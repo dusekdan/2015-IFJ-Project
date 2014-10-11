@@ -1,0 +1,36 @@
+Vytváříme interpratační překladač, tzn. finální část našeho překladače bude vykonávat to, co si přečte, že má vykonávat, ze zdrojového souboru (není to prostě kompilátor)
+
+Návratové hodnoty celého programu v případě chyb:
+"1" - Chyba v programu v rámci lexikální analýzy (chybná struktura aktuálního lexému).
+"2" - Chyba v programu v rámci syntaktické analýzy (chybná syntaxe struktury programu).
+"3" - Sémantická chyba v programu - nedefinovaná funkce/proměnná, pokus o redefinici proměnné, atd.
+"4" - Sémantická chyba typové kompatibility v aritmetických, řetězcových a relačních výrazech, případně špatný počet či typ parametrů u volání funkce
+"5" - ostatní sémantické chyby (feel free nějaké zde popsat)
+"6" - běhová chyba při načítání číselné hodnoty ze vstupu
+"7" - běhová chyba při práci s neinicializovanou proměnnou
+"8" - běhová chyba dělení nulou
+"9" - ostatní běhové chyby
+"99" - interní chyba interpreteru, tj. neovlivněná vstupním programem (chyba alokace paměti, chyba při otevírání souboru s řídícím programem, špatné parametry v cmd)
+
+Vstupní parametr(y):
+Jediným vstupním parametrem bude jméno souboru obsahující program k interpretaci. Přípustná je absolutní i relativní cesta.
+
+Vstup/Výstup/Chyby:
+Přijímat a směřovat na stdin, stdout + chyby na stderr.
+
+Klíčová slova pseudojazyka:
+begin, boolean, div, do, else, end, false, find, forward, function, if, integer, readln, real, sort, string, then, true, var, while, write... quicksort
+
+Datové typy:
+identifikátor - neprázdná posloupnost číslic, písmen a znaku podtržítka, začíná pouze písmenem, nebo podtržítkem, nesmí se shodovat s klíčovými slovy
+celočíselný literál (de facto integer(?)) - integer
+desetinný literál (de facto double(?)) - real
+řetězcový literár (de facto... string) - ohraničen jednoduchým apostrofem ('), jde o libovolný počet znaků zapsaných na JEDNOM řádku, znaky s vyšší hodnotou než je
+31 je možné zapsat jak přímo, tak ale pomocí "entity", ve tvaru "#i", kde "i" je ASCII hodnota. V zadání to nazývají escape sekvencí. - string
+boolean literál - typicky true/false - boolean
+
+Mezi složenými závorkami je blokový komentář.
+
+Není specifikováno kolik částí (souborů) v projektu máme/smíme využít, navrhuji každou z logických částí dělat do souboru zvlášť, třeba i jako hlavičkové soubory. (Dan)
+Body budeme pro všechny členy teamu dělit rovnoměrně.
+
