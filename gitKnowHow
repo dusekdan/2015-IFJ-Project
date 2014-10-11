@@ -17,3 +17,6 @@ git push // a kaboom baby, je to online, vypíše to nějakou zprávu o tom, co 
 
 Pro zjištění jestli se Vaše verze liší od verze na serveru (v gitu, v repozitáři, whatever):
 git status // vypíše hlášení o tom, co je a co není, nebo, že to je up-to-date
+
+Jakmile víte, že máte jinou verzi, než je na serveru, tak použijete
+git pull // a teď už máte stejnou verzi jako je online také
