@@ -9,46 +9,11 @@
 /****************************************************************/
 
 
-
 #include "ial.h"
 
 
-void partition(int pole[], int *i, int *j) { // rozdeleni
+tNodePtr *rootTS;
 
-	int pivot = pole[(*i + *j) / 2];
-
-	do {
-
-		while(pole[*i] < pivot) 	// prvky mensi jak pivot
-			(*i)++;
-
-		while(pole[*j] > pivot)		// prvky vetsi jak pivot
-			(*j)--;
-
-		if(*i <= *j) {
-
-			int help = pole[*i];
-			pole[(*i)++] = pole[*j];
-			pole[(*j)--] = help;
-		}
-
-	} while(*i < *j);
-}
-
-void quickSort(int pole[], int l, int r) { // razeni
-
-	int i, j;
-
-	i = l; j = r;
-
-	partition(pole, &i, &j);
-
-	if(j > l)
-		quickSort(pole, l, j);
-
-	if(i < r)
-		quickSort(pole, i, r);
-}
 
 
 int main(int argc, char *argv[]) {
@@ -73,4 +38,67 @@ int main(int argc, char *argv[]) {
 	}
 
 	return 0;
+}
+
+
+
+
+void initTable(void) {
+
+	(*rootTS) = NULL;	
+}
+
+void disposeTable(tNodePtr *rootTS) {
+
+
+	if((*rootTS)->rptr != NULL) {
+
+		disposeTable(&((*rootTS)->rptr)); 		// vycistime pravou stranu stromu
+	}
+
+	if((*rootTS)->lptr != NULL) {	
+	
+		disposeTable(&((*rootTS)->lptr));		// vycistime levou stranu stromu	
+	}
+
+	free((*rootTS)->data.name);
+	free(*rootTS);
+}
+
+
+void partition(int pole[], int *i, int *j) { 	// rozdeleni
+
+	int pivot = pole[(*i + *j) / 2];
+
+	do {
+
+		while(pole[*i] < pivot) 	// prvky mensi jak pivot
+			(*i)++;
+
+		while(pole[*j] > pivot)		// prvky vetsi jak pivot
+			(*j)--;
+
+		if((*i) <= (*j)) {
+
+			int help = pole[*i];
+			pole[(*i)++] = pole[*j];
+			pole[(*j)--] = help;
+		}
+
+	} while(*i < *j);
+}
+
+void quickSort(int pole[], int l, int r) { // razeni
+
+	int i, j;
+
+	i = l; j = r;
+
+	partition(pole, &i, &j);
+
+	if(j > l)
+		quickSort(pole, l, j);
+
+	if(i < r)
+		quickSort(pole, i, r);
 }

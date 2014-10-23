@@ -11,16 +11,55 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 
+typedef struct {			// typ ulozene promenne nebo funkce
 
-typedef struct Item {		// struktura polozky stromu
+	bool integer;
+	bool real;
+	bool boolean;
+	bool string;
+	bool empty;
+} tType;
+
+typedef struct {			// data promenne v symbolu
+
+	int integer;
+	double real;
+	char *string;
+	bool boolean;
+
+} tContent;
+
+typedef struct {		// symbol
+
+	char *name;				// nazev symbolu
+	tType type; 			// datovy typ symbolu
+	bool varType;			// true pokud je promenna, false pro funkci
+	int argCount;			// pocet argumentu funkce, pro promennou hodnota NULL
+	void *nextArg;			// ukazatel na dalsi argument funkce
+	tContent content;		// obsah promenne		
+} tData;
+
+
+typedef struct tUzel {		// uzel tabulky symbolu
 
 	int id;
-	struct Item *rptr;
-	struct Item *lptr;
-} *ItemPtr;
+	tData data;
+	struct tUzel *rptr;
+	struct tUzel *lptr;
+} *tNodePtr;
+
+extern tNodePtr *rootTS;		// ukazatel na zacatek tabulky symbolu
 
 
-void quickSort(int pole[], int l, int r);
-void partition(int pole[], int *i, int *j)
+void quickSort(int pole[], int l, int r);		// quicksort, nejspise jen cast
+void partition(int pole[], int *i, int *j);		// rozdeleni pro quickSort
+
+void initTable(void);
+void disposeTable();
+void insertSymbol();
+void searchSymbol();
+void selectSymbol();
+
