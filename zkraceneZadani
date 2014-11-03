@@ -19,7 +19,7 @@ Vstup/Výstup/Chyby:
 Přijímat a směřovat na stdin, stdout + chyby na stderr.
 
 Klíčová slova pseudojazyka:
-begin, boolean, div, do, else, end, false, find, forward, function, if, integer, readln, real, sort, string, then, true, var, while, write... quicksort
+begin, boolean, do, else, end, false, find, forward, function, if, integer, readln, real, sort, string, then, true, var, while, write... quicksort
 
 Datové typy:
 identifikátor - neprázdná posloupnost číslic, písmen a znaku podtržítka, začíná pouze písmenem, nebo podtržítkem, nesmí se shodovat s klíčovými slovy
