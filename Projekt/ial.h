@@ -31,7 +31,7 @@ typedef struct {			// data promenne v symbolu
 	bool boolean;
 
 } tContent;
-
+/*  LEX ČÁST */
 typedef struct {		// symbol
 
 	char *name;				// nazev symbolu
