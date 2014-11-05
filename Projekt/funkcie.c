@@ -7,19 +7,31 @@
 /* Kódování: UTF-8												*/
 /* Autoři:			Filip Kalous (xkalou03)						*/
 /****************************************************************/
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 
-int length(s)
-{
+#include "funkcie.h"
+
+int length(char *s) {
 	
+	printf("%s\n", s);
+	return 0;
+
 }
 
 
+void copy(char *s) {
 
-int main()
-{
-	
+	printf("%s\n", s);
+
+}
+
+
+int main() {
+
+	char *string = "'x'#10'z'";
+
+	length(string);
+	copy(string);
+
+	return 0;
 
 }
