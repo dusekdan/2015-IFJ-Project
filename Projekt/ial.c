@@ -65,16 +65,37 @@ void disposeTable(tNodePtr *rootTS) {
 	free(*rootTS);
 }
 
-void searchSymbol() {
+tNodePtr searchSymbol(tNodePtr *rootTS, char* key) {
 
+	if((*rootTS != NULL)) {
 
-	if((*rootTS)->rptr != NULL)
-		searchSymbol(&((*rootTS)->rptr));
+		int strCompare = strcmp(key, ((*rootTS)->key));
+	
+		if(strCompare < 0)
+			return searchSymbol(&((*rootTS)->lptr), key);
 
-	if((*rootTS)->lptr != NULL)
-		searchSymbol(&(*rootTS)->lptr));
+		else if(strCompare > 0)
+			return searchSymbol(&((*rootTS)->rptr), key);
 
+		else 
+			return (*rootTS);
+	}
 
+	return 0;
+}
+
+tNodePtr readSymbol(tNodePtr *rootTS, char *key) {
+
+	tNodePtr temp;
+
+	if(*rootTS != NULL) {
+
+		temp = searchSymbol(rootTS, key);
+
+		return temp;			
+	}
+
+	return 0;
 }
 
 

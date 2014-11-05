@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 
 
 typedef struct {			// typ ulozene promenne nebo funkce
@@ -45,7 +46,7 @@ typedef struct {		// symbol
 
 typedef struct tUzel {		// uzel tabulky symbolu
 
-	char* key;
+	char *key;
 	tData data;
 	struct tUzel *rptr;
 	struct tUzel *lptr;
@@ -60,6 +61,8 @@ void partition(int pole[], int *i, int *j);		// rozdeleni pro quickSort
 void initTable(void);
 void disposeTable();
 void insertSymbol();
-void searchSymbol();
-void selectSymbol();
+tNodePtr searchSymbol(tNodePtr *rootTS, char* key);
+tNodePtr readSymbol();
+
+
 
