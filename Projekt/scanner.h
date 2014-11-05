@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
+#include <stdbool.h>
 
 void getToken(FILE* fd);
 
@@ -17,6 +18,7 @@ typedef enum
 
 typedef struct
 {
-	//tType type;
-	char* attribute;
+	//int id;
+	tType type;
+	char* value;
 } tToken;

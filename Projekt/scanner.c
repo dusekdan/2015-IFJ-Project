@@ -1,4 +1,6 @@
 #include "scanner.h"
+#define STRLENGTH 200
+#define APOSTROF_ASCII 39
 
 enum states {
 
@@ -14,6 +16,10 @@ enum states {
 	sPREEXP,
 	sEXP,	
 	sSIGN,
+	sOPERATOR,
+	scDCOMMA,
+	scLESS,
+	scGREATER
 };
 
 char* keywords[] = {
@@ -34,6 +40,8 @@ int main()
 		}
 
 	getToken(fd);
+	getToken(fd);
+	getToken(fd);
 
 	fclose(fd);
 
@@ -41,43 +49,183 @@ int main()
 
 }
 
-
 void getToken(FILE* fd)
 {
+	printf("Start.\n");
+	char testToken[STRLENGTH]; // každých dalších 200 bude třeba reallocovat. Běžně by k tomu nemělo dojít.
+
+	int c; // this is actually char, but we need its numerical representation
+	int fcv = -1; // flow control variable; initialized on -1, because we increase it on the start of the loop
+	int actState = 0; // počáteční stav
+	bool terminator = false; // v moment kdy narazíme na :=<> atd. tak nastavujeme na true -> while končí
+	bool inComment = false; // in case we are in comment, we skipt everything (and we need this variable to determine that)
 
 
-	char c; // co asi
-	int actState = 0; // nastavujeme na nulu, neb 0 je start, a to je počáteční stav.
-	tToken token;
-
-	while( (c = fgetc(fd) ) != EOF )
+	while ( ((c = fgetc(fd) ) != EOF) && terminator == false )
 	{
-	
+		
+
+		if(isspace(c) && actState != sSTRING)
+		{
+			continue;
+		}
+
+		if(c == '{' && actState != sSTRING)
+		{
+			inComment = true;
+			continue;
+		}
+
+		if(inComment)
+		{
+			if(c == '}')
+			{
+				inComment = false;
+				printf("I skipped comment by the way...\n");
+			}
+			continue;
+		}
+
+		fcv++; // zvýšení flow control variable je na začátku cyklu, neboť je inicializovaná na -1
+		
+
 		switch(actState)
 		{
-			case sSTART:
+
+			case sSTART:	
+
+				printf("jsem tu\n");
 
 				if( isalpha(c) || c == '_')
 				{
 					actState = sIDENT;
+					testToken[fcv] = c;
+					break; // we breake it here, because we identified what's next state;
+				}
 
-					token.attribute = c;	// uložit znak do tokenu (asi jako jeho value), breaknout switch a cyklem najet do nového stavu
-					
+				if( c == APOSTROF_ASCII )
+				{
+					actState = sSTRING;
+					testToken[fcv] = c;
+				}
+
+				if ( c == '0')
+				{
+					actState = sZERO;
+					testToken[fcv] = c; // this part is questionable
+				}
+
+				if( c >= '1' || c <= '9' )
+				{
+					actState = sNUMBER;
+					testToken[fcv] = c;
+				}
+
+				if(c == '+' || c == '-' || c == '^')
+				{
+					actState = sOPERATOR;
+					testToken[fcv] = c;
+				}
+
+				if(c == ':')
+				{
+					actState = scDCOMMA;
+					testToken[fcv] = c;
+				}
+
+				if(c == '<')
+				{
+					actState = scLESS;
+					testToken[fcv] = c;
+				}
+
+				if(c == '>')
+				{
+					actState = scGREATER;
+					testToken[fcv] = c;
 				}
 				break;
-			
+				// když neskončíme v první podmínce, dále zjišťujeme co je příští status
+
 			case sIDENT:
-			token.attribute = strcat(token.attribute, c);
+				
+				if(isalpha(c) || c == '_' || isdigit(c))
+				{
+					testToken[fcv] = c;	// odpovídá-li znak povoleným znakům v identifikátoru, rozšíříme stávající token name/value o tuto hodnotu a cyklus jede odznovu
+				}
+				else	// nalezneme znak, který není platným identifikátorem => nastavujeme terminator na true
+				{
+					terminator = true;
+					printf("Tady posilam TOKEN!\n");
+					printf("Token name: %s\n",testToken);					
+				}
+
+			break;
+
+			case sSTRING:
+				printf("Jsem v sString\n");
+			break;
+
+			case sZERO:
+				printf("Jsem v sZERO\n");
+			break;
+
+			case sNUMBER:
+				printf("Jsem v sNUMBER\n");
+			break;
+
+			case sOPERATOR:
+				printf("Jsem v sOPERATOR\n");
+			break;
+
+			case scDCOMMA:
+				
+				printf("Jsem v scDCOMMA\n");
+				
+					if(c == '=')
+					{
+						testToken[fcv] = c;
+					}
+
+					if(strcmp(testToken, ":=") == 0)
+					{
+						printf("Token hotovy, posilam: %s\n", testToken);
+						terminator = true;
+					}
+
+			break;
+
+			case scLESS:
+				printf("Jsem v scLESS\n");
+			break;
+
+			case scGREATER:
+				printf("Jsem v scGREATER\n");
 			break;
 
 		}
 
-		printf("%s", token.attribute);
-	
 
+		if(terminator)
+		{
+
+			printf("Before reset: %s\n", testToken);
+
+			int i;
+					for(i = 0; i<=sizeof(testToken); i++)
+					{
+						testToken[i] = '\0';
+					}
+
+					fcv = 0;
+
+			fseek(fd, -1, SEEK_CUR);
+			printf("The znak: %c\n", c); // after fseek
+			printf("After reset: %s\n", testToken);
+			break;
+
+		}
 
 	}
-
-	printf("Ahoj, jsem na konci getTokenu.\n");
-
+	printf("Konec.\n");
 }
