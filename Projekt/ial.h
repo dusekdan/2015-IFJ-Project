@@ -36,7 +36,7 @@ typedef struct {		// symbol
 
 	char *name;				// nazev symbolu
 	tType type; 			// datovy typ symbolu
-	bool varType;			// true pokud je promenna, false pro funkci
+	bool func;				// false pokud neni funkce, true pro funkci
 	int argCount;			// pocet argumentu funkce, pro promennou hodnota NULL
 	void *nextArg;			// ukazatel na dalsi argument funkce
 	tContent content;		// obsah promenne		
@@ -45,7 +45,7 @@ typedef struct {		// symbol
 
 typedef struct tUzel {		// uzel tabulky symbolu
 
-	int id;
+	char* key;
 	tData data;
 	struct tUzel *rptr;
 	struct tUzel *lptr;

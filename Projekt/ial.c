@@ -65,6 +65,18 @@ void disposeTable(tNodePtr *rootTS) {
 	free(*rootTS);
 }
 
+void searchSymbol() {
+
+
+	if((*rootTS)->rptr != NULL)
+		searchSymbol(&((*rootTS)->rptr));
+
+	if((*rootTS)->lptr != NULL)
+		searchSymbol(&(*rootTS)->lptr));
+
+
+}
+
 
 void partition(int pole[], int *i, int *j) { 	// rozdeleni
 
