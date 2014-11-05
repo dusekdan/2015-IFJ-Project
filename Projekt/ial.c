@@ -48,6 +48,42 @@ void initTable(void) {
 	(*rootTS) = NULL;	
 }
 
+void disposeTable(tNodePtr *rootTS) {
+
+
+	if((*rootTS)->rptr != NULL) {
+
+		disposeTable(&((*rootTS)->rptr)); 		// vycistime pravou stranu stromu
+	}
+
+	if((*rootTS)->lptr != NULL) {	
+	
+		disposeTable(&((*rootTS)->lptr));		// vycistime levou stranu stromu	
+	}
+
+	free((*rootTS)->data.name);
+	free(*rootTS);
+}
+
+tNodePtr searchSymbol(tNodePtr *rootTS, char* key) {
+
+	if((*rootTS != NULL)) {
+
+		int strCompare = strcmp(key, ((*rootTS)->key));
+	
+		if(strCompare < 0)
+			return searchSymbol(&((*rootTS)->lptr), key);
+
+		else if(strCompare > 0)
+			return searchSymbol(&((*rootTS)->rptr), key);
+
+		else 
+			return (*rootTS);
+	}
+
+	return 0;
+}
+
 tNodePtr createNode(tData data) {
 	
 	tNodePtr new;
@@ -91,33 +127,18 @@ tNodePtr insertSymbol(tNodePtr *rootTS, char *key, tData data) {
 	}
 }
 
-void disposeTable(tNodePtr *rootTS) {
+tNodePtr readSymbol(tNodePtr *rootTS, char *key) {
 
+	tNodePtr temp;
 
-	if((*rootTS)->rptr != NULL) {
+	if(*rootTS != NULL) {
 
-		disposeTable(&((*rootTS)->rptr)); 		// vycistime pravou stranu stromu
+		temp = searchSymbol(rootTS, key);
+
+		return temp;			
 	}
 
-	if((*rootTS)->lptr != NULL) {	
-	
-		disposeTable(&((*rootTS)->lptr));		// vycistime levou stranu stromu	
-	}
-
-	free((*rootTS)->data.name);
-	free(*rootTS);
-}
-
-void searchSymbol() {
-
-
-	if((*rootTS)->rptr != NULL)
-		searchSymbol(&((*rootTS)->rptr));
-
-	if((*rootTS)->lptr != NULL)
-		searchSymbol(&(*rootTS)->lptr));
-
-
+	return 0;
 }
 
 
