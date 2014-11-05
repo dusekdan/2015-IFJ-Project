@@ -48,6 +48,49 @@ void initTable(void) {
 	(*rootTS) = NULL;	
 }
 
+tNodePtr createNode(tData data) {
+	
+	tNodePtr new;
+	if((new = malloc(sizeof(struct tUzel))) == NULL)
+		
+		return 0;
+	
+	else {
+	
+	new.key = data.key;
+	new.data = data.data; 
+	new.lptr = NULL;
+	new.rptr = NULL;
+	return new;
+	}
+}
+
+tNodePtr insertSymbol(tNodePtr *rootTS, char *key, tData data) {
+
+	int cmp;
+	tNodePtr tmp;
+	
+	if(*rootTS == NULL)
+
+		tmp = createNode(data);
+		return tmp;
+	
+	else {
+
+		cmp = strcmp((*rootTS)->key,key);
+
+		if(cmp > 0)
+		return insertTable(&(*rootTS->rptr), key, data);	
+		
+		if(cmp < 0)
+		return insertTable(&(*rootTS->lptr), key, data);	
+	    
+	    if(key == *rootTS->key)
+	    	*rootTS->data = data;
+
+	}
+}
+
 void disposeTable(tNodePtr *rootTS) {
 
 
