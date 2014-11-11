@@ -84,7 +84,7 @@ tNodePtr searchSymbol(tNodePtr *rootTS, char* key) {
 	return 0;
 }
 
-tNodePtr createNode(tData data) {
+tNodePtr createNode(tNodePtr *tempRoot) {
 	
 	tNodePtr new;
 	if((new = malloc(sizeof(struct tUzel))) == NULL)
@@ -93,10 +93,10 @@ tNodePtr createNode(tData data) {
 	
 	else {
 	
-	new.key = data.key;
-	new.data = data.data; 
-	new.lptr = NULL;
-	new.rptr = NULL;
+	new->key = (*tempRoot)->key;
+	new->data = (*tempRoot)->data; 
+	new->lptr = NULL;
+	new->rptr = NULL;
 	return new;
 	}
 }
@@ -106,25 +106,27 @@ tNodePtr insertSymbol(tNodePtr *rootTS, char *key, tData data) {
 	int cmp;
 	tNodePtr tmp;
 	
-	if(*rootTS == NULL)
+	if(*rootTS == NULL) {
 
-		tmp = createNode(data);
+		tmp = createNode(rootTS);
 		return tmp;
-	
+	}
 	else {
 
 		cmp = strcmp((*rootTS)->key,key);
 
 		if(cmp > 0)
-		return insertTable(&(*rootTS->rptr), key, data);	
+		return insertSymbol(&((*rootTS)->rptr), key, data);	
 		
 		if(cmp < 0)
-		return insertTable(&(*rootTS->lptr), key, data);	
+		return insertSymbol(&((*rootTS)->lptr), key, data);	
 	    
-	    if(key == *rootTS->key)
-	    	*rootTS->data = data;
+	    if(key == (*rootTS)->key)
+	    	(*rootTS)->data = data;
 
 	}
+
+	return 0;
 }
 
 tNodePtr readSymbol(tNodePtr *rootTS, char *key) {

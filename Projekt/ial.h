@@ -60,7 +60,7 @@ void partition(int pole[], int *i, int *j);		// rozdeleni pro quickSort
 
 void initTable(void);
 void disposeTable();
-tNodePtr createNode(tData data);
+tNodePtr createNode(tNodePtr *tempRoot);
 tNodePtr insertSymbol(tNodePtr *rootTS, char *key, tData data);
 tNodePtr searchSymbol(tNodePtr *rootTS, char* key);
 tNodePtr readSymbol();
