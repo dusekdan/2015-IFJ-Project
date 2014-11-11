@@ -115,7 +115,7 @@ void getToken(FILE* fd)
 					testToken[fcv] = c; // this part is questionable
 				}
 
-				if( c >= '1' || c <= '9' )
+				if( c >= '1' && c <= '9' )
 				{
 					actState = sNUMBER;
 					testToken[fcv] = c;
@@ -186,6 +186,12 @@ void getToken(FILE* fd)
 					{
 						testToken[fcv] = c;
 					}
+					/*else if ()
+					{
+						
+					}*/
+
+					
 
 					if(strcmp(testToken, ":=") == 0)
 					{
