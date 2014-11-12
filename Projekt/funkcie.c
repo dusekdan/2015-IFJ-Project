@@ -10,17 +10,24 @@
 
 #include "funkcie.h"
 
-int length(char *s) {
-	
-	printf("%s\n", s);
-	return 0;
 
-}
+void copy(char *s, int beginStr, int count) {		// filipova prace
 
+	char c;
+	int i = beginStr;
 
-void copy(char *s) {
+	while(count != 0) {
 
-	printf("%s\n", s);
+		c = s[i];
+
+		// printf("%c", c);
+
+		count--;
+		i++;
+
+	}
+
+	printf("\n");
 
 }
 
@@ -29,8 +36,7 @@ int main() {
 
 	char *string = "'x'#10'z'";
 
-	length(string);
-	copy(string);
+	copy(string, 1, 4);
 
 	return 0;
 
