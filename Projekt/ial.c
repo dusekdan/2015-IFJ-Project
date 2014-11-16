@@ -11,12 +11,28 @@
 
 #include "ial.h"
 
+#define ASCIISIZE 256
+
 
 tNodePtr *rootTS;
 
 
 
+
+
 int main(int argc, char *argv[]) {
+
+
+	char *pattern = "alibaba";
+
+	char *text = "Dnesba je alibaba otealibabavrena.";
+
+	int find = BMASearch(text, pattern);
+	
+	if(find > 0)
+		printf("Nasli jsme podretezec. Jeho pozice je %d.\n", find);
+	else
+		printf("Nenasli jsme podretezec.\n");
 
 	//int sizeArray = sizeof(argv) / sizeof(argv[0]);
 
@@ -41,6 +57,110 @@ int main(int argc, char *argv[]) {
 }
 
 
+
+
+
+int BMASearch(char *text, char *pattern) { 		// vraci jeho pozici, indexovano od 1
+
+
+	int textLength, patternLength;
+	int i;
+	int j = 0;
+
+	textLength = strlen(text);				// delka retezce 
+	patternLength = strlen(pattern);		// delka hledaneho retezce
+
+	int BCShift[ASCIISIZE], GSShift[patternLength];
+
+	BMACountBadChar(pattern, patternLength, BCShift);
+	BMACountGoodSuffix(pattern, patternLength, GSShift);
+
+
+	if(textLength < patternLength)		// text je mensi jak vyhledavany podretezec
+		return 0;
+
+	if(patternLength == 0)				// podretezec je prazdny - pozice 1
+		return 1;
+
+
+	while(j <= (textLength - patternLength)) {
+
+		for(i = (patternLength - 1); i >= 0 && pattern[i] == text[i+j]; --i);
+		
+		if(i < 0) {
+
+			return (j + 1);
+			j += GSShift[0];
+			
+		}
+
+		else
+			j += max(GSShift[i], BCShift[(int) text[i + j]] - patternLength + 1 + i);
+	}
+
+	return 0;		
+} 			
+
+void BMACountBadChar(char *pattern, int patternLength, int shiftBC[]) { 	// heuristika bad-character shift
+
+	int i;
+
+	for(i = 0; i < ASCIISIZE; ++i)		// inicializovani pole
+		shiftBC[i] = patternLength;
+
+	for(i = 0; i < (patternLength - 1); ++i)
+		shiftBC[(int) pattern[i]] = patternLength - i - 1;
+
+}
+
+void BMACountGoodSuffix(char *pattern, int patternLength, int shiftGS[]) {	// heuristika good-suffix shift
+
+	int i, j, suffix[patternLength];
+	j = 0;
+
+	BMASuffixes(pattern, patternLength, suffix);
+
+
+	for(i = 0; i < patternLength; ++i)			// inicializovani pole
+		shiftGS[i] = patternLength;
+
+	for(i = (patternLength - 1); i >= 0; --i)
+		if(suffix[i] == (i + 1))
+			for(; j < (patternLength - 1 - i); ++j)
+				if(shiftGS[j] == patternLength)
+					shiftGS[j] = patternLength - 1 - i;
+
+	for(i = 0; i <= patternLength - 2; ++i)
+		shiftGS[patternLength - 1 - suffix[i]] = patternLength - 1 - i;
+
+}
+
+void BMASuffixes(char *pattern, int patternLength, int *suffix) {			// pomocna funkce pro good-suffix shift
+
+	int f, g;
+
+	suffix[patternLength - 1] = patternLength;
+	g = patternLength - 1;
+
+	for(int i = (patternLength - 2); i >= 0; --i) {
+
+		if(i > g && suffix[i + patternLength - 1 - f] < (i - g))
+			suffix[i] = suffix[i + patternLength - 1 -f];
+
+		else {
+
+			if(i < g)
+				g = i;
+
+			f = i;
+
+			while(g >= 0 && pattern[g] == pattern[g + patternLength - 1 - f])
+				--g;
+
+			suffix[i] = f - g;
+		}
+	}
+}
 
 
 void initTable(void) {
@@ -180,3 +300,5 @@ void quickSort(int pole[], int l, int r) { // razeni
 	if(i < r)
 		quickSort(pole, i, r);
 }
+
+

@@ -15,6 +15,11 @@
 #include <string.h>
 
 
+#ifndef max
+	#define max(a, b) (((a) > (b)) ? (a) : (b))
+#endif
+
+
 typedef struct {			// typ ulozene promenne nebo funkce
 
 	bool integer;
@@ -65,5 +70,8 @@ tNodePtr insertSymbol(tNodePtr *rootTS, char *key, tData data);
 tNodePtr searchSymbol(tNodePtr *rootTS, char* key);
 tNodePtr readSymbol();
 
-
+int BMASearch();
+void BMACountBadChar();
+void BMACountGoodSuffix();
+void BMASuffixes();
 

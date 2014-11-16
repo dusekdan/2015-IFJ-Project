@@ -13,5 +13,4 @@
 #include <stdio.h>
 #include <string.h>
 
-int length(char *s);
-void copy(char *s);
+void copy(char *s, int beginStr, int count);
