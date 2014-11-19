@@ -38,7 +38,7 @@ typedef struct {			// data promenne v symbolu
 
 } tContent;
 /*  LEX ČÁST */
-typedef struct {		// symbol
+typedef struct tData {		// symbol
 
 	char *name;				// nazev symbolu
 	tType type; 			// datovy typ symbolu
@@ -60,11 +60,11 @@ typedef struct tUzel {		// uzel tabulky symbolu
 extern tNodePtr *rootTS;		// ukazatel na zacatek tabulky symbolu
 
 
-void quickSort(int pole[], int l, int r);		// quicksort, nejspise jen cast
-void partition(int pole[], int *i, int *j);		// rozdeleni pro quickSort
+void quickSort(char *text, int l, int r);		// quicksort, nejspise jen cast
+void partition(char text[], int *i, int *j);		// rozdeleni pro quickSort
 
 void initTable(void);
-void disposeTable();
+void disposeTable(tNodePtr *rootTS);
 tNodePtr createNode(tNodePtr *tempRoot);
 tNodePtr insertSymbol(tNodePtr *rootTS, char *key, tData data);
 tNodePtr searchSymbol(tNodePtr *rootTS, char* key);

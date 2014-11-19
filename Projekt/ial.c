@@ -18,14 +18,11 @@ tNodePtr *rootTS;
 
 
 
-
-
-int main(int argc, char *argv[]) {
-
+int main() {
 
 	char *pattern = "alibaba";
 
-	char *text = "Dnesba je alibaba otealibabavrena.";
+	char *text = "dnesba je alibaba otealibabavrena";
 
 	int find = BMASearch(text, pattern);
 	
@@ -36,28 +33,14 @@ int main(int argc, char *argv[]) {
 
 	//int sizeArray = sizeof(argv) / sizeof(argv[0]);
 
-	int pole[argc - 1];
+	int delka = strlen(text);
 
-	for(int i = 1; i < argc; i++) {
+	printf("volam qucik\n");
 
-		pole[i - 1] = atoi(argv[i]);
-	}
-
-	
-	quickSort(pole, 0, argc - 2);		// volani quicksortu
-
-
-
-	for(int j = 1; j < argc; j++) {
-
-		printf("%d\n", pole[j - 1]);
-	}
+	quickSort(text, 0, delka - 1);		// volani quicksortu
 
 	return 0;
 }
-
-
-
 
 
 int BMASearch(char *text, char *pattern) { 		// vraci jeho pozici, indexovano od 1
@@ -229,6 +212,7 @@ tNodePtr insertSymbol(tNodePtr *rootTS, char *key, tData data) {
 	if(*rootTS == NULL) {
 
 		tmp = createNode(rootTS);
+		printf("%s\n", tmp->data.name);
 		return tmp;
 	}
 	else {
@@ -264,41 +248,46 @@ tNodePtr readSymbol(tNodePtr *rootTS, char *key) {
 }
 
 
-void partition(int pole[], int *i, int *j) { 	// rozdeleni
+void partition(char text[], int *i, int *j) { 	// rozdeleni
 
-	int pivot = pole[(*i + *j) / 2];
+	int pivot = text[(*i + *j) / 2];
 
 	do {
 
-		while(pole[*i] < pivot) 	// prvky mensi jak pivot
+		while(text[*i] < pivot) 	// prvky mensi jak pivot
 			(*i)++;
 
-		while(pole[*j] > pivot)		// prvky vetsi jak pivot
+		while(text[*j] > pivot)		// prvky vetsi jak pivot
 			(*j)--;
 
 		if((*i) <= (*j)) {
 
-			int help = pole[*i];
-			pole[(*i)++] = pole[*j];
-			pole[(*j)--] = help;
+			int help = text[*i];
+			text[(*i)++] = text[*j];
+			text[(*j)--] = help;
 		}
 
 	} while(*i < *j);
 }
 
-void quickSort(int pole[], int l, int r) { // razeni
+
+ void quickSort(char *text, int l, int r) { // razeni
+
 
 	int i, j;
 
 	i = l; j = r;
 
-	partition(pole, &i, &j);
+	partition(text, &i, &j);
 
 	if(j > l)
-		quickSort(pole, l, j);
+		quickSort(text, l, j);
 
 	if(i < r)
-		quickSort(pole, i, r);
+		quickSort(text, i, r);
+
+
+	printf("%s\n", text);
 }
 
 
