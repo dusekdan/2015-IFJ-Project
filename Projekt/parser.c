@@ -1,20 +1,20 @@
 ////////////////////Roman Jaška
 ////////////////////rozrobené
 #include "parser.h"
+#include "ial.c"
 
 
 
-void gib_tok (int* typ_ptr, char* att_ptr)
+void gib_tok (token tok)
 {
     //printf("gib token\n");
     int i=0;
+    
     scanf("%d",&i);
-    /*printf("Got: ");
-    terminalis(i);*/
-    *typ_ptr=i;
-    /*
-    *att_ptr='a';*/
-}
+
+    //tok->type=i;
+    tok->type=i;
+    }
 
 void terminalis (int terminal)
 {
@@ -58,11 +58,11 @@ void terminalis (int terminal)
     }
 }
 
-void match (int* typ_ptr, char* att_ptr, int terminal)
+void match (token tok, int terminal)
 {
     if (terminal<30)
     {
-        gib_tok(typ_ptr, att_ptr);
+        gib_tok(tok);
         //printf("Did: ");
         terminalis(terminal);
     }
@@ -70,39 +70,39 @@ void match (int* typ_ptr, char* att_ptr, int terminal)
 }
 
 
-void nt_program (int* typ_ptr, char* att_ptr)
+void nt_program (token tok)
 {
-    gib_tok (typ_ptr, att_ptr);
+    gib_tok (tok);
     /////////////////////////////////////////////////////////////////////////////RULE 1
-    if (*typ_ptr == t_var || *typ_ptr == t_function || *typ_ptr == t_begin)
+    if (tok->type == t_var || tok->type == t_function || tok->type == t_begin)
     {   
-        if (*typ_ptr == t_var)
+        if (tok->type == t_var)
         {
-            nt_var_def_block (typ_ptr, att_ptr);
+            nt_var_def_block (tok);
         }
-        if (*typ_ptr == t_function)
+        if (tok->type == t_function)
         {
-            nt_fun_def_list (typ_ptr, att_ptr);
+            nt_fun_def_list (tok);
         }
-        if (*typ_ptr == t_begin)
+        if (tok->type == t_begin)
         {
-            nt_main (typ_ptr, att_ptr);
+            nt_main (tok);
         }
     }
     else
         printf("syntax error in nt_program\n");
 }
 
-void nt_var_def_block (int* typ_ptr, char* att_ptr)
+void nt_var_def_block (token tok)
 {
-    if (*typ_ptr == t_var || *typ_ptr == t_function || *typ_ptr == t_begin)
+    if (tok->type == t_var || tok->type == t_function || tok->type == t_begin)
     {   
         ////////////////////////////////////////////////////////////////////////RULE 2
-        if (*typ_ptr == t_var)
+        if (tok->type == t_var)
         {
-            match(typ_ptr, att_ptr, 1);
-            nt_var_def(typ_ptr, att_ptr);
-            nt_var_def_list(typ_ptr, att_ptr);
+            match(tok, t_var);
+            nt_var_def(tok);
+            nt_var_def_list(tok);
         }
         //////////////////////////////////////////////////////////////////////////RULE3
         else
@@ -112,15 +112,15 @@ void nt_var_def_block (int* typ_ptr, char* att_ptr)
         printf("syntax error in nt_var_def_block\n");
 }
 
-void nt_var_def_list (int* typ_ptr, char* att_ptr)
+void nt_var_def_list (token tok)
 {
-    if (*typ_ptr == t_function || *typ_ptr == t_begin || *typ_ptr == t_var_id)
+    if (tok->type == t_function || tok->type == t_begin || tok->type == t_var_id)
     {
         /////////////////////////////////////////////////////////////////////////RULE4
-        if (*typ_ptr == t_var_id)
+        if (tok->type == t_var_id)
         {
-            nt_var_def(typ_ptr, att_ptr);
-            nt_var_def_list(typ_ptr, att_ptr);
+            nt_var_def(tok);
+            nt_var_def_list(tok);
         }
         /////////////////////////////////////////////////////////////////////////RULE5
         else
@@ -130,39 +130,57 @@ void nt_var_def_list (int* typ_ptr, char* att_ptr)
         printf("syntax error in nt_var_def_list\n");
 }
 
-void nt_var_def (int* typ_ptr, char* att_ptr)
+void nt_var_def (token tok)
 {
     ///////////////////////////////////////////////////////////////////////////RULE6
-    if (*typ_ptr == t_var_id)
+    if (tok->type == t_var_id)
     {
-        match (typ_ptr, att_ptr, t_var_id);
-        match (typ_ptr, att_ptr, t_colon);
-        nt_type (typ_ptr, att_ptr);
-        match (typ_ptr, att_ptr, t_semicolon);
+        ////////////////////////////////////////////SPRACOVANIE PREMENNEJ
+        if (searchSymbol(&rootTS, tok->val_str)==0)
+        //////////////////////////////////////////////IDEME UKLADAT
+        {
+            tNodePtr temp;
+            tData premenna = malloc(sizeof(struct tData));
+            if (premenna!=NULL)
+            {
+                premenna->name=tok->val_str;
+                premenna->type=t_var_id;
+                temp=insertSymbol(&rootTS, tok->val_str,premenna);
+                printf("premenna %s bola vytvorena\n", tok->val_str);
+            } else printf("dojebal sa malloc\n");
+        }else printf("premmenna uy existuje\n");
+
+        match (tok, t_var_id);
+        
+
+
+        match (tok, t_colon);
+        nt_type (tok);
+        match (tok, t_semicolon);
     }
     else
         printf("syntax error in nt_var_def\n");
 
 }
 
-void nt_fun_def_list (int* typ_ptr, char* att_ptr)
+void nt_fun_def_list (token tok)
 {
-    if (*typ_ptr == t_function || *typ_ptr == t_begin)
+    if (tok->type == t_function || tok->type == t_begin)
     {
         //////////////////////////////////////////////////////////////////RULE7
-        if (*typ_ptr == t_function)
+        if (tok->type == t_function)
         {
-            match(typ_ptr,att_ptr,t_function);
-            match(typ_ptr,att_ptr,t_fun_id);
-            match(typ_ptr,att_ptr,t_l_parrent);
-            nt_param_list(typ_ptr,att_ptr);
-            match(typ_ptr,att_ptr,t_r_parrent);
-            match(typ_ptr,att_ptr,t_colon);
-            nt_type(typ_ptr,att_ptr);
-            match(typ_ptr,att_ptr,t_semicolon);
-            nt_fun_body(typ_ptr,att_ptr);
-            match(typ_ptr,att_ptr,t_semicolon);
-            nt_fun_def_list(typ_ptr,att_ptr);
+            match(tok,t_function);
+            match(tok,t_fun_id);
+            match(tok,t_l_parrent);
+            nt_param_list(tok);
+            match(tok,t_r_parrent);
+            match(tok,t_colon);
+            nt_type(tok);
+            match(tok,t_semicolon);
+            nt_fun_body(tok);
+            match(tok,t_semicolon);
+            nt_fun_def_list(tok);
         }
         //////////////////////////////////////////////////////////////////////RULE8
         else
@@ -173,76 +191,76 @@ void nt_fun_def_list (int* typ_ptr, char* att_ptr)
 }
 
 
-void nt_fun_body (int* typ_ptr, char* att_ptr)
+void nt_fun_body (token tok)
 {
-    if (*typ_ptr == t_forward || *typ_ptr == t_begin || *typ_ptr == t_var)
+    if (tok->type == t_forward || tok->type == t_begin || tok->type == t_var)
     {
         //////////////////////////////////////////////////////////////////RULE9 +++treba zaistit ze neskor bude definovana
-        if (*typ_ptr == t_forward)
+        if (tok->type == t_forward)
         {
-            match(typ_ptr,att_ptr,t_function);
-            match(typ_ptr,att_ptr,t_fun_id);
-            match(typ_ptr,att_ptr,t_l_parrent);
-            nt_param_list(typ_ptr,att_ptr);
-            match(typ_ptr,att_ptr,t_r_parrent);
-            match(typ_ptr,att_ptr,t_colon);
-            nt_type(typ_ptr,att_ptr);
-            match(typ_ptr,att_ptr,t_semicolon);
-            match(typ_ptr,att_ptr,t_forward);
-            match(typ_ptr,att_ptr,t_semicolon);
-            nt_fun_def_list(typ_ptr,att_ptr);
+            match(tok,t_function);
+            match(tok,t_fun_id);
+            match(tok,t_l_parrent);
+            nt_param_list(tok);
+            match(tok,t_r_parrent);
+            match(tok,t_colon);
+            nt_type(tok);
+            match(tok,t_semicolon);
+            match(tok,t_forward);
+            match(tok,t_semicolon);
+            nt_fun_def_list(tok);
         }
         //////////////////////////////////////////////////////////////////////RULE10
         else
         {
-            nt_var_def_block  (typ_ptr,att_ptr);
-            nt_body (typ_ptr,att_ptr);
+            nt_var_def_block (tok);
+            nt_body (tok);
         }
     }
     else
         printf("synerror in nt_fun_def_list\n");
 }
 
-void nt_body (int* typ_ptr, char* att_ptr)
+void nt_body (token tok)
 {
     ////////////////////////////////////////////////////////////////////////////RULE11
-    if (*typ_ptr == t_begin)
+    if (tok->type == t_begin)
     {
-        match(typ_ptr,att_ptr,t_begin);
-        nt_stmt_list(typ_ptr,att_ptr);
-        match(typ_ptr,att_ptr,t_end);
+        match(tok,t_begin);
+        nt_stmt_list(tok);
+        match(tok,t_end);
     }
     else printf("syn error in nt_body\n");
 }
 
-void nt_main (int* typ_ptr, char* att_ptr)
+void nt_main (token tok)
 {
     ///////////////////////////////////////////////////////////////////////////////RULE12
-    if (*typ_ptr == t_begin)
+    if (tok->type == t_begin)
     {
-        nt_body(typ_ptr,att_ptr);
-        match(typ_ptr,att_ptr,t_period);
-        match(typ_ptr,att_ptr,t_dollar);
+        nt_body(tok);
+        match(tok,t_period);
+        match(tok,t_dollar);
     }
     else printf("syn error in nt_main\n");
 }
 
-void nt_stmt_list (int* typ_ptr, char* att_ptr)
+void nt_stmt_list (token tok)
 {
-    if (*typ_ptr == t_begin || *typ_ptr == t_end    || *typ_ptr == t_if    ||
-        *typ_ptr == t_while || *typ_ptr == t_readln || *typ_ptr == t_write ||
-        *typ_ptr == t_var_id)
+    if (tok->type == t_begin || tok->type == t_end    || tok->type == t_if    ||
+        tok->type == t_while || tok->type == t_readln || tok->type == t_write ||
+        tok->type == t_var_id)
     {
         ////////////////////////////////////////////////////////////////////////////RULE14
-        if (*typ_ptr == t_end)
+        if (tok->type == t_end)
         {
             return;
         }
         ////////////////////////////////////////////////////////////////////////////RULE13
         else
         {
-            nt_stmt(typ_ptr,att_ptr);
-            nt_stmt_more(typ_ptr,att_ptr);
+            nt_stmt(tok);
+            nt_stmt_more(tok);
         }
 
     }
@@ -250,15 +268,15 @@ void nt_stmt_list (int* typ_ptr, char* att_ptr)
         printf("syn error in nt_stmt_list\n");
 }
 
-void nt_stmt_more (int* typ_ptr, char* att_ptr)
+void nt_stmt_more (token tok)
 {
-    if (*typ_ptr == t_semicolon || *typ_ptr == t_end)
+    if (tok->type == t_semicolon || tok->type == t_end)
     {
         //////////////////////////////////////////////////////////////////////////////////RULE15
-        if (*typ_ptr == t_semicolon)
+        if (tok->type == t_semicolon)
         {
-            match(typ_ptr,att_ptr,t_semicolon);
-            nt_stmt_list(typ_ptr,att_ptr);
+            match(tok,t_semicolon);
+            nt_stmt_list(tok);
         }
         //////////////////////////////////////////////////////////////////////////////////RULE16
         else
@@ -266,115 +284,83 @@ void nt_stmt_more (int* typ_ptr, char* att_ptr)
     }
 }
 
-void nt_stmt (int* typ_ptr, char* att_ptr)
+void nt_stmt (token tok)
 {
-    if (*typ_ptr == t_begin  || *typ_ptr == t_var_id || *typ_ptr == t_if    ||
-        *typ_ptr == t_while  || *typ_ptr == t_readln || *typ_ptr == t_write/* ||
-        *typ_ptr == t_length || *typ_ptr == t_copy   || *typ_ptr == t_find  ||
-        *typ_ptr == t_sort*/)
+    if (tok->type == t_begin  || tok->type == t_var_id || tok->type == t_if    ||
+        tok->type == t_while  || tok->type == t_readln || tok->type == t_write)
     {
-        switch (*typ_ptr)
+        switch (tok->type)
         {
             ////////////////////////////////////////////////////////////////////////////////RULE17
-            case 8:         nt_body(typ_ptr,att_ptr);
+            case 8:         nt_body (tok);
                             break;
             ////////////////////////////////////////////////////////////////////////////////RULE18
-            case 20:        match(typ_ptr,att_ptr,t_var_id);   
-                            match(typ_ptr,att_ptr,t_assign);
-                            nt_assign(typ_ptr,att_ptr);
+            case 20:        match     (tok,t_var_id);   
+                            match     (tok,t_assign);
+                            nt_assign (tok);
                             break;                
             ////////////////////////////////////////////////////////////////////////////////RULE19               
-            case 13:        match(typ_ptr,att_ptr,t_if);
-                            match(typ_ptr,att_ptr,t_expr);
-                            match(typ_ptr,att_ptr,t_then);
-                            nt_body(typ_ptr,att_ptr);
-                            match(typ_ptr,att_ptr,t_else);
-                            nt_body(typ_ptr,att_ptr);
+            case 13:        match   (tok,t_if);
+                            match   (tok,t_expr);
+                            match   (tok,t_then);
+                            nt_body (tok);
+                            match   (tok,t_else);
+                            nt_body (tok);
                             break;
             ////////////////////////////////////////////////////////////////////////////////RULE20
-            case 16:        match(typ_ptr,att_ptr,t_while);
-                            match(typ_ptr,att_ptr,t_expr);
-                            match(typ_ptr,att_ptr,t_do);
-                            nt_body(typ_ptr,att_ptr);
+            case 16:        match   (tok,t_while);
+                            match   (tok,t_expr);
+                            match   (tok,t_do);
+                            nt_body (tok);
                             break;
             ////////////////////////////////////////////////////////////////////////////////RULE21
-            case 18:        match(typ_ptr,att_ptr,t_readln);
-                            match(typ_ptr,att_ptr,t_l_parrent);
-                            match(typ_ptr,att_ptr,t_var_id);
-                            match(typ_ptr,att_ptr,t_r_parrent);
+            case 18:        match (tok,t_readln);
+                            match (tok,t_l_parrent);
+                            match (tok,t_var_id);
+                            match (tok,t_r_parrent);
                             break;
             ////////////////////////////////////////////////////////////////////////////////RULE22
-            case 19:        match(typ_ptr,att_ptr,t_write);
-                            match(typ_ptr,att_ptr,t_l_parrent);
-                            nt_term_list(typ_ptr,att_ptr);
-                            match(typ_ptr,att_ptr,t_r_parrent);
+            case 19:        match        (tok,t_write);
+                            match        (tok,t_l_parrent);
+                            nt_term_list (tok);
+                            match        (tok,t_r_parrent);
                             break;
-            /*////////////////////////////////////////////////////////////////////////////////RULE37
-            case 30:        match(typ_ptr,att_ptr,t_length);
-                            match(typ_ptr,att_ptr,t_l_parrent);
-                            match(typ_ptr,att_ptr,t_term);
-                            match(typ_ptr,att_ptr,t_r_parrent);
-                            break;
-            ////////////////////////////////////////////////////////////////////////////////RULE38
-            case 31:        match(typ_ptr,att_ptr,t_copy);
-                            match(typ_ptr,att_ptr,t_l_parrent);
-                            match(typ_ptr,att_ptr,t_term);
-                            match(typ_ptr,att_ptr,t_semicolon);
-                            match(typ_ptr,att_ptr,t_term);
-                            match(typ_ptr,att_ptr,t_semicolon);
-                            match(typ_ptr,att_ptr,t_term);
-                            match(typ_ptr,att_ptr,t_r_parrent);
-                            break;
-            ////////////////////////////////////////////////////////////////////////////////RULE39
-            case 32:        match(typ_ptr,att_ptr,t_find);
-                            match(typ_ptr,att_ptr,t_l_parrent);
-                            match(typ_ptr,att_ptr,t_term);
-                            match(typ_ptr,att_ptr,t_semicolon);
-                            match(typ_ptr,att_ptr,t_term);
-                            match(typ_ptr,att_ptr,t_r_parrent);
-                            break;
-            ////////////////////////////////////////////////////////////////////////////////RULE40
-            case 33:        match(typ_ptr,att_ptr,t_sort);
-                            match(typ_ptr,att_ptr,t_l_parrent);
-                            match(typ_ptr,att_ptr,t_term);
-                            match(typ_ptr,att_ptr,t_r_parrent);
-                            break;*/
         }
     }    
     else
         printf("syntax error in nt_stmt\n");
 }
 
-void nt_assign (int* typ_ptr, char* att_ptr)
+void nt_assign (token tok)
 {
-    if (*typ_ptr == t_expr || *typ_ptr == t_fun_id)
+    if (tok->type == t_expr || tok->type == t_fun_id)
     {
         ///////////////////////////////////////////////////////////////////////RULE23
-        if (*typ_ptr == t_expr)
+        if (tok->type == t_expr)
         {
-            match(typ_ptr,att_ptr,t_expr);
+            match(tok,t_expr);
         }
         ////////////////////////////////////////////////////////////////////////RULE24
         else
         {
-            match(typ_ptr,att_ptr,t_fun_id);
-            match(typ_ptr,att_ptr,t_l_parrent);
-            nt_term_list(typ_ptr,att_ptr);
-            match(typ_ptr,att_ptr,t_r_parrent);
+            match(tok,t_fun_id);
+            match(tok,t_l_parrent);
+            nt_term_list(tok);
+            match(tok,t_r_parrent);
         }
     }
     else printf("syn error in nt_assign\n");
 }
 
-void nt_term_list (int* typ_ptr, char* att_ptr)
+void nt_term_list (token tok)
 {
-    if (*typ_ptr == t_term || *typ_ptr == t_r_parrent)
+    if (tok->type == t_term || tok->type == t_r_parrent)
     {
         /////////////////////////////////////////////////////////////////////RULE26
-        if (*typ_ptr == t_term)
+        if (tok->type == t_term)
         {
-            match(typ_ptr,att_ptr,t_term);
-            nt_term_more(typ_ptr,att_ptr);
+            match(tok,t_term);
+            nt_term_more(tok);
         }
         /////////////////////////////////////////////////////////////////////RULE25
         else
@@ -384,15 +370,15 @@ void nt_term_list (int* typ_ptr, char* att_ptr)
         printf("syn error in nt_term_list\n");
 }
 
-void nt_term_more (int* typ_ptr, char* att_ptr)
+void nt_term_more (token tok)
 {
-    if (*typ_ptr == t_comma || *typ_ptr == t_r_parrent)
+    if (tok->type == t_comma || tok->type == t_r_parrent)
     {
         ////////////////////////////////////////////////////////////////////////RULE27
-        if (*typ_ptr == t_comma)
+        if (tok->type == t_comma)
         {
-            match(typ_ptr,att_ptr,t_comma);
-            nt_term_list(typ_ptr,att_ptr);
+            match(tok,t_comma);
+            nt_term_list(tok);
         }
         ////////////////////////////////////////////////////////////////////////RULE28
         else
@@ -402,40 +388,40 @@ void nt_term_more (int* typ_ptr, char* att_ptr)
         printf("syn error in nt_term_more\n");
 }
 
-void nt_param_list (int* typ_ptr, char* att_ptr)
+void nt_param_list (token tok)
 {
-    if (*typ_ptr == t_r_parrent || *typ_ptr == t_param)
+    if (tok->type == t_r_parrent || tok->type == t_param)
     {
         ////////////////////////////////////////////////////////////////////////RULE29
-        if (*typ_ptr == t_r_parrent)
+        if (tok->type == t_r_parrent)
         {
             return;
         }
         ////////////////////////////////////////////////////////////////////////RULE30
         else
         {
-            match(typ_ptr,att_ptr,t_param);
-            nt_param_more(typ_ptr,att_ptr);
+            match(tok,t_param);
+            nt_param_more(tok);
         }
     }
     else
         printf("synerror in nt_param_list\n");
 }
 
-void nt_param_more (int* typ_ptr, char* att_ptr)
+void nt_param_more (token tok)
 {
-    if (*typ_ptr == t_r_parrent || *typ_ptr == t_comma)
+    if (tok->type == t_r_parrent || tok->type == t_comma)
     {
         ////////////////////////////////////////////////////////////////////////RULE32
-        if (*typ_ptr == t_r_parrent)
+        if (tok->type == t_r_parrent)
         {
             return;
         }
         ////////////////////////////////////////////////////////////////////////RULE31
         else
         {
-            match(typ_ptr,att_ptr,t_comma);
-            nt_param_list(typ_ptr,att_ptr);
+            match(tok,t_comma);
+            nt_param_list(tok);
         }
 
     }
@@ -443,24 +429,24 @@ void nt_param_more (int* typ_ptr, char* att_ptr)
         printf("synerror in nt_param_more\n");
 }
 
-void nt_type (int* typ_ptr, char* att_ptr)
+void nt_type (token tok)
 {
-    if (*typ_ptr == t_integer || *typ_ptr == t_real ||
-        *typ_ptr == t_string  || *typ_ptr == t_boolean)
+    if (tok->type == t_integer || tok->type == t_real ||
+        tok->type == t_string  || tok->type == t_boolean)
     {
-        switch (*typ_ptr)
+        switch (tok->type)
         {
             /////////////////////////////////////////////////////////////RULE33
-            case 26:    match(typ_ptr,att_ptr,t_integer);
+            case 26:    match(tok,t_integer);
                         break;
             /////////////////////////////////////////////////////////////RULE34
-            case 27:    match(typ_ptr,att_ptr,t_real);
+            case 27:    match(tok,t_real);
                         break;
             /////////////////////////////////////////////////////////////RULE35
-            case 28:    match(typ_ptr,att_ptr,t_string);
+            case 28:    match(tok,t_string);
                         break;
             /////////////////////////////////////////////////////////////RULE36
-            case 29:    match(typ_ptr,att_ptr,t_boolean);
+            case 29:    match(tok,t_boolean);
                         break;
         }
     }
@@ -469,15 +455,22 @@ void nt_type (int* typ_ptr, char* att_ptr)
 
 }
 
-
-
-int main(int argc, char const *argv[])
+int main(/*int argc, char const *argv[]*/)
 {
-    char attribute;
-    char *att_ptr = &attribute;
-    int typ ;/*= *argv[1]-48;*/
-    //printf("%d\n", typ );
-    int *typ_ptr = &typ;
-    nt_program (typ_ptr,att_ptr);
+    init(&rootTS);
+    /*char key='a';
+    char *key=&key;*/
+    token tok=malloc(sizeof(struct token));
+    if (tok!=0)
+    {
+        tok->val_str="abc";
+        printf("tokenoken\n");
+        nt_program (tok);
+    }
+    else
+    {
+        printf("tokenkokot\n");
+        return 1;
+    }
     return 0;
 }

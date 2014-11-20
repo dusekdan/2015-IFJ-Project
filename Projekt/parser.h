@@ -32,31 +32,31 @@ static const int t_string    = 28;
 static const int t_boolean   = 29;
 static const int t_dollar    = 30;
 
-typedef struct
+typedef struct token
 {
     int type;      //Typ podla zoznamu terminalov
-    *char val_str; //Názov v prípade že ide o id, tak sem pojde jeho nazov, ak ide o string sem ide obsah stringu
+    char *val_str; //Názov v prípade že ide o id, tak sem pojde jeho nazov, ak ide o string sem ide obsah stringu
     int   val_int; //Hodnota int ak ide o integer alebo 0/1 ak ide o bool
     float val_flo; //Hodnota na float (real)
     //////////String netreba nato pozijeme val_str
     //////////Bool netreba naten pouzijeme val_int
-}token;
+}*token;
 
 
 void terminalis (int terminal); //na debug
-void nt_var_def_block (int* typ_ptr, char* att_ptr);
-void nt_var_def (int* typ_ptr, char* att_ptr);
-void nt_var_def_list (int* typ_ptr, char* att_ptr);
-void nt_fun_def_list (int* typ_ptr, char* att_ptr);
-void nt_fun_body (int* typ_ptr, char* att_ptr);
-void nt_body (int* typ_ptr, char* att_ptr);
-void nt_main (int* typ_ptr, char* att_ptr);
-void nt_stmt_list (int* typ_ptr, char* att_ptr);
-void nt_stmt_more (int* typ_ptr, char* att_ptr);
-void nt_stmt (int* typ_ptr, char* att_ptr);
-void nt_assign (int* typ_ptr, char* att_ptr);
-void nt_term_list (int* typ_ptr, char* att_ptr);
-void nt_term_more (int* typ_ptr, char* att_ptr);
-void nt_type (int* typ_ptr, char* att_ptr);
-void nt_param_list (int* typ_ptr, char* att_ptr);
-void nt_param_more (int* typ_ptr, char* att_ptr);
+void nt_var_def_block (token tok);
+void nt_var_def (token tok);
+void nt_var_def_list (token tok);
+void nt_fun_def_list (token tok);
+void nt_fun_body (token tok);
+void nt_body (token tok);
+void nt_main (token tok);
+void nt_stmt_list (token tok);
+void nt_stmt_more (token tok);
+void nt_stmt (token tok);
+void nt_assign (token tok);
+void nt_term_list (token tok);
+void nt_term_more (token tok);
+void nt_type (token tok);
+void nt_param_list (token tok);
+void nt_param_more (token tok);
