@@ -13,21 +13,12 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include "parser.h"
 
 
 #ifndef max
 	#define max(a, b) (((a) > (b)) ? (a) : (b))
 #endif
-
-
-typedef struct {			// typ ulozene promenne nebo funkce
-
-	bool integer;
-	bool real;
-	bool boolean;
-	bool string;
-	bool empty;
-} tType;
 
 typedef struct {			// data promenne v symbolu
 
@@ -41,12 +32,11 @@ typedef struct {			// data promenne v symbolu
 typedef struct tData {		// symbol
 
 	char *name;				// nazev symbolu
-	tType type; 			// datovy typ symbolu
-	bool func;				// false pokud neni funkce, true pro funkci
+	int type; 			    // datovy typ symbolu
 	int argCount;			// pocet argumentu funkce, pro promennou hodnota NULL
 	void *nextArg;			// ukazatel na dalsi argument funkce
 	tContent content;		// obsah promenne		
-} tData;
+} *tData;
 
 
 typedef struct tUzel {		// uzel tabulky symbolu
@@ -57,18 +47,18 @@ typedef struct tUzel {		// uzel tabulky symbolu
 	struct tUzel *lptr;
 } *tNodePtr;
 
-extern tNodePtr *rootTS;		// ukazatel na zacatek tabulky symbolu
+extern tNodePtr rootTS;		// ukazatel na zacatek tabulky symbolu
 
 
 void quickSort(char *text, int l, int r);		// quicksort, nejspise jen cast
 void partition(char text[], int *i, int *j);		// rozdeleni pro quickSort
 
-void initTable(void);
+void init(tNodePtr *rootTS);
+void initTable(tNodePtr *rootTS);
 void disposeTable(tNodePtr *rootTS);
-tNodePtr createNode(tNodePtr *tempRoot);
+tNodePtr createNode(char *key, tData data);
 tNodePtr insertSymbol(tNodePtr *rootTS, char *key, tData data);
 tNodePtr searchSymbol(tNodePtr *rootTS, char* key);
-tNodePtr readSymbol();
 
 int BMASearch();
 void BMACountBadChar();
