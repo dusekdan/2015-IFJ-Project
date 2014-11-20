@@ -194,7 +194,7 @@ tNodePtr insertSymbol(tNodePtr *rootTS, char *key, tData data) {
 }
 
 
-void partition(char text[], int *i, int *j) { 	// rozdeleni
+void partition(char *text, int *i, int *j) { 	// rozdeleni
 
 	int pivot = text[(*i + *j) / 2];
 

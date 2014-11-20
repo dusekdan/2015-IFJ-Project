@@ -51,7 +51,7 @@ extern tNodePtr rootTS;		// ukazatel na zacatek tabulky symbolu
 
 
 void quickSort(char *text, int l, int r);		// quicksort, nejspise jen cast
-void partition(char text[], int *i, int *j);		// rozdeleni pro quickSort
+void partition(char *text, int *i, int *j);		// rozdeleni pro quickSort
 
 void init(tNodePtr *rootTS);
 void initTable(tNodePtr *rootTS);
