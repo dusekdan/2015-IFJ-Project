@@ -1,7 +1,6 @@
 #include "stdio.h"
 #include "string.h"
 
-//static const int p_debug     =  0;
 static const int t_var       =  1;
 static const int t_colon     =  2;
 static const int t_semicolon =  3;
@@ -26,16 +25,23 @@ static const int t_expr      = 21;
 static const int t_fun_id    = 22;
 static const int t_term      = 23;
 static const int t_param     = 24;
-//static const int t_read_id   = 25;
+//static const int t_read_id   = 25;  //////////////////////////////read id nakoniec nebude treba
 static const int t_integer   = 26;
 static const int t_real      = 27;
 static const int t_string    = 28;
 static const int t_boolean   = 29;
-/*static const int t_length    = 30;
-static const int t_copy      = 31;
-static const int t_find      = 32;
-static const int t_sort      = 33;*/
 static const int t_dollar    = 30;
+
+typedef struct
+{
+    int type;      //Typ podla zoznamu terminalov
+    *char val_str; //Názov v prípade že ide o id, tak sem pojde jeho nazov, ak ide o string sem ide obsah stringu
+    int   val_int; //Hodnota int ak ide o integer alebo 0/1 ak ide o bool
+    float val_flo; //Hodnota na float (real)
+    //////////String netreba nato pozijeme val_str
+    //////////Bool netreba naten pouzijeme val_int
+}token;
+
 
 void terminalis (int terminal); //na debug
 void nt_var_def_block (int* typ_ptr, char* att_ptr);
