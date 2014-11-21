@@ -24,7 +24,7 @@ static const int t_var_id    = 20;
 static const int t_expr      = 21;
 static const int t_fun_id    = 22;
 static const int t_term      = 23;
-static const int t_param     = 24;
+//static const int t_param     = 24;
 //static const int t_read_id   = 25;  //////////////////////////////read id nakoniec nebude treba
 static const int t_integer   = 26;
 static const int t_real      = 27;
@@ -43,7 +43,7 @@ typedef struct token
 }*token;
 
 
-void terminalis (int terminal); //na debug
+void terminalis (int terminal, token tok); //na debug
 void nt_var_def_block (token tok);
 void nt_var_def (token tok);
 void nt_var_def_list (token tok);
@@ -60,3 +60,6 @@ void nt_term_more (token tok);
 void nt_type (token tok);
 void nt_param_list (token tok);
 void nt_param_more (token tok);
+void nt_param (token tok);
+
+int buildemin ();

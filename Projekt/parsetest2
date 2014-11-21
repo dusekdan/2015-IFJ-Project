@@ -1,0 +1,34 @@
+1
+    20 a 2 26 3
+    20 vysl 2 26 3
+6 22 factorial 4 20 n 2 26 5 2 26 3 7 3
+6 22 factorial 4 20 n 2 26 5 2 26 3
+1
+    20 temp_result 2 26 3
+    20 decremented_n 2 26 3
+8
+    13 21 14
+    8
+        20 factorial 12 21
+    9
+    15
+    8
+        20 decremented_n 12 21 3
+        20 temp_result 12 22 factorial 4 23 5 3
+        20 factorial 12 21
+    9
+9 3
+
+8
+    19 4 23 5 3
+    18 4 20 a 5 3
+    13 21 14
+    8
+        19 4 23 5
+    9
+    15
+    8
+        20 vysl 12 22 factorial 4 23 5 3
+        19 4 23 11 23 11 23 5
+    9
+9 10
