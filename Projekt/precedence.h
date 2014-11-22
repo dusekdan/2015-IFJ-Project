@@ -14,6 +14,9 @@
 #include <stdlib.h>
 #include "scanner.h"
 #include <stdbool.h>
+#include "ial.h"
+
+#define STACKSIZE 50;
 
 
 typedef enum {
@@ -47,13 +50,14 @@ typedef enum {
 
 typedef struct {
 
+	tData symbol;
 	tOperators element;
 
-} tData;
+} tOpData;
 
 typedef struct tElement {
 
-	tData data;
+	tOpData data;
 	struct tElement *pointer;
 
 } *tElement;
@@ -65,10 +69,13 @@ typedef struct {
 } tStack;
 
 
-void stackInit();		// inicializace zasobniku
-void stackFull();		// kontrola plneho zasobniku
+void stackInit(tStack *stack);		// inicializace zasobniku
+//bool stackFull();					// kontrola plneho zasobniku
 bool stackEmpty(tStack *stack);		// kontrola prazdneho zasobniku
 void stackTop();
-void stackPop();
-void stackPush();
+void stackPop(tStack *stack);
+bool stackPush(tStack *stack, tOpData element);
 void stackDispose();
+
+void precedenceParser();
+int zpracuj(tToken token, tOpData *column);
