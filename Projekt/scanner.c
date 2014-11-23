@@ -1,300 +1,501 @@
-#include "scanner.h"
-#define STRLENGTH 200
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
 #define APOSTROF_ASCII 39
 
-enum states {
+/************************ VYTRŽENO Z PARSER.H **********************-*/
 
-	sSTART,		// pocatecni stav
-	sIDENT,		// identifikator
-	sSTRING,	// retezec
-	sESC, 		// escape sekvence
-	sCOMENT, 	// komentar
-	sOPERATORS,	// dvouznakove operatory
-	sNUMBER,
-	sZERO,
-	sREAL,
-	sPREEXP,
-	sEXP,	
-	sSIGN,
-	sOPERATOR,
-	scDCOMMA,
-	scLESS,
-	scGREATER,
-	sHCOMMA
-};
+static const int t_var       =  1;
+static const int t_colon     =  2;
+static const int t_semicolon =  3;
+static const int t_l_parrent =  4;
+static const int t_r_parrent =  5;
+static const int t_function  =  6;
+static const int t_forward   =  7;
+static const int t_begin     =  8;
+static const int t_end       =  9;
+static const int t_period    = 10;
+static const int t_comma     = 11;
+static const int t_assign    = 12;
+static const int t_if        = 13;
+static const int t_then      = 14;
+static const int t_else      = 15;
+static const int t_while     = 16;
+static const int t_do        = 17;
+static const int t_readln    = 18;
+static const int t_write     = 19;
+static const int t_var_id    = 20;
+static const int t_expr      = 21;
+static const int t_fun_id    = 22;
+static const int t_term      = 23;
+//static const int t_param     = 24;
+//static const int t_read_id   = 25;  //////////////////////////////read id nakoniec nebude treba
+static const int t_integer   = 26;
+static const int t_real      = 27;
+static const int t_string    = 28;
+static const int t_boolean   = 29;
+static const int t_dollar    = 30;
 
-char* keywords[] = {
-	"begin", "boolean", "do", "else", "end", "false", "find", "forward", "function",
-	"if", "integer", "readln", "real", "sort", "string", "then", "true", "var", "while",
-	"write"
-};
+static const int t_plus      = 31;// +
+static const int t_minus     = 32;// -
+static const int t_mul       = 33;// *
+static const int t_div       = 34;// /
+/// zatvorky su t_l_parrent a rparrent cize 4 a 5
+static const int t_less      = 35;//<
+static const int t_more      = 36;//>
+static const int t_lesseq    = 37;//<=
+static const int t_moreeq    = 38;//>=
+static const int t_equal     = 39;//=
+static const int t_nequal    = 40;//<>
+static const int t_expr_val  = 41;// tento terminal ak prislo nieco konecne ako cislo alebo string, vtomto pripade bude v odpovedajucej casti struktury token obsah
+                                  // ale moze sa tam vyskytnut aj premenna cize, var_id a v tom pripade je v *val_str bude obsahovat nazov premennej a po vyhladani
+                                  // v tabulke symbolov zistis typ, (hledam->data->type), tam su typy int 1 real 2 string 3 bool 4, iny typ nieje platna premenna
+static const int t_striska = 42; //^
 
 
-int main()
+typedef struct token
 {
+    int type;      //Typ podla zoznamu terminalov
+    char *val_str; //Názov v prípade že ide o id, tak sem pojde jeho nazov, ak ide o string sem ide obsah stringu
+    int   val_int; //Hodnota int ak ide o integer alebo 0/1 ak ide o bool
+    float val_flo; //Hodnota na float (real)
+    //////////String netreba nato pozijeme val_str
+    //////////Bool netreba naten pouzijeme val_int
+}*token;
 
-	FILE* fd = fopen("testfile1", "r");
-		if(fd == NULL)
-		{
-			printf("Unable to open the file!\n");
-			return 1; // every time you dont manage to open file, error
-		}
+/************************ VYTRŽENO Z PARSER.H **********************-*/
 
-	printf("***********************************************************************\n");
-	
-	printf("\n1.\n");
-	getToken(fd);
-	printf("\n2.\n");
-	getToken(fd);
-	printf("\n3.\n");
-	getToken(fd);
-	printf("\n4.\n");
-	getToken(fd);
-	printf("\n5.\n");
-	getToken(fd);
-	printf("\n6.\n");
-	getToken(fd);
-	printf("\n7.\n");
-	getToken(fd);
-	printf("\n8.\n");
-	getToken(fd);
 
-	fclose(fd);
+/************************ ENUM PRO CASE ****************************-*/
 
-	return 0;
+enum states {
+	sSTART,
+	sIDENT,
+	sSTRING,
+	sZERO,
+	sNUMBER,
+	sREAL,
+	sSINGLEOPER,
+	sDOUBLEOPER
+};	
 
+int maxStringLength = 200; // maximal string length that we've been able to reach (string allocation based on it)
+
+/************************ ENUM PRO CASE ****************************-*/
+
+//void getNextToken();
+int getNextChar(FILE* fd);
+void getNextToken(FILE* fd, token TToken);
+
+
+int getNextChar(FILE* fd)
+{
+	// get the character
+	int nextCharacter = fgetc(fd);
+
+	// fseek it back, so you don't really move the file descriptor
+	if(nextCharacter != EOF)
+	{
+		fseek(fd, -1, SEEK_CUR);
+	}
+	// returning the char (as int)
+	return nextCharacter;
 }
 
-void getToken(FILE* fd)
+
+void getNextToken(FILE* fd, token TToken)
 {
-	printf("----- Funkce getToken()...started. -----\n");
-	char testToken[STRLENGTH]; // každých dalších 200 bude třeba reallocovat. Běžně by k tomu nemělo dojít.
 
-	int c; // this is actually char, but we need its numerical representation
-	int fcv = -1; // flow control variable; initialized on -1, because we increase it on the start of the loop
-	int actState = 0; // počáteční stav
-	bool terminator = false; // v moment kdy narazíme na :=<> atd. tak nastavujeme na true -> while končí
-	bool fseekD = true; // kvůli potřebě potlačit nutnost posouvat se o jeden znak (když nenačítáme jeden napřed), umožňuji rozhodovat zda se bude nebo nebude fseekovat
-	bool inComment = false; // in case we are in comment, we skipt everything (and we need this variable to determine that)
+	int c, cx; 
+	int actState = 0; 
+	int fcv = -1;
 
 
-	while ( ((c = fgetc(fd) ) != EOF) && terminator == false )
+	int tokType;
+	char *strBuffer;
+	strBuffer = malloc(sizeof(char)*maxStringLength);
+		if(strBuffer == NULL)
+		{
+			printf("Allocation error!\n");
+			exit(666);
+		}
+
+	bool inComment = false;
+	bool terminateLoop = false;
+	bool fseeker = true;
+	bool numberIntCase = false;
+	bool numberFloatCase = false;
+
+
+	while ( (c = fgetc(fd)) != EOF )
 	{
 
-
+		/****************************** DEALING WITH EXTRA SPACES (WHITE SPACES) ******************************/
+		
 		if(isspace(c) && actState != sSTRING)
 		{
-			continue;
+			continue; // when we hit the white space and we are not in the middle of the string, we skip the rest of the loop. For greater good.
 		}
 
+		/****************************** DEALING WITH COMMENTARIES (JUST SKIP THEM) ******************************/
 
-		// this is the part where I test if next char is  eof
-		int nx = fgetc(fd);
-		bool forceSend = false;
-		if(nx == EOF)
-		{
-			printf("END OF FILE NEXT CHARACTER NIGGA!\n");	
-			forceSend = true;
-		}
-		fseek(fd, -1, SEEK_CUR);
-
-
-
-		if(c == '{' && actState != sSTRING)
+		if(c == '{' && actState != sSTRING)	// here we find out that commentary has started
 		{
 			inComment = true;
 			continue;
 		}
 
-		if(inComment)
+		if(inComment)	// if commentary started, we also have to check for its ending
 		{
 			if(c == '}')
 			{
-				inComment = false;
-				printf("*Commentary skipped!\n");
+				inComment = false;	// if we reach the end of commentary, we set flow control variable inComment back to false
+				//printf("*Commentary skipped!\n");	// also in debug mode we print out a message about skipping a commentary
 			}
 			continue;
 		}
 
-		fcv++; // zvýšení flow control variable je na začátku cyklu, neboť je inicializovaná na -1
-		
-		printf("Entering the #%d with char: '%c'\n", fcv, c);
+		/*************************** SETTING UP FLOW-CONTROL VARIABLES AND STUFF ***************************/
+
+		fcv++; // increasing the flow control variable (it is set to -1 by default, so it is 0 for the first loop after this line)
+		cx = getNextChar(fd);	// getting the next character and testing it for end of file -> if it would be end of file, we would have to force send token, because there will be no next loop walkthrough
+
+
+		/************************** TESTING A NEXT CHARACTER ON BEING EOF *************************/
+		// nutno doplnit
+
+		/************************** AND THE SWITCH FUN BEGINS **************************************/
 
 		switch(actState)
 		{
 
-			case sSTART:	
+			case sSTART:
 
-				printf("*Case: sSTART entered!\n");
-
-				if( isalpha(c) || c == '_')
+				if(isalpha(c) || c == '_')
 				{
 					actState = sIDENT;
-					testToken[fcv] = c;
-					break; // we breake it here, because we identified what's next state;
+					strBuffer[fcv] = c;
+					break; // break comes here because we already identified what kind of state we're dealing with
 				}
 
 				if( c == APOSTROF_ASCII )
 				{
 					actState = sSTRING;
-					testToken[fcv] = c;
+					strBuffer[fcv] = c;
+					break;
 				}
 
-				if ( c == '0')
+				/*if( c == '0') // so far appears to be useless condition
 				{
-					actState = sZERO;
-					testToken[fcv] = c; // this part is questionable
-				}
+					actState = sZERO;	// this case maybe won't be required
+					// don't know what to put to buffer yet (#!#)
+					break;
+				}*/
 
-				if( c >= '1' && c <= '9' )
+				if( c >= '0' && c <= '9')
 				{
 					actState = sNUMBER;
-					testToken[fcv] = c;
+					strBuffer[fcv] = c;
+					break;
 				}
 
-				if(c == '+' || c == '-' || c == '^')
+				if(c == '+' || c == '-' || c == '*' || c == '/' || c == '^' || c == '=' ||  c== ';' || /* tyto znaky mohou vést na double op*/ c == ':' || c == '<' || c == '>')
 				{
-					actState = sOPERATOR;
-					testToken[fcv] = c;
+					actState = sSINGLEOPER;	 // je třeba provést kontrolu na doubleop
+					strBuffer[fcv] = c;
+					break;
 				}
-
-				if(c == ':')
-				{
-					actState = scDCOMMA;
-					testToken[fcv] = c;
-				}
-
-				if(c == '<')
-				{
-					actState = scLESS;
-					testToken[fcv] = c;
-				}
-
-				if(c == '>')
-				{
-					actState = scGREATER;
-					testToken[fcv] = c;
-				}
-
-				if( c == ';')
-				{
-					actState = sHCOMMA;
-					testToken[fcv] = c;
-				} 
-				break;
-				// když neskončíme v první podmínce, dále zjišťujeme co je příští status
+			
+			break; // this is sSTART emergency break
 
 			case sIDENT:
+				tokType = t_var_id; // (#!#) - nejsem si jistý, že sem dávám správný typ
 				
-				printf("*Case: sIDENT entered!\n");
-
 				if(isalpha(c) || c == '_' || isdigit(c))
 				{
-					testToken[fcv] = c;	// odpovídá-li znak povoleným znakům v identifikátoru, rozšíříme stávající token name/value o tuto hodnotu a cyklus jede odznovu
+					strBuffer[fcv] = c;	// if the loaded char respond to the mask, we extend outcoming value of the token
 				}
-				else	// nalezneme znak, který není platným identifikátorem => nastavujeme terminator na true
+				else // if character does not respond to the mask, we set terminator on true causing while interuption (and function end)
 				{
-					terminator = true;
-					testToken[fcv] = '\0'; // making sure that string is null terminated... you know that joke ... :)
-					printf("-> Sending a Token: %s\n", testToken);			
-					printf("%s", testToken);
+					strBuffer[fcv] = '\0'; // making sure that string is null terminated... you know that joke ... :)
+					terminateLoop = true;
+					fseek(fd, -1, SEEK_CUR);
+					fseeker = false;
 				}
 
-			break;
+			break; // this is sIDENT emergency break
 
-			case sSTRING:
-				printf("Jsem v sString\n");
-			break;
-
-			case sZERO:
-				printf("Jsem v sZERO\n");
-			break;
-
-			case sNUMBER:
-				printf("Jsem v sNUMBER\n");
-			break;
-
-			case sOPERATOR:
-				printf("Jsem v sOPERATOR\n");
-			break;
-
-			case scDCOMMA:
+			case sSINGLEOPER: // this case actually handles even doubleOperators
 				
-				// sem dorazím až v moment, kdy jsem prokazatelně načetl dvojtečku
-				printf("*Case scDCOMMA entered\n");
-					
-					// po dvojtečce může následovat buď "cokoliv jiného" nebo "rovná se"
-					if(c != '=') // nenásleduje-li rovnítko, víme, že odesíláme dvojtečku jako TOKEN.
+				// when we get here we know that it is truely single operator
+
+				if(strBuffer[fcv-1] == ':')	// in this case we can expect these ":", ":="
+				{
+					if(c == '=')	// for ":=" case
 					{
-						terminator = true;
-						printf("->Sending a Token: %s\n", testToken);
-						printf("%s", testToken);
+						strBuffer[fcv] = c;		// we add actual char to the string buffer
+						strBuffer[fcv+1] = '\0';	// and null terminate that string
+						tokType = t_assign;		// set up token type on t_assign
+						terminateLoop = true;	// decide we will terminate the loop
+						fseeker = false;		// but we won't fseek back (no need)
+						break;
+					}
+					else 	// this is the case for  just":"
+					{		// all of the contents here and bellow is analogical
+						strBuffer[fcv] = '\0';
+						tokType = t_colon;
+						terminateLoop = true;
+						break;
+					}
+				}
+
+				if(strBuffer[fcv-1] == '<')	// expectable cases "<", "<=", "<>"
+				{
+					if(c == '=')	// for "<=" case
+					{
+						strBuffer[fcv] = c;
+						strBuffer[fcv+1] = '\0';
+						terminateLoop = true;
+						tokType = t_lesseq;
+						fseeker = false;
+						break;
 					}
 					else
 					{
-						terminator = true;
-						fseekD = false;
-						testToken[fcv] = c;
-						testToken[(fcv+1)] = '\0'; // null terminated string je dobry string
-						printf("->Sending a Token: %s\n", testToken);
-						printf("%s", testToken);
+						if(c == '>')	// for "<>" case
+						{
+							strBuffer[fcv] = c;
+							strBuffer[fcv+1] = '\0';
+							terminateLoop = true;
+							tokType = t_nequal;
+							fseeker = false;
+							break;
+						}
+						else 		// and finally for just "<" case
+						{							
+							strBuffer[fcv] = '\0';
+							tokType = t_less;
+							terminateLoop = true;
+							break;
+						}
+					}
+				}
+
+				if(strBuffer[fcv-1] == '>')	// expectable cases ">", ">="
+				{
+					if(c == '=')	// case for ">="
+					{
+						strBuffer[fcv] = c;
+						strBuffer[fcv+1] = '\0';
+						tokType = t_moreeq;
+						terminateLoop = true;
+						fseeker = false;
+						break;
+					}
+					else 	// and case for simple ">"
+					{
+						strBuffer[fcv] = '\0';
+						tokType = t_more;
+						terminateLoop = true;
+						break;
+					}
+				}
+
+				// here we go only for one char operators
+
+				if(strBuffer[fcv-1] == ';')		// semicolon case
+				{
+					strBuffer[fcv] = '\0';
+					tokType = t_semicolon;
+					terminateLoop = true;
+					break;
+				}
+
+				if(strBuffer[fcv-1] == '=')		// equal case
+				{
+					strBuffer[fcv] = '\0';
+					tokType = t_equal;
+					terminateLoop = true;
+					break;
+				}
+
+				if(strBuffer[fcv-1] == '^')		// "striska" case
+				{
+					strBuffer[fcv] = '\0';
+					tokType = t_striska;
+					terminateLoop = true;
+					break;
+				}
+
+				if(strBuffer[fcv-1] == '/')		// "slash" or "divide" case
+				{
+					strBuffer[fcv] = '\0';
+					tokType = t_div;
+					terminateLoop = true;
+					break;
+				}
+
+				if(strBuffer[fcv-1] == '*')		// multiplication case
+				{
+					strBuffer[fcv] = '\0';
+					tokType = t_mul;
+					terminateLoop = true;
+					break;
+				}
+
+				if(strBuffer[fcv-1] == '-') 	// minus case
+				{
+					strBuffer[fcv] = '\0';
+					tokType = t_minus;
+					terminateLoop = true;
+					break;
+				}
+
+				if(strBuffer[fcv-1] == '+')		// plus case
+				{
+					strBuffer[fcv] = '\0';
+					tokType = t_plus;
+					terminateLoop = true;
+					//fseek(fd, -1, SEEK_CUR);
+					break;
+				}
+				else
+				{
+					actState = 998;
+					break;
+				}
+
+			break; // this is sSINGLEOPER emergency break
+
+			case sNUMBER:
+			
+				if(isdigit(c) ||  c == '.' || c == 'e' || c == 'E')
+				{
+
+					if(c == '.' || c == 'e' || c == 'E')
+					{
+						actState = sREAL;
 					}
 
+					strBuffer[fcv] = c;
 
-			break;
+				}
+				else
+				{
+					// here we get when we get "terminal" for numeric type
+						// so we got to save, fseekback and send token
+					strBuffer[fcv] = '\0';
+					tokType = t_integer;
+					
+					// situation: in strBuffer is stored nullterminated string containing INTEGER, with possible leading zeroes.
+					// we need to strip this mothef*cker of this zeroes and make him play it our way.
+					// That's the part where strtol kicks in
 
-			case scLESS:
-				printf("Jsem v scLESS\n");
-			break;
+					int strtolBase = 10; // there's only decadic notation allowed in project, so base is 10
+					long tmpTokInt;
+					char *strtolErrPtr;
 
-			case scGREATER:
-				printf("Jsem v scGREATER\n");
-			break;
-			case sHCOMMA:
-				printf("*Case: sHCOMMA entered\n");
-				
-				terminator = true;
-				printf("->Sending a Token: %s\n", testToken);
-				printf("%s", testToken);
+						tmpTokInt = strtol(strBuffer, &strtolErrPtr, strtolBase);
+						if(strtolErrPtr == strBuffer)
+						{
+							printf("Trial to convert a string that is not convertable to long. Integer branch.\n");
+							exit(666);
+						} 
 
-			break;
+					int tokInt = tmpTokInt;	// now we have value of the integer stored in an integer variable, which is what we wanted, right.
 
-		}
+					//printf("%s | %d\n", strBuffer, tokInt); // printing out original string & tokInt, debug mode only
 
-		if(forceSend)
-		{
-			printf("->Sending a forced Token: %s\n", testToken);
+
+					terminateLoop = true;
+					numberIntCase = true;		// we let the program know that we need to terminate the loop and as we end in integercase, we need to fill the variable
+				}
+
+			break; // this is sNUMBER emergency break 
 			
+			case sREAL:
+				printf("we're in a sREAL case!\n");
+
+				numberFloatCase = true;
+				float tokFloat = 0.00;
+
+			break;
+
+			case 998:
+				printf("Error in single operator determination!\n");
+			break; // same as one level up
+
+			default:
+				printf("This should not occur! (case default)\n");		
 		}
 
-		if(terminator)
-		{
 
-			int i;
-			for(i = 0; i<=sizeof(testToken); i++)
+		/* end of switch fun */
+
+		/* TOKEN SENDING AND LOOP TERMINATION */
+
+		if(terminateLoop)
+		{
+			TToken->val_str = strBuffer;
+			TToken->type = tokType;
+
+			//printf("actually read char: %s\n", strBuffer);
+			free(strBuffer);
+
+			if(fseeker)
 			{
-				testToken[i] = '\0';
+				fseek(fd, -1, SEEK_CUR); // (#!#) posun o jeden znak zpět po odeslání tokenu
 			}
 
-			fcv = 0;	// so much to the reseting tokenVariable & flow control variable
-			
-			if(fseekD)
+			if(numberIntCase)
 			{
-				fseek(fd, -1, SEEK_CUR);	// protože znak budeme potřebovat načíst při přístím průchodu cyklem, posouváme se v souboru o jedno zpět
+				TToken->val_int = tokInt; // we ended in integer branch, so we fill "val_int" with fresh mea... I mean data.
 			}
 
-
-
-			// pojistný odeslání tokenu
+			if(numberFloatCase)
+			{
+				TToken->val_flo = tokFloat; // we ended in integer branch, so we fill "val_flo" with data.
+			}
 
 			break;
-
 		}
 
+//(#!#) Místo posledního středníku (A jakékoliv další žádosti o další lexém) to pakuje dohromady středník a předchozí řetězec. Weird stuff
+ 	}
 
 
-		
+}
 
-	}
-	//#printf("----- Funkce getToken() ...ended -----\n");
+
+
+int main()
+{
+
+	token TToken = malloc(sizeof(struct token));
+		if(TToken == NULL)
+		{
+			printf("Encountered allocation issue!\n");
+			return 1;
+		}
+
+	FILE* fd = fopen("testfile1", "r");
+		if(fd == NULL)
+		{
+			printf("Encountered an error while opening the file!\n");
+			return 1;
+		}
+
+	printf("Starting a scanning process! \n");
+
+
+			int pica;
+			for(pica = 0; pica <= 19; pica++)
+			{
+				getNextToken(fd, TToken);
+				printf("Token #%d: %s (type=%d)\n", pica, TToken->val_str, TToken->type);
+			}
+
+	printf("Ending a scanning process! \n");
+	return 0;
+
 }

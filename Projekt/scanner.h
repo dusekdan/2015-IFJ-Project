@@ -1,24 +1,25 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include <string.h>
 #include <stdbool.h>
+#include "parser.h";
 
-void getToken(FILE* fd);
+//void getToken(FILE* fd, int* type_ptr, char* att_ptr);
 
-typedef enum
+/*typedef enum
 {
-	IDENTIFIER,
-	STRING,
-	REAL,
+	IDENTIFIER, // 0
+	OPERATOR,
+	DOPERATOR,
+	BRACKET_START,
+	BRACKET_END,
 	INTEGER,
-	BOOLEAN,
-	OPERATOR
-} tType;
+	DOUBLE,
+	STRING
+} tType;*/
 
-typedef struct
+/*typedef struct
 {
 	//int id;
 	tType type;
 	char* value;
-} tToken;
+} tToken;*/
