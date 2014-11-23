@@ -446,7 +446,6 @@ void getNextToken(FILE* fd, token TToken)
 			break; // this is sNUMBER emergency break 
 			
 			case sREAL:
-				printf("we're in a sREAL case! with %c\n", c);
 
 				// situation is we have practically two cases how we could end up here.
 				// The first, we get "#." from sNUMBER where "#" represents variable number of digit in range 0-9
@@ -459,105 +458,182 @@ void getNextToken(FILE* fd, token TToken)
 						// #-#e+# or #.#E-# [done]
 						// we have to deal with those formats one by one; branches for "e" and "E" will be shared though
 
-				// FIRST CASE 
-
-				/*if(strBuffer[fcv-1] == '.') // case for "#."
+				if(dotContained) // everything here will count on "#." as a an input
 				{
 
-					
-
-
-					if(isdigit(c)) 
+					// multiple courses of action
+					if(!eContained && !signContained)
 					{
-
-					}
-
-				}*/
-
-				/*// first trial
-				if(strBuffer[fcv-1] == 'e' || strBuffer[fcv-1] == 'E')	// case for "#e" or "#E"
-				{
-					// now we can only expect "+", "-" or nothing and then numbers
-					if(isdigit(c) || c == '+' || c == '-')
-					{
-						strBuffer[fcv] = c;	// in case "+", "-" or digit comes, we extend the strBuffer
-						// this of  course happens only once, in the moment we come from sNUMBER with "#e|#E" form
-					}
-					else // now comes something thta doesnt respond to the head, like terminal
-					{
-						printf("REAL format not valid! Something unexpected after \"e\" or \"E\"!(1)\n");
-						exit(666);
-					}
-				}
-				else // we dont get the first case format
-				{
-					// inside we test on first case format
-					if(strBuffer[fcv-1] == '.')	// if positive, we accept only digits for this loop run
-					{
+						// akceptujeme cisla a ecka, po kterých může následovat sign
 						if(isdigit(c))
 						{
 							strBuffer[fcv] = c;
 						}
-						else 	// when we don't get a digit at this moment, that means REAL error
+						else 	// neni-li to pismeno, melo by to byt eE, jinak terminace a odeslani
 						{
-							printf("REAL format not valid! (2)\n"); //(666)
+							if(c == 'e' || c == 'E')
+							{
+								strBuffer[fcv] = c;
+								eContained = true;
+								break;
+							}
+							else
+							{
+								strBuffer[fcv] = '\0';	// posíláme token, neboť jsme narazili na double tvaru "#.#"
+								tokType = t_expr_val;
+
+								char *strtodErrPtr;
+								tokDouble = strtod(strBuffer, &strtodErrPtr);
+									if(strBuffer == strtodErrPtr)
+									{
+										printf("Trial to convert non-convertable string to double! Real branch.\n");
+										exit(666);
+									}
+
+								terminateLoop = true;
+								numberDoubleCase = true;
+								break;
+							}
 						}
 					}
-					else 	// previous character was a number (nothing else can come so far)
+
+					if(eContained && !signContained)
 					{
-						if(c == 'e' || c == 'E' || isdigit(c))
+
+						if(strBuffer[fcv-1] == 'e' || strBuffer[fcv-1] == 'E')	 // pokud předchozí bylo eE, můžeme očekávat znak
+						{
+
+							if(c == '+' || c == '-')
+							{
+								strBuffer[fcv] = c;
+								signContained = true;
+								break;
+							}
+							else
+							{
+								if(isdigit(c)) // pokud tam nebude znaménko, ale číslo, stejně se budeme tvářit jako by znaménko bylo obsaženo (tzn. teď už nemůže být znovu)
+								{
+									strBuffer[fcv] = c;
+									signContained = true;
+									break;
+								}
+								else 	// jakýkoliv jiný znak není povolen == chyba literálu
+								{
+									printf("REAL ve spatnem tvaru!\n");
+									exit(666);
+								}
+							}
+						}
+
+						if(isdigit(c))	// nebude-li předchozí přímo eE, přijímáme čísla a možnost zadávat znaménko padá
 						{
 							strBuffer[fcv] = c;
-						}
-						else // other symbols are not allowed -> ending the calculations
-						{
-							tokDouble = 6.66;
-							tokType = t_expr_val;
-							strBuffer[fcv] = '\0';
-
-							terminateLoop = true;
-							numberDoubleCase = true;
-							break; // it's break time 
-						}
-					}
-				}*/
-
-				// second trial
-				/*if(strBuffer[fcv-1] == '.')
-				{
-					if(isdigit(c))
-					{
-						strBuffer[fcv] = c;
-					}
-					else
-					{
-						printf("REAL error, invalid character after 'dot'.\n");
-						exit(666);
-					}
-				}
-				else
-				{
-					if(strBuffer[fcv-1] == "e" || strBuffer == "E")
-					{
-						if(c == '+' || c == '-' || isdigit(c))
-						{
-							strBuffer[fcv] = c;
+							signContained = true;
+							break;
 						}
 						else
 						{
-							printf("REAL error, invalid character after 'e' or 'E'.\n");
+							printf("REAL zase ve spatnem tvaru!\n");
 							exit(666);
 						}
+
 					}
 
-				}*/
+					if(eContained && signContained) // v tento moment už přijímáme jen čísla, cokoliv jiného vede na odeslání tokenu
+					{
+
+						if(strBuffer[fcv-1] == '+' || strBuffer[fcv-1] == '-') // pokud předchozí byl +-, je třeba přijmout číslo
+						{
+
+							if(!isdigit(c))
+							{
+								printf("REAL konci znamenkem == problem!\n");
+								exit(666);
+							}
+						}
+
+						if(isdigit(c))
+						{
+							strBuffer[fcv] = c;
+							break;
+						}
+						else 	// nutno odeslat token
+						{
+							strBuffer[fcv] = '\0';
+							tokType = t_expr_val;
+
+							char *strtodErrPtr;
+							tokDouble = strtod(strBuffer, &strtodErrPtr);
+								if(strBuffer == strtodErrPtr)
+								{
+									printf("Trial to convert non-convertable string to double! Real breanch!\n");
+									exit(666);
+								}
+
+							terminateLoop = true;
+							numberDoubleCase = true;
+							break;
+						}
+					}
+					break;
+				}
+
+				if(!dotContained) // není-li obsažena tečka, už ani nepřijde, předchozí znak musí být eE, neměla by nastat situace, kdy by nebyl.
+				{
+					if(eContained && !signContained)
+					{
+						// jeste neni obsazeno znamenko
+						if(c == '+' || c == '-')
+						{
+								strBuffer[fcv] = c;
+								signContained = true;
+								break;
+						}
+						else
+						{
+								if(isdigit(c)) // pokud tam nebude znaménko, ale číslo, stejně se budeme tvářit jako by znaménko bylo obsaženo (tzn. teď už nemůže být znovu)
+								{
+									strBuffer[fcv] = c;
+									signContained = true;
+									break;
+								}
+								else 	// jakýkoliv jiný znak není povolen == chyba literálu
+								{
+									printf("REAL ve spatnem tvaru! (3)\n");
+									exit(666);
+								}
+						}
+						break;
+					}
 
 
+					if(eContained && signContained)
+					{
+						// obsazeno ecko i znamenko => prijimame pouze cisla, cokoliv jineho vede na odeslani tokenu
+						if(isdigit(c))
+						{
+							strBuffer[fcv] = c;
+							break;
+						}
+						else 	// pokud neni prijato cislo, je cas odeslat token
+						{
+							strBuffer[fcv] = '\0';
+							tokType = t_expr_val;
 
-
-
-				//numberDoubleCase = true;
-				//tokDouble = 0.00;
+							char *strtodErrPtr;
+							tokDouble = strtod(strBuffer, &strtodErrPtr);
+								if(strBuffer == strtodErrPtr)
+								{
+									printf("Trial to convert non-convertable string to double!\n");
+									exit(666);
+								}
+							terminateLoop = true;
+							numberDoubleCase = true;
+							break;
+						}
+						break;
+					}
+				}
 
 			break;
 
@@ -576,6 +652,9 @@ void getNextToken(FILE* fd, token TToken)
 
 		if(terminateLoop)
 		{
+
+			TToken->val_int = -1;
+			TToken->val_flo = -1.0;
 			TToken->val_str = strBuffer;
 			TToken->type = tokType;
 
@@ -599,11 +678,15 @@ void getNextToken(FILE* fd, token TToken)
 			if(numberIntCase)
 			{
 				TToken->val_int = tokInt; // we ended in integer branch, so we fill "val_int" with fresh mea... I mean data.
+				TToken->val_flo = -1.0;
+				TToken->val_str = NULL;
 			}
 
 			if(numberDoubleCase)
 			{
 				TToken->val_flo = tokDouble; // we ended in integer branch, so we fill "val_flo" with data.
+				TToken->val_int = -1;
+				TToken->val_str = NULL;
 			}
 
 			break;

@@ -1,10 +1,11 @@
 {ahpj}
-variable:=1.64e+;
+variable:=14E2+275;
+{variable:= 1 . 6 4; {fakt že tohle projde je možná trochu špatně... }
 promenna:=00000000000000000000000000000000000000000054 + 0000054 ;
-{1promenna:=20e-2;}
+1promenna:=20e-2;
 Pos:=Penis;
 +*/-^::=<><=>=; 
-Pos:=Penis2;    
+Pos:=Penis2;    }
 
 
   
