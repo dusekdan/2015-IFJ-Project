@@ -55,7 +55,7 @@ typedef struct token
     int type;      //Typ podla zoznamu terminalov
     char *val_str; //Názov v prípade že ide o id, tak sem pojde jeho nazov, ak ide o string sem ide obsah stringu
     int   val_int; //Hodnota int ak ide o integer alebo 0/1 ak ide o bool
-    float val_flo; //Hodnota na float (real)
+    double val_dou; //Hodnota na float (real)
     //////////String netreba nato pozijeme val_str
     //////////Bool netreba naten pouzijeme val_int
 }*token;
@@ -83,97 +83,4 @@ void nt_param (token tok);
 int buildemin ();
 
 
-int buildemin()
-{
-    tNodePtr newnode;
-    tData    newsymbol = malloc(sizeof(struct tData));
-    if (newsymbol != NULL)
-    {
-        newsymbol->name = "length";
-        newsymbol->type = 5;//funkcia integrova
-        newsymbol->argCount = 1;
-        newnode = insertSymbol(&rootTS, "length", newsymbol);
-    }else return 1;
-    newsymbol=NULL;
-             newnode;
-             newsymbol = malloc(sizeof(struct tData));
-    if (newsymbol != NULL)
-    {
-        newsymbol->name = "copy";
-        newsymbol->type = 7;//funkcia stringova
-        newsymbol->argCount = 3;
-        newnode = insertSymbol(&rootTS, "length", newsymbol);
-    }else return 1;
-    newsymbol=NULL;
-             newnode;
-             newsymbol = malloc(sizeof(struct tData));
-    if (newsymbol != NULL)
-    {
-        newsymbol->name = "find";
-        newsymbol->type = 5;//funkcia intefgrova
-        newsymbol->argCount = 2;
-        newnode = insertSymbol(&rootTS, "find", newsymbol);
-    }else return 1;
-    newsymbol=NULL;
-             newnode;
-             newsymbol = malloc(sizeof(struct tData));
-    if (newsymbol != NULL)
-    {
-        newsymbol->name = "sort";
-        newsymbol->type = 7;//funkcia stringova
-        newsymbol->argCount = 1;
-        newnode = insertSymbol(&rootTS, "length", newsymbol);
-    }else return 1;
-    return 0;
-}
 
-void gib_tok (token tok)
-{
-    int i=0;
-    char *m;    
-    scanf("%d",&i);
-    if (i==t_var_id || i == t_fun_id)
-    {
-        scanf("%ms",&m);
-        tok->val_str=m;
-    }
-    tok->type=i;
-}
-
-void terminalis (int terminal, token tok)
-{
-    switch (terminal)
-    {
-        case 1: printf("var\n");break;
-        case 2: printf(": ");break;
-        case 3: printf(";\n");break;
-        case 4: printf("( ");break;
-        case 5: printf(") ");break;
-        case 6: printf("function ");break;
-        case 7: printf("forward ");break;
-        case 8: printf("begin\n");break;
-        case 9: printf("end\n");break;
-        case 10: printf(".\n");break;
-        case 11: printf(", ");break;
-        case 12: printf(":= ");break;
-        case 13: printf("if ");break;
-        case 14: printf("then\n");break;
-        case 15: printf("else\n");break;
-        case 16: printf("while ");break;
-        case 17: printf("do ");break;
-        case 18: printf("readln ");break;
-        case 19: printf("write ");break;
-        case 20: printf("%s ",tok->val_str);break;
-        case 21: printf("expr ");break;
-        case 22: printf("%s ",tok->val_str);break;
-        case 23: printf("term ");break;
-        //case 24: printf("param ");break;
-        //case 25: printf("read_id ");break;
-        case 26: printf("integer ");break;
-        case 27: printf("real ");break;
-        case 28: printf("string ");break;
-        case 29: printf("boolean ");break;
-        case 30: printf("$\n");break;
-        default: printf("error input=%d\n", terminal);
-    }
-}
