@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
+#include <regex.h>
 #define APOSTROF_ASCII 39
 
 /************************ VYTRŽENO Z PARSER.H **********************-*/
@@ -58,7 +60,7 @@ typedef struct token
     int type;      //Typ podla zoznamu terminalov
     char *val_str; //Názov v prípade že ide o id, tak sem pojde jeho nazov, ak ide o string sem ide obsah stringu
     int   val_int; //Hodnota int ak ide o integer alebo 0/1 ak ide o bool
-    float val_flo; //Hodnota na float (real)
+    double val_flo; //Hodnota na float (real)
     //////////String netreba nato pozijeme val_str
     //////////Bool netreba naten pouzijeme val_int
 }*token;
@@ -112,6 +114,10 @@ void getNextToken(FILE* fd, token TToken)
 
 
 	int tokType;
+
+	int tokInt;
+	double tokDouble;
+
 	char *strBuffer;
 	strBuffer = malloc(sizeof(char)*maxStringLength);
 		if(strBuffer == NULL)
@@ -124,7 +130,22 @@ void getNextToken(FILE* fd, token TToken)
 	bool terminateLoop = false;
 	bool fseeker = true;
 	bool numberIntCase = false;
-	bool numberFloatCase = false;
+	bool numberDoubleCase = false;
+
+
+	// I actually hate myself for doing this, but time is the time
+	bool signContained = false;
+	bool eContained = false;
+	bool dotContained = false;
+
+
+	/******* STARTING BUFFER RESET *******/
+	int r;	
+	int bufferLength = strlen(strBuffer);
+	for(r = 0; r < bufferLength; r++)
+	{
+				strBuffer[r] = '\0'; // no better way to reset string than null terminate everything
+	}
 
 
 	while ( (c = fgetc(fd)) != EOF )
@@ -375,6 +396,17 @@ void getNextToken(FILE* fd, token TToken)
 					if(c == '.' || c == 'e' || c == 'E')
 					{
 						actState = sREAL;
+
+						if(c == '.')
+						{
+							dotContained = true;
+						}
+
+						if(c == 'e' || c == 'E')
+						{
+							eContained = true;
+						}
+
 					}
 
 					strBuffer[fcv] = c;
@@ -385,15 +417,15 @@ void getNextToken(FILE* fd, token TToken)
 					// here we get when we get "terminal" for numeric type
 						// so we got to save, fseekback and send token
 					strBuffer[fcv] = '\0';
-					tokType = t_integer;
+					tokType = t_expr_val;
 					
 					// situation: in strBuffer is stored nullterminated string containing INTEGER, with possible leading zeroes.
 					// we need to strip this mothef*cker of this zeroes and make him play it our way.
 					// That's the part where strtol kicks in
 
 					int strtolBase = 10; // there's only decadic notation allowed in project, so base is 10
-					long tmpTokInt;
-					char *strtolErrPtr;
+					long tmpTokInt;		 // temporary long variable, to be semantically correct
+					char *strtolErrPtr;	 // error string from strtol() comes here
 
 						tmpTokInt = strtol(strBuffer, &strtolErrPtr, strtolBase);
 						if(strtolErrPtr == strBuffer)
@@ -402,7 +434,7 @@ void getNextToken(FILE* fd, token TToken)
 							exit(666);
 						} 
 
-					int tokInt = tmpTokInt;	// now we have value of the integer stored in an integer variable, which is what we wanted, right.
+					tokInt = tmpTokInt;	// now we have value of the integer stored in an integer variable, which is what we wanted, right.
 
 					//printf("%s | %d\n", strBuffer, tokInt); // printing out original string & tokInt, debug mode only
 
@@ -414,10 +446,118 @@ void getNextToken(FILE* fd, token TToken)
 			break; // this is sNUMBER emergency break 
 			
 			case sREAL:
-				printf("we're in a sREAL case!\n");
+				printf("we're in a sREAL case! with %c\n", c);
 
-				numberFloatCase = true;
-				float tokFloat = 0.00;
+				// situation is we have practically two cases how we could end up here.
+				// The first, we get "#." from sNUMBER where "#" represents variable number of digit in range 0-9
+				// The second, we get "#e" or "#E", which we consider to be the same case 
+
+				// in this case we can expect following formats
+						// #.# [done]
+						// #.#e#  or #.#E# [done]
+						// #.#e-# or #.#E-#  [done]
+						// #-#e+# or #.#E-# [done]
+						// we have to deal with those formats one by one; branches for "e" and "E" will be shared though
+
+				// FIRST CASE 
+
+				/*if(strBuffer[fcv-1] == '.') // case for "#."
+				{
+
+					
+
+
+					if(isdigit(c)) 
+					{
+
+					}
+
+				}*/
+
+				/*// first trial
+				if(strBuffer[fcv-1] == 'e' || strBuffer[fcv-1] == 'E')	// case for "#e" or "#E"
+				{
+					// now we can only expect "+", "-" or nothing and then numbers
+					if(isdigit(c) || c == '+' || c == '-')
+					{
+						strBuffer[fcv] = c;	// in case "+", "-" or digit comes, we extend the strBuffer
+						// this of  course happens only once, in the moment we come from sNUMBER with "#e|#E" form
+					}
+					else // now comes something thta doesnt respond to the head, like terminal
+					{
+						printf("REAL format not valid! Something unexpected after \"e\" or \"E\"!(1)\n");
+						exit(666);
+					}
+				}
+				else // we dont get the first case format
+				{
+					// inside we test on first case format
+					if(strBuffer[fcv-1] == '.')	// if positive, we accept only digits for this loop run
+					{
+						if(isdigit(c))
+						{
+							strBuffer[fcv] = c;
+						}
+						else 	// when we don't get a digit at this moment, that means REAL error
+						{
+							printf("REAL format not valid! (2)\n"); //(666)
+						}
+					}
+					else 	// previous character was a number (nothing else can come so far)
+					{
+						if(c == 'e' || c == 'E' || isdigit(c))
+						{
+							strBuffer[fcv] = c;
+						}
+						else // other symbols are not allowed -> ending the calculations
+						{
+							tokDouble = 6.66;
+							tokType = t_expr_val;
+							strBuffer[fcv] = '\0';
+
+							terminateLoop = true;
+							numberDoubleCase = true;
+							break; // it's break time 
+						}
+					}
+				}*/
+
+				// second trial
+				/*if(strBuffer[fcv-1] == '.')
+				{
+					if(isdigit(c))
+					{
+						strBuffer[fcv] = c;
+					}
+					else
+					{
+						printf("REAL error, invalid character after 'dot'.\n");
+						exit(666);
+					}
+				}
+				else
+				{
+					if(strBuffer[fcv-1] == "e" || strBuffer == "E")
+					{
+						if(c == '+' || c == '-' || isdigit(c))
+						{
+							strBuffer[fcv] = c;
+						}
+						else
+						{
+							printf("REAL error, invalid character after 'e' or 'E'.\n");
+							exit(666);
+						}
+					}
+
+				}*/
+
+
+
+
+
+				//numberDoubleCase = true;
+				//tokDouble = 0.00;
 
 			break;
 
@@ -440,6 +580,15 @@ void getNextToken(FILE* fd, token TToken)
 			TToken->type = tokType;
 
 			//printf("actually read char: %s\n", strBuffer);
+
+
+			// buffer string reset
+			/*int r;	// well... i cant do this here, because im pointing at this string and syntax a. wouldnt have a way to work with it. Reset needs to be initialized before entering the loop.
+			for(r = 0; r < bufferLength; r++)
+			{
+				strBuffer[r] = '\0'; // no better way to reset string than null terminate everything
+			}*/
+
 			free(strBuffer);
 
 			if(fseeker)
@@ -452,9 +601,9 @@ void getNextToken(FILE* fd, token TToken)
 				TToken->val_int = tokInt; // we ended in integer branch, so we fill "val_int" with fresh mea... I mean data.
 			}
 
-			if(numberFloatCase)
+			if(numberDoubleCase)
 			{
-				TToken->val_flo = tokFloat; // we ended in integer branch, so we fill "val_flo" with data.
+				TToken->val_flo = tokDouble; // we ended in integer branch, so we fill "val_flo" with data.
 			}
 
 			break;
@@ -492,7 +641,7 @@ int main()
 			for(pica = 0; pica <= 19; pica++)
 			{
 				getNextToken(fd, TToken);
-				printf("Token #%d: %s (type=%d)\n", pica, TToken->val_str, TToken->type);
+				printf("Token #%d, structure string='%s', integer='%d', real='%f' (type=%d)\n", pica, TToken->val_str, TToken->val_int, TToken->val_flo, TToken->type);
 			}
 
 	printf("Ending a scanning process! \n");
