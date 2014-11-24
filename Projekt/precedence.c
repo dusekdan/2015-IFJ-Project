@@ -11,13 +11,38 @@
 
 #include "precedence.h"
 
-
 int main() {
 
 	precedenceParser();
 
 	return 0;
 
+}
+
+token gibTok(int count) {
+
+	token tok = malloc(sizeof(struct token));
+
+	if(count == 0) {
+
+		tok->type = t_expr_int;
+		tok->val_int = 10;
+	}
+	if(count == 1) {
+		
+		tok->type = t_plus;
+	}
+	if(count == 2) {
+
+		tok->type = t_expr_int;
+		tok->val_int = 20;
+	}
+	if(count == 3) {
+	
+		tok->type = t_semicolon;
+	}
+	count++;
+	return tok;
 }
 
 void stackInit(tStack *stack) {
@@ -51,17 +76,23 @@ bool stackPush(tStack *stack, tOpData element) {
 	return true;
 }
 
-void stackPop(tStack *stack) {
+void stackPop(tStack *stack, tOpData *data) {
 
 	if(stack->top != NULL) {
 
 		tElement temp;
 
 		temp = stack->top;
+		*data = stack->top->data;
 		stack->top = stack->top->pointer;
 
 		free(temp);
 	}
+}
+
+tOpData stackTop(tStack *stack) {
+
+	return (stack->top->data);
 }
 
 
@@ -83,106 +114,308 @@ tPriority precedenceTable [14][14] = {
 	{pLESS, pLESS, pLESS, pLESS, pLESS, pEMPTY, pLESS, pLESS, pLESS, pLESS, pLESS, pLESS, pLESS, pEMPTY},
 };
 
-int zpracuj(tToken token, tOpData *column) {		// zjisteni typu tokenu, nastaveni inxdexu
+int zpracuj(token tok, tOpData *column) {		// zjisteni typu tokenu, nastaveni inxdexu
 
-	/*switch(token.type) {
+	printf("zpracovavam\n");
+	char *key;
 
-		case "+":
+	switch(tok->type) {
+
+		case 31:
 			column->element = PLUS;
 			break;
 		
-		case "-":
+		case 32:
 			column->element = MINUS;
 			break;
 
-		case "*":
+		case 33:
 			column->element = MUL;
 			break;
 
-		case "/":
+		case 34:
 			column->element = DIV;
 			break;
 
-		case "(":
+		case 4:
 			column->element = LEFT;
 			break;
 
-		case ")":
+		case 5:
 			column->element = RIGHT;
 			break;
 
-		case "<":
+		case 35:
 			column->element = LESS;
 			break;
 
-		case ">":
+		case 36:
 			column->element = MORE;
 			break;
 
-		case "<=":
+		case 37:
 			column->element = LESSEQUAL;
 			break;
 
-		case ">=":
+		case 38:
 			column->element = MOREEQUAL;
 			break;
 
-		case "=":
+		case 39:
 			column->element = EQUAL;
 			break;
 
-		case "<>":
+		case 40:
 			column->element = NONEQUAL;
-			break;*/
-											// cisla a retezce budu rovnou ukladat do tabulky symbolu
-		/*case INTEGER:
-		case REAL:
-
-			column->element = ID;
 			break;
 
-		case STRING:
+		case 3:								// strednik
 
-			column->element = ID;
+			column->element = DOLAR;
 			break;
 
-						// atd......
-	}*/
+		case 20:
+
+			key = malloc(sizeof(char)*(strlen(tok->val_str) + 1));
+			strcat(key, "V");
+			strcat(key, tok->val_str);
+
+
+			if((searchSymbol(&rootTS, key)) == 0)
+				return -1;
+			if((searchSymbol(&localTS, key)) == 0)
+				return -1;
+
+
+		case 41:							// integer, bool
+		case 42:
+		case 43:
+
+			column->element = ID;
+
+			break;
+
+		default:
+			fprintf(stderr, "Chyba pri cteni tokenu vyrazu\n");
+			return -1;	
+	}
 
 	return 0;
 }
 
 
-void precedenceParser() {				// hlavni funkce precedencni analyzy
+int precedenceParser() {				// hlavni funkce precedencni analyzy
 
-	printf("Jsem v parseru.\n");
+	tStack stack1;
+	stackInit(&stack1);
 
-	tStack stack;
-	stackInit(&stack);
+	tStack stack2;
+	stackInit(&stack2);
 
-	tOpData help;		// pro ulozeni dolaru na zasobnik
+	tOpData temp;		// pro ulozeni dolaru na zasobnik
 	tOpData column;	// indexy do precedencni tabulky 
 	tOpData row;
+	tOpData change;
 	int error;
-	tToken token;
+	int count = 0;
 
 
-	help.element = DOLAR;
-	stackPush(&stack, help);		// pushnuti dolaru na vrchol zasobniku
+	temp.element = DOLAR;
+	stackPush(&stack1, temp);		// pushnuti dolaru na vrchol zasobniku
 
 	do {
 
-		if((error = zpracuj(token, &column)) == 0) {
+		token tok = gibTok(count);
+		count++;
 
-			printf("jsem po funkci zpracuj %d\n", error);
+		if((error = zpracuj(tok, &column)) != 0)		// pokud skoncime s chybou, breakujeme
+			break;
 
+
+		row = stackTop(&stack1);						// precteni tokenu na vrcholu zasobniku
+
+		
+		while((row.element == NETERM || row.element == SHIFT) && row.element != DOLAR) {			// preskakujeme na zasobniku neterminaly
+			
+			stackPop(&stack1, &change);
+			stackPush(&stack2, change);
+			row = stackTop(&stack1);
 		}
 
+		while(stackEmpty(&stack2) != true) {			// navraceni neterminalu na hlavni zasobnik
+
+			stackPop(&stack2, &change);
+			stackPush(&stack1, change);
+		}
+
+		printf("row = %d  column = %d\n", row.element, column.element);
+
+		switch(precedenceTable[row.element][column.element]) {
+
+			case pEQUAL:				// equal
+
+				printf("equal\n");
+				stackPush(&stack1, column);
+				break;
+
+			case pLESS:					// shift
+				printf("shift\n");
+				while(row.element == NETERM || row.element == SHIFT) {			// preskakujeme na zasobniku neterminaly
+			
+					stackPop(&stack1, &change);
+					stackPush(&stack2, change);
+					row = stackTop(&stack1);
+				}
+
+				temp.element = SHIFT;
+				stackPush(&stack1, temp);
+
+				while(stackEmpty(&stack2) != true) {		// vraceni neterminalu na zasobnik
+
+					stackPop(&stack2, &change);
+					stackPush(&stack1, change);
+				}
+
+				stackPush(&stack1, column);
+
+				break;
+
+			case pMORE:					// redukce
+
+				printf("redukce\n");
+
+				if(reduction(&stack1, &stack2) < 0)
+					return -1;
+				
+				stackPush(&stack1, column);	// pushujeme az po redukci, zbytecne by se nam tam operator pletl
+
+				break;
+
+			case pEMPTY:				// empty, syntax error
+
+				printf("empty\n");
+				printf("Syntaktická chyba.\n");
+				return -1;
+				break;
+		}
 	}
 
-	while(stack.top->data.element != DOLAR);
+	while(stack1.top->data.element != DOLAR);
 
-	stackPop(&stack);
+	stackPop(&stack1, &temp);		
+
+	return 0;			// jeste nedokonceno, zatim mi to funguje jen pro pravidlo E -> i, protoze se nedokazu vickrat zacyklit v te redukci
+}
+
+
+int reduction(tStack *stack1, tStack *stack2) {
+
+	tOpData help = stackTop(stack1);
+	tOpData change;
+	tOpData temp;
+
+	printf("jsem v redukci\n");
+
+	while(help.element != SHIFT && stackEmpty(stack1) != true) {			//	dostaneme se az na SHIFT, vse na druhem zasobniku pouzijeme pro jedno z pravidel
+		
+		stackPop(stack1, &change);
+		stackPush(stack2, change);
+		help = stackTop(stack1);
+	}
+
+	if(help.element == SHIFT) {
+
+		stackPop(stack2, &temp);	// nacteme si dalsi oper z druheho zasobniku
+
+		if(temp.element == ID) {		// zacneme od nejjednodusiho - E->ID
+
+			stackPop(stack2, &temp);
+
+			if(stackEmpty(stack2) == true) {	// prvni pravidlo splneno
+
+				stackPop(stack1, &temp);		// popneme SHIFT, ze zasobniku, uz neni potreba
+				temp.element = NETERM;
+				stackPush(stack1, temp);		// pushneme dle pravidla - E (neterminal)
+				
+				printf("Bylo provedeno 12. pravidlo.\n");
+			}
+		}
+
+		else if(temp.element == NETERM) {	// nyni vsechna pravidla pro neterminaly
+
+			int control = 0;
+
+			stackPop(stack2, &temp);
+
+			switch(temp.element) {
+
+				case PLUS:
+				case MINUS:
+				case MUL:
+				case DIV:
+				case LESS:
+				case MORE:
+				case MOREEQUAL:
+				case LESSEQUAL:
+				case EQUAL:
+				case NONEQUAL:
+
+					control = 1;
+					break;
+
+				default:
+					fprintf(stderr, "Nevyhovuje pravidlum.\n");
+					control = 0;
+					break;
+			}
+
+			if(control == 0)
+				return -1;
+
+			else {
+
+				stackPop(stack2, &temp);
+
+				if(temp.element == NETERM) {
+
+					if(stackEmpty(stack2) == true) {
+
+						stackPop(stack1, &temp);
+						temp.element = NETERM;
+						stackPush(stack2, temp);
+
+						printf("Vyhovuje jednomu z pravidel 1-10\n");
+					}
+				}
+
+				else {
+
+					fprintf(stderr, "Nevyhovuje pravidlum.\n");
+					return -1;
+				} 
+			}
+		}
+
+		else if(temp.element == LEFT) {
+
+			stackPop(stack2, &temp);
+
+			if(temp.element == NETERM) {
+
+				stackPop(stack2, &temp);
+
+				if(temp.element == RIGHT && stackEmpty(stack2) == true) {
+
+					stackPop(stack1, &temp);
+					temp.element = NETERM;
+					stackPush(stack1, temp);
+				}
+			}
+		}
+	}
+
+	printf("redukce skoncila\n");
+	return 0;
 
 }
 
