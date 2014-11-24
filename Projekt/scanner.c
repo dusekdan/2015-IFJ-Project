@@ -85,6 +85,19 @@ int maxStringLength = 200; // maximal string length that we've been able to reac
 
 /************************ ENUM PRO CASE ****************************-*/
 
+/************************ keywords ***********************************/
+
+char* keywords[] = {
+	"begin", "boolean", "do", "else", "end", "false", "find", "forward", "function",
+	"if", "integer", "readln", "real", "sort", "string", "then", "true", "var", "while",
+	"write"
+};
+
+
+
+
+
+
 //void getNextToken();
 int getNextChar(FILE* fd);
 void getNextToken(FILE* fd, token TToken);
@@ -655,18 +668,19 @@ void getNextToken(FILE* fd, token TToken)
 
 			TToken->val_int = -1;
 			TToken->val_flo = -1.0;
+			
+
 			TToken->val_str = strBuffer;
 			TToken->type = tokType;
 
-			//printf("actually read char: %s\n", strBuffer);
+			// here I'm gonna test the string on being a key word and base on that I redecide what tokenType I send in the end
 
-
-			// buffer string reset
-			/*int r;	// well... i cant do this here, because im pointing at this string and syntax a. wouldnt have a way to work with it. Reset needs to be initialized before entering the loop.
-			for(r = 0; r < bufferLength; r++)
+			if(strcmp(strBuffer, "begin") == 0)
 			{
-				strBuffer[r] = '\0'; // no better way to reset string than null terminate everything
-			}*/
+				TToken->type = t_begin;
+			}
+
+			
 
 			free(strBuffer);
 
@@ -710,7 +724,7 @@ int main()
 			return 1;
 		}
 
-	FILE* fd = fopen("testfile1", "r");
+	FILE* fd = fopen("testFiles/t1", "r");
 		if(fd == NULL)
 		{
 			printf("Encountered an error while opening the file!\n");

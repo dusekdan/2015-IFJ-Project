@@ -1,0 +1,14 @@
+{ kurevsky 
+dlouhý
+několika
+řádkový
+komentář obsahující
+divné znaky := > 
+
+<= !! : ^ >@
+}
+begin:
+{Promenna := prvniPromenna*druhaPromenna;}
+tretiPromenna := Promenna/druhaPromenna;
+tretiPromenna := 25+tretiPromenna;
+tretiPromenna := 1.54e10*tretiPromenna;
