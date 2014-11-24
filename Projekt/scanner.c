@@ -53,6 +53,7 @@ static const int t_expr_val  = 41;// tento terminal ak prislo nieco konecne ako 
                                   // ale moze sa tam vyskytnut aj premenna cize, var_id a v tom pripade je v *val_str bude obsahovat nazov premennej a po vyhladani
                                   // v tabulke symbolov zistis typ, (hledam->data->type), tam su typy int 1 real 2 string 3 bool 4, iny typ nieje platna premenna
 static const int t_striska = 42; //^
+static const int t_dot = 43; // .
 
 
 typedef struct token
@@ -101,6 +102,30 @@ char* keywords[] = {
 //void getNextToken();
 int getNextChar(FILE* fd);
 void getNextToken(FILE* fd, token TToken);
+void makeStringLowerCase(char *string);
+void resetString(char *string);
+
+
+
+void makeStringLowerCase(char *string)
+{
+	int i;
+	int stringLength = strlen(string);
+	for(i = 0; i < stringLength; i++)
+	{
+		string[i] = tolower(string[i]);
+	}
+}
+
+void resetString(char *string)
+{
+	int i;
+	int stringLength = strlen(string);
+	for(i = 0; i < stringLength; i++)
+	{
+		string[i] = '\0';
+	}
+}	
 
 
 int getNextChar(FILE* fd)
@@ -153,12 +178,7 @@ void getNextToken(FILE* fd, token TToken)
 
 
 	/******* STARTING BUFFER RESET *******/
-	int r;	
-	int bufferLength = strlen(strBuffer);
-	for(r = 0; r < bufferLength; r++)
-	{
-				strBuffer[r] = '\0'; // no better way to reset string than null terminate everything
-	}
+	resetString(strBuffer);
 
 
 	while ( (c = fgetc(fd)) != EOF )
@@ -233,7 +253,7 @@ void getNextToken(FILE* fd, token TToken)
 					break;
 				}
 
-				if(c == '+' || c == '-' || c == '*' || c == '/' || c == '^' || c == '=' ||  c== ';' || /* tyto znaky mohou vést na double op*/ c == ':' || c == '<' || c == '>')
+				if(c == '+' || c == '.' || c == '-' || c == '*' || c == '/' || c == '(' || c == ')' || c == ',' || c == '^' || c == '=' ||  c== ';' || /* tyto znaky mohou vést na double op*/ c == ':' || c == '<' || c == '>')
 				{
 					actState = sSINGLEOPER;	 // je třeba provést kontrolu na doubleop
 					strBuffer[fcv] = c;
@@ -341,6 +361,38 @@ void getNextToken(FILE* fd, token TToken)
 				{
 					strBuffer[fcv] = '\0';
 					tokType = t_semicolon;
+					terminateLoop = true;
+					break;
+				}
+
+				if(strBuffer[fcv-1] == '.')
+				{
+					strBuffer[fcv] = '\0';
+					tokType = t_dot;
+					terminateLoop = true;
+					break;
+				}
+
+				if(strBuffer[fcv-1] == ',')
+				{
+					strBuffer[fcv] = '\0';
+					tokType = t_comma;
+					terminateLoop = true;
+					break;
+				}
+
+				if(strBuffer[fcv-1] == '(')
+				{
+					strBuffer[fcv] == '\0';
+					tokType = t_l_parrent;
+					terminateLoop = true;
+					break;
+				}
+
+				if(strBuffer[fcv-1] == ')')
+				{
+					strBuffer[fcv] == '\0';
+					tokType = t_r_parrent;
 					terminateLoop = true;
 					break;
 				}
@@ -630,6 +682,8 @@ void getNextToken(FILE* fd, token TToken)
 						}
 						else 	// pokud neni prijato cislo, je cas odeslat token
 						{
+
+
 							strBuffer[fcv] = '\0';
 							tokType = t_expr_val;
 
@@ -666,23 +720,101 @@ void getNextToken(FILE* fd, token TToken)
 		if(terminateLoop)
 		{
 
-			TToken->val_int = -1;
-			TToken->val_flo = -1.0;
+			TToken->type = tokType; // anytime we get here, we set the tokType
+
+				TToken->val_int = -1;
+				TToken->val_flo = -1.0;
 			
 
-			TToken->val_str = strBuffer;
-			TToken->type = tokType;
+				TToken->val_str = strBuffer;
+				
 
-			// here I'm gonna test the string on being a key word and base on that I redecide what tokenType I send in the end
+				// here I'm gonna test the string on being a key word and base on that I redecide what tokenType I send in the end
 
-			if(strcmp(strBuffer, "begin") == 0)
-			{
-				TToken->type = t_begin;
-			}
+				makeStringLowerCase(strBuffer); // makes content of strBuffer lowercase (required for successfull comparism)
 
-			
-
-			free(strBuffer);
+				if(strcmp(strBuffer, "begin") == 0)
+				{
+					TToken->type = t_begin;
+				}
+				else if(strcmp(strBuffer, "boolean") == 0)
+				{
+					TToken->type = t_boolean;
+				}
+				else if(strcmp(strBuffer, "do") == 0)
+				{
+					TToken->type = t_do;
+				}
+				else if(strcmp(strBuffer, "else") == 0)
+				{
+					TToken->type = t_else;
+				}
+				else if(strcmp(strBuffer, "end") == 0)
+				{
+					TToken->type = t_end;
+				}
+				else if(strcmp(strBuffer, "false") == 0)
+				{
+					TToken->type = t_expr_val;
+					TToken->val_int = 0;	//(#!#)
+				}
+				else if(strcmp(strBuffer, "find") == 0)
+				{
+					TToken->type = t_fun_id;
+				}
+				else if(strcmp(strBuffer, "forward") == 0)
+				{
+					TToken->type = t_forward;
+				}
+				else if(strcmp(strBuffer, "function") == 0)
+				{
+					TToken->type = t_function;
+				}
+				else if(strcmp(strBuffer, "if") == 0)
+				{
+					TToken->type = t_if;
+				}
+				else if(strcmp(strBuffer, "integer") == 0)
+				{
+					TToken->type = t_integer;
+				}
+				else if(strcmp(strBuffer, "readln") == 0)
+				{
+					TToken->type = t_readln;
+				}
+				else if(strcmp(strBuffer, "real") == 0)
+				{
+					TToken->type = t_real;
+				}
+				else if(strcmp(strBuffer, "sort") == 0)
+				{
+					TToken->type = t_fun_id;
+				}
+				else if(strcmp(strBuffer, "string") == 0)
+				{	
+					TToken->type = t_string;
+				}
+				else if(strcmp(strBuffer, "then") == 0)
+				{
+					TToken->type = t_then;
+				}
+				else if(strcmp(strBuffer, "true") == 0)
+				{
+					TToken->type = t_expr_val;
+					TToken->val_int = 1; //(#!#)
+				}
+				else if(strcmp(strBuffer, "var") == 0)
+				{
+					TToken->type = t_var;
+				}
+				else if(strcmp(strBuffer, "while") == 0)
+				{
+					TToken->type = t_while;
+				}
+				else if(strcmp(strBuffer, "write") == 0)
+				{
+					TToken->type = t_write;
+				}	
 
 			if(fseeker)
 			{
@@ -693,20 +825,28 @@ void getNextToken(FILE* fd, token TToken)
 			{
 				TToken->val_int = tokInt; // we ended in integer branch, so we fill "val_int" with fresh mea... I mean data.
 				TToken->val_flo = -1.0;
-				TToken->val_str = NULL;
+				resetString(strBuffer);
+				free(strBuffer);
 			}
-
-			if(numberDoubleCase)
+			else if(numberDoubleCase)
 			{
 				TToken->val_flo = tokDouble; // we ended in integer branch, so we fill "val_flo" with data.
 				TToken->val_int = -1;
-				TToken->val_str = NULL;
+				resetString(strBuffer);
+				free(strBuffer);
+			}
+			else
+			{
+				free(strBuffer);
 			}
 
+			// Conclusion
+			// When called on ínteger/real, in the responding data type is stored the value, in the other one, -1 is issued, in val_str is left the original string value
+			// When called on string/identifier/whatever requires storage in strBuff, it's left in there (though memory is cleaned in the end)
 			break;
 		}
 
-//(#!#) Místo posledního středníku (A jakékoliv další žádosti o další lexém) to pakuje dohromady středník a předchozí řetězec. Weird stuff
+		//(#!#) Místo posledního středníku (A jakékoliv další žádosti o další lexém) to pakuje dohromady středník a předchozí řetězec. Weird stuff
  	}
 
 
@@ -724,7 +864,7 @@ int main()
 			return 1;
 		}
 
-	FILE* fd = fopen("testFiles/t1", "r");
+	FILE* fd = fopen("testfile1", "r");
 		if(fd == NULL)
 		{
 			printf("Encountered an error while opening the file!\n");
@@ -735,7 +875,7 @@ int main()
 
 
 			int pica;
-			for(pica = 0; pica <= 19; pica++)
+			for(pica = 0; pica <= 50; pica++)
 			{
 				getNextToken(fd, TToken);
 				printf("Token #%d, structure string='%s', integer='%d', real='%f' (type=%d)\n", pica, TToken->val_str, TToken->val_int, TToken->val_flo, TToken->type);

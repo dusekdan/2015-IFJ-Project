@@ -7,7 +7,7 @@ divné znaky := >
 
 <= !! : ^ >@
 }
-begin:
+Begin:
 {Promenna := prvniPromenna*druhaPromenna;}
 tretiPromenna := Promenna/druhaPromenna;
 tretiPromenna := 25+tretiPromenna;
