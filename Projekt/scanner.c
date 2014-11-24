@@ -53,7 +53,6 @@ static const int t_expr_val  = 41;// tento terminal ak prislo nieco konecne ako 
                                   // ale moze sa tam vyskytnut aj premenna cize, var_id a v tom pripade je v *val_str bude obsahovat nazov premennej a po vyhladani
                                   // v tabulke symbolov zistis typ, (hledam->data->type), tam su typy int 1 real 2 string 3 bool 4, iny typ nieje platna premenna
 static const int t_striska = 42; //^
-static const int t_dot = 43; // .
 
 
 typedef struct token
@@ -213,7 +212,7 @@ void getNextToken(FILE* fd, token TToken)
 
 		fcv++; // increasing the flow control variable (it is set to -1 by default, so it is 0 for the first loop after this line)
 		cx = getNextChar(fd);	// getting the next character and testing it for end of file -> if it would be end of file, we would have to force send token, because there will be no next loop walkthrough
-
+		
 
 		/************************** TESTING A NEXT CHARACTER ON BEING EOF *************************/
 		// nutno doplnit
@@ -368,7 +367,7 @@ void getNextToken(FILE* fd, token TToken)
 				if(strBuffer[fcv-1] == '.')
 				{
 					strBuffer[fcv] = '\0';
-					tokType = t_dot;
+					tokType = t_period;
 					terminateLoop = true;
 					break;
 				}
@@ -875,7 +874,7 @@ int main()
 
 
 			int pica;
-			for(pica = 0; pica <= 50; pica++)
+			for(pica = 0; pica <= 150; pica++)
 			{
 				getNextToken(fd, TToken);
 				printf("Token #%d, structure string='%s', integer='%d', real='%f' (type=%d)\n", pica, TToken->val_str, TToken->val_int, TToken->val_flo, TToken->type);
