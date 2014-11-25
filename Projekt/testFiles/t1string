@@ -1,2 +1,5 @@
 {testovací soubor pro string}
-Promenna :=
+Promenna := 'Ahoj svete!' ;
+Promenna2 := '2Ahoj''''''2Svete';
+Promenna3 := '5Ahoj'#39'Sve''3t'#33'';
+Promenna4 := 'Ahoj'#010'Sve''te'#33'';
