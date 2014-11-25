@@ -10,6 +10,7 @@ tNodePtr localTS;//ukazatel na localnu tabulku
 bool searchGlobalOnly = true;//ci ukladam do globalnej tabulky
 //char *latestfunction=NULL;
 int fwdDeclarations=0;//pocet fwd
+int pocetArg = 0;
 bool debug=false;
 //char * tempremem=NULL;
 //bool nextmustbebody;
@@ -302,6 +303,7 @@ void nt_fun_def_list (token tok)
 
                 char *funVarKey = createKey ("V", tok->val_str);
                 saveSymbol (&localTS, funVarKey, tok->val_str, t_var_id, 0, true);
+                free (funVarKey);
             }
 
             /* V opačnom prípade ide buď o redeklaráciu alebo doplnenie for-  */
@@ -335,6 +337,11 @@ void nt_fun_def_list (token tok)
             /* Spracovanie parametrov funkcie */
 
             nt_param_list (tok, nextMustBeBody);
+            if (nextMustBeBody==false)
+            {
+                searchSymbol (&rootTS, key)->data->argCount=pocetArg;
+                pocetArg=0;
+            }
 
             match (tok, t_r_parrent);
             match (tok, t_colon);
@@ -345,6 +352,8 @@ void nt_fun_def_list (token tok)
 
 
             nt_fun_body (tok, nextMustBeBody, key);
+
+            free (key);
 
             match (tok, t_semicolon);
 
@@ -369,117 +378,6 @@ void nt_fun_def_list (token tok)
         errorHandler(errSyn);
     }
 }
-/*
-void nt_fun_def_list_old (token tok)
-{
-    if (tok->type == t_function || tok->type == t_begin)
-    {
-        //////////////////////////////////////////////////////////////////RULE7
-        if (tok->type == t_function)
-        {
-
-            match(tok,t_function);
-
-            char * key = malloc(sizeof(char)*(strlen(tok->val_str)+1));
-            memset(key, 0, strlen(key));
-            strcat (key, "F");
-            strcat (key, tok->val_str);
-            //printf("\n╔═══════════════╗\n║Hladany key je:║%s\n╚═══════════════╝\n",key);
-            
-
-            ////////////////////////////////////////////SPRACOVANIE FID
-            //Kontrola či funkcia už je v tabulke alebo nie
-            //funkcie sa vydy hladaju v rootTS
-            tNodePtr hledam  = searchSymbol(&rootTS, key);//printf("%d\n",&hledam );
-            if (hledam == 0)
-            //////////////////////////////////////////////IDEME UKLADAT
-            {
-                remember=tok->val_str;//odpanatanie nayvu funkcie aby sme jej vedeli neskor dat typ
-                tData    newsymbol = malloc(sizeof(struct tData));
-                if (newsymbol != NULL)
-                {
-                    newsymbol->name = tok->val_str;
-                    newsymbol->type = t_fun_id;
-                    insertSymbol(&rootTS, key, newsymbol);//printf("\n╔═══════════════════╗\n║▼ulozene do rootTS▼║\n╚═══════════════════╝\n");
-                    hledam  = searchSymbol(&rootTS, key);//do hledam dam novu
-                                    //teraz treba este vytvorit rovnomennu lokalnu premennu;
-                    //bool temp=searchGlobalOnly;
-                
-
-
-                tData    newsymbol1 = malloc(sizeof(struct tData));
-                if (newsymbol1 != NULL)
-                {
-                    newsymbol1->name = tok->val_str;
-                    newsymbol1->type = t_var_id;
-                    char * key1 = malloc(sizeof(char)*(strlen(tok->val_str)+1));
-                    memset(key1, 0, strlen(key1));
-                    strcat (key1, "V");
-                    strcat (key1, tok->val_str);
-                    /*printf("\nimplicitna premenna %s ok\n",insertSymbol(&localTS, key1, newsymbol1)/*->key);
-                }
-
-
-
-
-
-
-                    match(tok,t_fun_id);
-                }
-                else printf("dojebal sa malloc\n");
-            }
-            else //funkcia uz bola definovana takze musi mat typ prideleny cize iny ako funid
-            {
-                if (hledam->data->type >= 9 && hledam->data->type <=12)
-                {
-                    remember=tok->val_str;
-                    //printf("tokvalstr %s\n",remember );
-                    //printf("REMEM %s\n",remember );
-                    //searchType=4;
-                    if (debug==true)printf("\n----------funkcia %s mala fwd a bol to %d\n",hledam->data->name, hledam->data->type);
-                    nextmustbebody=true;
-                    match(tok,t_fun_id);
-                }
-            }
-            match(tok,t_l_parrent);
-
-            nt_param_list(tok);
-            //printf("\n╔═══════════════════╗\n║Parametre nacitane ║\n╚═══════════════════╝\n");
-
-            match(tok,t_r_parrent);
-            match(tok,t_colon);
-            shouldirecall=true;//skoncili paprametre treba priradit typ funkcii
-            //printf("pretype remember%s\n",remember );
-            searchType=2;
-            nt_type(tok);//teraz ma funkcia priradeny typ 5-8
-            searchType=0;//printf("type ok\n");
-            match(tok,t_semicolon);
-
-            int fwdbefore=fwdDeclarations;//
-            tempremem=hledam->key;
-            //printf("pojde body\n");
-            nt_fun_body(tok);
-            if (fwdbefore!=fwdDeclarations) //ak sa ymenil pocet fwd tak toto je fwd deklaracia
-                {
-                    hledam->data->type+=4; //novy stav 9-12
-                }
-            else (hledam->data->type+=8);
-
-            match(tok,t_semicolon);
-
-            nt_fun_def_list(tok);
-        }
-        //////////////////////////////////////////////////////////////////////RULE8
-        else
-            return;
-    }
-    else
-    {    
-        printf("nt_fun_def_list\n");
-        errorHandler(errSyn);
-    }
-}*/
-
 
 void nt_fun_body (token tok, bool nextMustBeBody, char *key) //fwd1 body2
 {
@@ -772,10 +670,7 @@ void nt_param (token tok, bool testOnly)
             searchGlobalOnly=false;
             nt_type(tok, key);
             searchGlobalOnly=temp;
-
-
-
-
+            pocetArg++;
         }
         else // ak sa len kontroluju z minulej fwd hlavicky
         {
@@ -800,7 +695,7 @@ void nt_param (token tok, bool testOnly)
 
 
 
-
+        free(key);
     }
     else
         printf("synerror in nt_param\n");
@@ -1039,6 +934,7 @@ int main(int argc, char const *argv[])
     {
         gib_tok (tok);
         nt_program (tok);
+        free(tok);
     }
     else
     {
