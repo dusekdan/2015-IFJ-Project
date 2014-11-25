@@ -8,13 +8,14 @@
 /* Autoři:			Filip Kalous (xkalou03)						*/
 /*					Matúš Bútora (xbutor01)						*/
 /****************************************************************/
-
-
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
-#include "scanner.h"
 #include <stdbool.h>
-#include "ial.h"
+#include "parser.h"
+#include "ial.c"
+#include "errorHandler.c"
+
 
 #define STACKSIZE 50;
 
@@ -43,9 +44,25 @@ typedef enum {
 	EQUAL,
 	NONEQUAL,
 	ID,
-	DOLAR
+	DOLAR,
+	NETERM,
+	SHIFT
 
 } tOperators;
+
+static const int rule_1[3] = {NETERM, PLUS, NETERM};
+static const int rule_2[3] = {NETERM, MINUS, NETERM};
+static const int rule_3[3] = {NETERM, MUL, NETERM};
+static const int rule_4[3] = {NETERM, DIV, NETERM};
+static const int rule_5[3] = {NETERM, LESS, NETERM};
+static const int rule_6[3] = {NETERM, MORE, NETERM};
+static const int rule_7[3] = {NETERM, LESSEQUAL, NETERM};
+static const int rule_8[3] = {NETERM, MOREEQUAL, NETERM};
+static const int rule_9[3] = {NETERM, EQUAL, NETERM};
+static const int rule_10[3] = {NETERM, NONEQUAL, NETERM};
+static const int rule_11[3] = {RIGHT, NETERM, LEFT};
+static const int rule_12[3] = {0, 0, ID};
+
 
 
 typedef struct {
@@ -72,10 +89,10 @@ typedef struct {
 void stackInit(tStack *stack);		// inicializace zasobniku
 //bool stackFull();					// kontrola plneho zasobniku
 bool stackEmpty(tStack *stack);		// kontrola prazdneho zasobniku
-void stackTop();
-void stackPop(tStack *stack);
+tOpData stackTop(tStack *stack);
+void stackPop(tStack *stack, tOpData *data);
 bool stackPush(tStack *stack, tOpData element);
-void stackDispose();
 
-void precedenceParser();
-int zpracuj(tToken token, tOpData *column);
+int precedenceParser();
+int zpracuj(token tok, tOpData *column);
+int reduction(tStack *stack1, tStack *stack2);
