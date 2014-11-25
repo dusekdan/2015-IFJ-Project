@@ -14,6 +14,7 @@
 #include <stdbool.h>
 #include "parser.h"
 #include "ial.c"
+#include "errorHandler.c"
 
 
 #define STACKSIZE 50;
