@@ -283,7 +283,7 @@ void nt_fun_def_list (token tok)
         /* Premenná ktorá rozhoduje či môže prísť forward deklarácia alebo nie*/
 
         bool nextMustBeBody = false;
-
+        char *rememberVarName = NULL;
         ///////////////////////////////////////////////////////////////////RULE7
 
         if (tok->type == t_function)
@@ -303,6 +303,7 @@ void nt_fun_def_list (token tok)
                 /*Uloženie lokálnej premennej patriacej k práve uloženej fun.*/
 
                 char *funVarKey = createKey ("V", tok->val_str);
+                rememberVarName = createKey ("V", tok->val_str);
                 saveSymbol (&localTS, funVarKey, tok->val_str, t_var_id, 0, true);
                 free (funVarKey);
             }
@@ -348,7 +349,28 @@ void nt_fun_def_list (token tok)
             match (tok, t_colon);
 
             nt_type (tok, key);
+            //Nakoniec este priradim typ premennej rovnomennej
+            if (rememberVarName!=NULL)
+            switch (searchSymbol(&rootTS, key)->data->type)
+                {
+                    case 5:
+                    case 9:
+                    case 13:    searchSymbol(&localTS, rememberVarName)->data->type=1;break;
+                    case 6:
+                    case 10:
+                    case 14:    searchSymbol(&localTS, rememberVarName)->data->type=2;break;
+                    case 7:
+                    case 11:
+                    case 15:    searchSymbol(&localTS, rememberVarName)->data->type=3;break;
+                    case 8:
+                    case 12:
+                    case 16:    searchSymbol(&localTS, rememberVarName)->data->type=4;break;
+                    default: errorHandler(errSemTypArg);break;
+                }
 
+            printf("key je teraz %s\n", key );
+
+            
             match (tok, t_semicolon);
 
 
@@ -510,12 +532,16 @@ void nt_stmt (token tok)
             case 20:        key = createKey ("V", tok->val_str);            
                             currTS = (searchGlobalOnly == true) ? &rootTS : &localTS;
                             hledam = searchSymbol (&*currTS, key);
+
                             if (hledam == 0 && searchGlobalOnly == false)
-                                hledam=searchSymbol(&rootTS, key);
+                                hledam = searchSymbol(&rootTS, key);
 
                             if (hledam!=0)
                                 if (hledam->data->type==t_var_id || (hledam->data->type >= 1 && hledam->data->type <= 4))
                                 {
+                                    printf("\n\nSnazim sa priradit do premennej typu %d\n\n",hledam->data->type);
+
+
                                     match (tok,t_var_id);
                                 }
                                 else
@@ -525,7 +551,16 @@ void nt_stmt (token tok)
                                     return;
                                 }
                             match     (tok,t_assign);
-                            nt_assign (tok);
+
+                            //SEMANTICKA KONTROLA
+                            int semControlVar = nt_assign (tok);
+                            if (semControlVar != hledam->data->type+4 && semControlVar != hledam->data->type+12)
+                            {
+                                printf("nesedeli typy\n");
+                                errorHandler (errSemTypArg);
+                            }
+
+
                             free (key);
                             break;                
             ////////////////////////////////////////////////////////////////////////////////RULE19               
@@ -545,7 +580,6 @@ void nt_stmt (token tok)
             ////////////////////////////////////////////////////////////////////////////////RULE21
             case 18:        match (tok,t_readln);
                             match (tok,t_l_parrent);
-                            ////////////////////////////////////////////SPRACOVANIE PREMENNEJ
                             //Kontrola či premenná už je v tabulke
                             key = createKey ("V", tok->val_str);
 
@@ -565,7 +599,15 @@ void nt_stmt (token tok)
                                     printf ("nedefnovana premenna pre readln\n");
                                     errorHandler (errSemDef);
                                     return;
-                                }                    
+                                }
+
+                            //SEMANTICKA KONTROLA
+                            if (hledam->data->type < 1 || hledam->data->type > 3)
+                            {
+                                printf("tuna nemoze byt bool\n");
+                                errorHandler (errSemTypArg);
+                            }
+
                             match (tok,t_r_parrent);
                             free (key);
                             break;
@@ -584,7 +626,7 @@ void nt_stmt (token tok)
     }
 }
 
-void nt_assign (token tok)
+int nt_assign (token tok)
 {
     if (tok->type == t_expr || tok->type == t_fun_id)
     {
@@ -592,12 +634,14 @@ void nt_assign (token tok)
         if (tok->type == t_expr)
         {
             match(tok,t_expr);
+            return 0;
         }
         ////////////////////////////////////////////////////////////////////////RULE24
         else
         {
             char * key = createKey ("F",tok->val_str);
-            if (searchSymbol(&rootTS, key)==0)
+            tNodePtr hledam = searchSymbol(&rootTS, key);
+            if (hledam==0)
             {
                 printf("Hladal som key %s\n",key );
                 errorHandler(errSemDef);
@@ -607,6 +651,7 @@ void nt_assign (token tok)
             match(tok,t_l_parrent);
             nt_term_list(tok);
             match(tok,t_r_parrent);
+            return hledam->data->type;
         }
     }
     else
@@ -614,6 +659,7 @@ void nt_assign (token tok)
         printf("syn error in nt_assign\n");
         errorHandler(errSyn);
     }
+    return -1;
 }
 
 void nt_term (token tok)

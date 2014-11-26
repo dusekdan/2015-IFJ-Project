@@ -27,7 +27,7 @@ static const int t_write     = 19;
 static const int t_var_id    = 20;
 static const int t_expr      = 21;
 static const int t_fun_id    = 22;
-static const int t_term      = 23;
+//static const int t_term      = 23;
 //static const int t_param     = 24;
 //static const int t_read_id   = 25;  //////////////////////////////read id nakoniec nebude treba
 static const int t_integer   = 26;
@@ -99,7 +99,8 @@ void nt_main (token tok);
 void nt_stmt_list (token tok);
 void nt_stmt_more (token tok);
 void nt_stmt (token tok);
-void nt_assign (token tok);
+int nt_assign (token tok);
+void nt_term (token tok);
 void nt_term_list (token tok);
 void nt_term_more (token tok);
 void nt_type (token tok, char * key);
