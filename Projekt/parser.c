@@ -2,18 +2,12 @@
 ////////////////////rozrobené
 #include "parser.h"
 #include "errorHandler.c"
-//#include "scanner.c"
-//F/ILE* fd;
-//tNodePtr globalTS;
+
 tNodePtr localTS;//ukazatel na localnu tabulku
-//tNodePtr adresa = 0;
 bool searchGlobalOnly = true;//ci ukladam do globalnej tabulky
-//char *latestfunction=NULL;
 int fwdDeclarations=0;//pocet fwd
 int pocetArg = 0;
 bool debug=false;
-//char * tempremem=NULL;
-//bool nextmustbebody;
 
 
 /* Funkcia pre prichystanie key na prácu so symbolom */
@@ -410,7 +404,10 @@ void nt_fun_body (token tok, bool nextMustBeBody, char *key) //fwd1 body2
         }
     }
     else
+    {
         printf("synerror in nt_fun_def_list\n");
+        errorHandler(errSyn);
+    }
 }
 
 void nt_body (token tok)
@@ -435,7 +432,11 @@ void nt_main (token tok)
         match(tok,t_period);
         match(tok,t_dollar);
     }
-    else printf("syn error in nt_main\n");
+    else
+    {
+        printf("syn error in nt_main\n");
+        errorHandler(errSyn);
+    }
 }
 
 void nt_stmt_list (token tok)
@@ -458,7 +459,10 @@ void nt_stmt_list (token tok)
 
     }
     else
+    {
         printf("syn error in nt_stmt_list\n");
+        errorHandler(errSyn);
+    }
 }
 
 void nt_stmt_more (token tok)
@@ -475,6 +479,11 @@ void nt_stmt_more (token tok)
         else
             return;
     }
+    else
+    {
+        printf("nt_stmt_more\n");
+        errorHandler(errSyn);
+    }
 }
 
 void nt_stmt (token tok)
@@ -482,53 +491,35 @@ void nt_stmt (token tok)
     if (tok->type == t_begin  || tok->type == t_var_id || tok->type == t_if    ||
         tok->type == t_while  || tok->type == t_readln || tok->type == t_write)
     {
-        tNodePtr hledam;char * key = malloc(sizeof(char)*(strlen(tok->val_str)+1));
+        tNodePtr hledam  = NULL;
+        tNodePtr *currTS = NULL;
+        char * key       = NULL;
         switch (tok->type)
         {
             ////////////////////////////////////////////////////////////////////////////////RULE17
             case 8:         nt_body (tok);
                             break;
             ////////////////////////////////////////////////////////////////////////////////RULE18
-            case 20:        //////////////////////////////////////Spracovanie premennej
-                            
-                            memset(key, 0, strlen(key));
-                            strcat (key, "V");
-                            strcat (key, tok->val_str);
-                            //printf("key je %s\n", key);
-                            //printf("searchGlobalOnly je %d\n",searchGlobalOnly);
-
-                            if (searchGlobalOnly==true)
-                            {
-                                //printf("hladam v global\n");
+            case 20:        key = createKey ("V", tok->val_str);            
+                            currTS = (searchGlobalOnly == true) ? &rootTS : &localTS;
+                            hledam = searchSymbol (&*currTS, key);
+                            if (hledam == 0 && searchGlobalOnly == false)
                                 hledam=searchSymbol(&rootTS, key);
-                            }
-                            
-                            else
-                            {
-                                //printf("hladam v local\n");
-                                hledam=searchSymbol(&localTS, key);
-                                if (hledam==0)
-                                    hledam=searchSymbol(&rootTS, key);
-                            }
 
                             if (hledam!=0)
                                 if (hledam->data->type==t_var_id || (hledam->data->type >= 1 && hledam->data->type <= 4))
                                 {
-                                    //printf("ano je to varid\n");
                                     match (tok,t_var_id);
                                 }
-                                //else if (hledam->data->type==t_fun_id || (hledam->data->type >= 5 && hledam->data->type <= 8) || (hledam->data->type >= 13 && hledam->data->type <= 16))//toto reaguje len na typove premenne )
-                                //{
-                                 //   match(tok,t_fun_id);
-                                //}
                                 else
                                 {
-                                    printf("nedefnovana premenna\n");
-                                    printf("type bol %d\n",hledam->data->type );
+                                    printf ("nedefnovana premenna\n");
+                                    errorHandler (errSemDef);
                                     return;
                                 }
                             match     (tok,t_assign);
                             nt_assign (tok);
+                            free (key);
                             break;                
             ////////////////////////////////////////////////////////////////////////////////RULE19               
             case 13:        match   (tok,t_if);
@@ -549,31 +540,27 @@ void nt_stmt (token tok)
                             match (tok,t_l_parrent);
                             ////////////////////////////////////////////SPRACOVANIE PREMENNEJ
                             //Kontrola či premenná už je v tabulke
-                            char * key = malloc(sizeof(char)*(strlen(tok->val_str)+1));
-                            memset(key, 0, strlen(key));
-                            strcat (key, "V");
-                            strcat (key, tok->val_str);
-                            if (searchGlobalOnly==false)
-                                {
-                                    hledam=searchSymbol(&localTS, key);
-                                    if (hledam==0)
-                                        hledam=searchSymbol(&rootTS, key);
-                                }
-                            else
-                                hledam=searchSymbol(&rootTS, key);
+                            key = createKey ("V", tok->val_str);
+
+                            currTS = (searchGlobalOnly == true) ? &rootTS : &localTS;
+                            hledam = searchSymbol (&*currTS, key);
+                            if (hledam == 0 && searchGlobalOnly == false)
+                                hledam = searchSymbol(&rootTS, key);
 
                             if (hledam!=0)
                                 
                                 if (hledam->data->type==t_var_id || (hledam->data->type >= 1 && hledam->data->type <= 4))//toto reaguje len na typove premenne 
-                                {//printf("%d\n", hledam->data->type );
+                                {
                                     match (tok,t_var_id);
                                 }
                                 else
                                 {
-                                    printf("nedefnovana premenna pre radln\n");
+                                    printf ("nedefnovana premenna pre readln\n");
+                                    errorHandler (errSemDef);
                                     return;
-                                }                     
+                                }                    
                             match (tok,t_r_parrent);
+                            free (key);
                             break;
             ////////////////////////////////////////////////////////////////////////////////RULE22
             case 19:        match        (tok,t_write);
@@ -584,7 +571,10 @@ void nt_stmt (token tok)
         }
     }    
     else
+    {
         printf("syntax error in nt_stmt\n");
+        errorHandler(errSyn);
+    }
 }
 
 void nt_assign (token tok)
@@ -599,23 +589,24 @@ void nt_assign (token tok)
         ////////////////////////////////////////////////////////////////////////RULE24
         else
         {
-            char * key = malloc(sizeof(char)*(strlen(tok->val_str)+1));
-            memset(key, 0, strlen(key));
-            strcat (key, "F");
-            strcat (key, tok->val_str);
+            char * key = createKey ("F",tok->val_str);
             if (searchSymbol(&rootTS, key)==0)
             {
                 printf("Hladal som key %s\n",key );
-                printf("error funkcia nieje definovana\n");
+                errorHandler(errSemDef);
             }
-
+            free(key);
             match(tok,t_fun_id);
             match(tok,t_l_parrent);
             nt_term_list(tok);
             match(tok,t_r_parrent);
         }
     }
-    else printf("syn error in nt_assign\n");
+    else
+    {
+        printf("syn error in nt_assign\n");
+        errorHandler(errSyn);
+    }
 }
 
 void nt_term_list (token tok)
@@ -633,7 +624,10 @@ void nt_term_list (token tok)
             return;
     }
     else
+    {
         printf("syn error in nt_term_list\n");
+        errorHandler(errSyn);
+    }
 }
 
 void nt_term_more (token tok)
@@ -651,7 +645,10 @@ void nt_term_more (token tok)
             return;
     }
     else
+    {
         printf("syn error in nt_term_more\n");
+        errorHandler(errSyn);
+    }
 }
 
 void nt_param (token tok, bool testOnly)
@@ -698,12 +695,14 @@ void nt_param (token tok, bool testOnly)
         free(key);
     }
     else
+    {
         printf("synerror in nt_param\n");
+        errorHandler(errSyn);
+    }
 }
 
 void nt_param_list (token tok, bool testOnly)
 {
-    //printf("nt_param_list dostal %d\n",tok->type );
     if (tok->type == t_r_parrent || tok->type == t_var_id)
     {
         ////////////////////////////////////////////////////////////////////////RULE29
@@ -719,7 +718,10 @@ void nt_param_list (token tok, bool testOnly)
         }
     }
     else
+    {
         printf("synerror in nt_param_list\n");
+        errorHandler(errSyn);
+    }
 }
 
 void nt_param_more (token tok, bool testOnly)
@@ -740,175 +742,71 @@ void nt_param_more (token tok, bool testOnly)
 
     }
     else
+    {
         printf("synerror in nt_param_more\n");
+        errorHandler(errSyn);
+    }
 }
 
 void nt_type (token tok, char * key)
 {
-    //printf("type je %d a valstr je %s\n",tok->type,tok->val_str  );
     if (tok->type == t_integer || tok->type == t_real ||
         tok->type == t_string  || tok->type == t_boolean)
     {
-        /*char * whatamilookingfor;
-        if (remember != NULL && shouldirecall==true) ///test ci uz som von z parametrov
-            {
-                whatamilookingfor=malloc(sizeof(char)*(strlen(remember)));
-                whatamilookingfor=remember;
-                remember=NULL;
-                //printf("\n\nI remember %s\n",whatamilookingfor);
-            }
-        else
-            {
-                whatamilookingfor=malloc(sizeof(char)*(strlen(tok->val_str)));
-                whatamilookingfor=tok->val_str;
-            }
-                //printf("WHATAMILOOKINGFOR: %s\n",whatamilookingfor );
-                /*char * key = malloc(sizeof(char)*(strlen(whatamilookingfor))+1);
-                memset(key, 0, strlen(key));
-                //printf("SEARCHTYPE JE %d\n",searchType );
-                switch (searchType)
-                {
-                    case 1: strcat (key, "V");
-                            break;
-                    case 2: strcat (key, "F");
-                            searchGlobalOnly=true;
-                            break;
-                    case 3: strcat (key, "P");
-                            searchGlobalOnly=false;
-                            break;
-                    //case 4: searchGlobalOnly=true;
-                            break;
-                    default:printf("kokot\n");
-                            exit(1);
-                }*/
-                //printf("key ke %s\n",key );
-               // strcat (key, whatamilookingfor);
-                //printf("key ke %s\n",key );
-                //free (whatamilookingfor);
-            //printf("som vonku %s\n",key);
-        /////////////////////////////////////////////////////Rozlisenie ci idem hladat lokalnu ci globalnu
-        //printf(" hladat bude key: %s a searchGlobalOnly je %d\n",key,searchGlobalOnly);
-        tNodePtr hledam;//=malloc(sizeof(struct tUzel));
-        //printf("searchGlobalOnly is %d\n",searchGlobalOnly );
+        tNodePtr hledam;
         if (searchGlobalOnly==true)
-        {   //printf("som dnu global a key je %s\n",key);
+        {   
             hledam=searchSymbol(&rootTS,  key);
-            //printf("hladam v global\n");
         }
         else
-        { //printf("som v lokal\n");
-
+        {
             hledam=searchSymbol(&localTS, key);
         }
-        if (hledam==0){printf("nenasiel som\n");exit(1);}
-        //printf("NASIEL SOM %s a jeho type je %d\n",hledam->key,hledam->data->type );
-        ///////////////////////////1234 su premenne typu i r s b
-        
-        switch (tok->type)
-        {
-            /////////////////////////////////////////////////////////////RULE33
-            case 26:    match(tok,t_integer);
 
-                        /*if (nextmustbebody==false)
-                        { */  
+        if (hledam==0)
+            errorHandler(errSemDef);
+        else
+            switch (tok->type)
+            {
+                //////////////////////////////////////////////////////////RULE33
+                case 26:    match(tok,t_integer);
                             if (hledam->data->type==t_var_id)
-                                {
-                                    hledam->data->type=1;
-                                }
+                                hledam->data->type=1;
                             else
                                 if (hledam->data->type==t_fun_id)
-                                {   
                                     hledam->data->type=5;
-                                    //shouldirecall=false;
-                                    //remember=NULL;
-                                }
-                        //}
-                        /*else //len test
-                        {
-                                if (hledam->data->type!=1 && hledam->data->type!=9)
-                                {
-
-                                    printf("error nesedi integer dostal som %d\n",hledam->data->type);
-                                }
-                        }*/
-                        break;
-            /////////////////////////////////////////////////////////////RULE34
-            case 27:    match(tok,t_real);
-                        //if (nextmustbebody==false)
-                        //{
-                        if (hledam->data->type==t_var_id)
-                            hledam->data->type=2;
-                        else
-                            if (hledam->data->type==t_fun_id)
-                                {
+                            break;
+                //////////////////////////////////////////////////////////RULE34
+                case 27:    match(tok,t_real);
+                            if (hledam->data->type==t_var_id)
+                                hledam->data->type=2;
+                            else
+                                if (hledam->data->type==t_fun_id)
                                     hledam->data->type=6;
-                                   // shouldirecall=false;
-                                   // remember=NULL;
-                                }
-                        //}
-                        /*else //len test
-                        {
-                                if (hledam->data->type!=2)
-                                {
-                                    printf("error nesedi real dostal som %d\n",hledam->data->type);
-                                }
-                        }*/
-                        break;
-            /////////////////////////////////////////////////////////////RULE35
-            case 28:    match(tok,t_string);
-                        //if (nextmustbebody==false)
-                        //{
-                        if (hledam->data->type==t_var_id)
-                            hledam->data->type=3;
-                        else
-                            if (hledam->data->type==t_fun_id)
-                                {
+                            break;
+                //////////////////////////////////////////////////////////RULE35
+                case 28:    match(tok,t_string);
+                            if (hledam->data->type==t_var_id)
+                                hledam->data->type=3;
+                            else
+                                if (hledam->data->type==t_fun_id)
                                     hledam->data->type=7;
-                                    //shouldirecall=false;
-                                    //remember=NULL;
-                                }
-                        //}
-                        /*else //len test
-                        {
-                                if (hledam->data->type!=3)
-                                {
-                                    printf("error nesedi string dostal som %d\n",hledam->data->type);
-                                }
-                        }*/
-                        break;
-            /////////////////////////////////////////////////////////////RULE36
-            case 29:    match(tok,t_boolean);
-                        //if (nextmustbebody==false)
-                        //{
-                        if (hledam->data->type==t_var_id)
-                            hledam->data->type=4;
-                        else
-                            if (hledam->data->type==t_fun_id)
-                                {
+                            break;
+                //////////////////////////////////////////////////////////RULE36
+                case 29:    match(tok,t_boolean);
+                            if (hledam->data->type==t_var_id)
+                                hledam->data->type=4;
+                            else
+                                if (hledam->data->type==t_fun_id)
                                     hledam->data->type=8;
-                                    //shouldirecall=false;
-                                    //remember=NULL;
-                                }
-                        //}
-                        /*else //len test
-                        {
-                                if (hledam->data->type!=4)
-                                {
-                                    printf("error nesedi bool dostal som %d\n",hledam->data->type);
-                                }
-                        }*/
-                        break;
-        }
-        /*if (debug==true)
-            if (nextmustbebody==false)
-                printf("\n--objektu %s bol priradeny typ %d \n",hledam->data->name, hledam->data->type );
-            else 
-                printf("\n-----------typy sedeli\n");*/
-        //printf("typy fajn\n");
-    //free(key);
+                            break;
+            }
     }   
     else
+    {
         printf("syntax error in nt_type\n");
+        errorHandler(errSyn);
+    }
 
 }
 
@@ -920,7 +818,7 @@ void startTable () ///////////////////////////////////////////////Funkcia na roz
     printf("╔═══════════════════╗\n║rootTS:     %d║\n║localTS:    %d║\n╚═══════════════════╝\n",&rootTS,&localTS);
 
     if (buildemin()!=0) //////////////////////////////////////////vlozenie vstavanych funkcii
-        printf("BUILTIN FUNCTIONS FUCKED UP\n");
+        errorHandler(errInt)
 
 }
 
@@ -938,9 +836,10 @@ int main(int argc, char const *argv[])
     }
     else
     {
-        printf("tokenkokot\n");
+        errorHandler(errInt);
         return 1;
     }
     disposeTable(&rootTS);
+    if (localTS!=0) disposeTable(&localTS);
     return 0;
 }
