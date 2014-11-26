@@ -2,6 +2,9 @@
 #include "string.h"
 #include "ial.c"
 
+
+
+
 static const int t_var       =  1;
 static const int t_colon     =  2;
 static const int t_semicolon =  3;
@@ -48,14 +51,38 @@ static const int t_expr_val  = 41;// tento terminal ak prislo nieco konecne ako 
                                   // ale moze sa tam vyskytnut aj premenna cize, var_id a v tom pripade je v *val_str bude obsahovat nazov premennej a po vyhladani
                                   // v tabulke symbolov zistis typ, (hledam->data->type), tam su typy int 1 real 2 string 3 bool 4, iny typ nieje platna premenna
 
+enum tableIDs
+{
+    placeholder,
+    //var = premenna 1 - 4
+    sym_var_int,
+    sym_var_rea,
+    sym_var_str,
+    sym_var_boo,
+    //fun = funkce 5 - 8
+    sym_fun_int,
+    sym_fun_rea,
+    sym_fun_str,
+    sym_fun_boo,
+    //fwd = forward deklarace funkce 9 - 12
+    sym_fwd_int,
+    sym_fwd_rea,
+    sym_fwd_str,
+    sym_fwd_boo,
+    //fok = funkce ok 13 - 16
+    sym_fok_int,
+    sym_fok_rea,
+    sym_fok_str,
+    sym_fok_boo
 
+};
 
 typedef struct token
 {
     int type;      //Typ podla zoznamu terminalov
     char *val_str; //Názov v prípade že ide o id, tak sem pojde jeho nazov, ak ide o string sem ide obsah stringu
     int   val_int; //Hodnota int ak ide o integer alebo 0/1 ak ide o bool
-    double val_dou; //Hodnota na float (real)
+    double val_flo; //Hodnota na float (real)
     //////////String netreba nato pozijeme val_str
     //////////Bool netreba naten pouzijeme val_int
 }*token;
@@ -66,7 +93,7 @@ void nt_var_def_block (token tok);
 void nt_var_def (token tok);
 void nt_var_def_list (token tok);
 void nt_fun_def_list (token tok);
-void nt_fun_body (token tok);
+void nt_fun_body (token tok, bool nextMustBeBody, char *key);
 void nt_body (token tok);
 void nt_main (token tok);
 void nt_stmt_list (token tok);
@@ -75,10 +102,10 @@ void nt_stmt (token tok);
 void nt_assign (token tok);
 void nt_term_list (token tok);
 void nt_term_more (token tok);
-void nt_type (token tok);
-void nt_param_list (token tok);
-void nt_param_more (token tok);
-void nt_param (token tok);
+void nt_type (token tok, char * key);
+void nt_param_list (token tok, bool testOnly);
+void nt_param_more (token tok, bool testOnly);
+void nt_param (token tok, bool testOnly);
 
 int buildemin ();
 

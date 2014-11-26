@@ -14,21 +14,21 @@
     15
     8
         20 decremented_n 12 21 3
-        20 temp_result 12 22 factorial 4 23 5 3
+        20 temp_result 12 22 factorial 4 20 decremented_n 5 3
         20 factorial 12 21
     9
 9 3
 
 8
-    19 4 23 5 3
+    19 4 41 Zadejte_cislo_pro_vypocet_faktorialu:_ 5 3
     18 4 20 a 5 3
     13 21 14
     8
-        19 4 23 5
+        19 4 41 Faktorial_nelze_spocitat\n 5
     9
     15
     8
-        20 vysl 12 22 factorial 4 23 5 3
-        19 4 23 11 23 11 23 5
+        20 vysl 12 22 factorial 4 20 a 5 3
+        19 4 41 Vysledek_je:_ 11 20 vysl 11 41 \n 5
     9
 9 10

@@ -4,17 +4,17 @@
     20 n 2 26 3
 8
     20 str1 12 21 3
-    20 str2 12 22 copy 4 23 11 23 11 23 5 3
-    19 4 23 11 23 11 23 11 23 5 3
-    20 n 12 22 find 4 23 11 23 5 3
-    19 4 23 11 23 11 23 5 3
-    19 4 23 11 23 5 3
+    20 str2 12 22 copy 4 20 str1 11 41 9 11 41 11 5 3
+    19 4 20 str1 11 41 \n 11 20 str2 11 41 \n 5 3
+    20 n 12 22 find 4 20 str2 11 41 text 5 3
+    19 4 41 Pozice_retezce_"text"_v_str2:_ 11 20 n 11 41 \n 5 3
+    19 4 41 Zadejte_posloupnost_vsech_malych_pismen_a-h,_ 11 41 aby_se_pismena_v_posloupnosti_neopakovala: 5 3
     18 4 20 str1 5 3
-    20 str2 12 22 sort 4 23 5 3
+    20 str2 12 22 sort 4 41 str1 5 3
     16 21 17
     8
-        19 4 23 5 3
+        19 4 41 Spatne_zadana_posloupnost,_zkuste_znovu:\n 5 3
         18 4 20 str1 5 3
-        20 str2 12 22 sort 4 23 5
+        20 str2 12 22 sort 4 20 str1 5
     9
 9 10
