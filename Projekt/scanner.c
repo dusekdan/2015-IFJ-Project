@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
-#include <regex.h>
 #define APOSTROF_ASCII 39
 
 /************************ VYTRŽENO Z PARSER.H **********************-*/
@@ -322,7 +321,7 @@ void getNextToken(FILE* fd, token TToken)
 
  
 			}
-			else // tady imho terminuju smyčku ručně
+			else 
 			{
 				if(entity)
 				{
@@ -755,7 +754,7 @@ void getNextToken(FILE* fd, token TToken)
 							strBuffer[fcv] = c;
 							break;
 						}
-						else 	// nutno odeslat token
+						else 	
 						{
 							strBuffer[fcv] = '\0';
 							tokType = t_expr_val;
