@@ -8,6 +8,7 @@ bool searchGlobalOnly = true;//ci ukladam do globalnej tabulky
 int fwdDeclarations=0;//pocet fwd
 int pocetArg = 0;
 bool debug=false;
+char * textPreTerminalis = NULL;
 
 
 /* Funkcia pre prichystanie key na prácu so symbolom */
@@ -98,6 +99,11 @@ void gib_tok (token tok)
         scanf("%ms",&m);
         tok->val_str=m;
     }
+    if (i ==t_expr_val)
+    {
+        scanf("%ms",&m);
+        textPreTerminalis=m;
+    }  
     tok->type=i;
 }
 
@@ -129,7 +135,7 @@ void terminalis (int terminal, token tok)
         case 20: printf("%s ",tok->val_str);break;
         case 21: printf("expr ");break;
         case 22: printf("%s ",tok->val_str);break;
-        case 23: printf("term ");break;
+        //case 23: printf("term ");break;
         //case 24: printf("param ");break;
         //case 25: printf("read_id ");break;
         case 26: printf("integer ");break;
@@ -137,6 +143,7 @@ void terminalis (int terminal, token tok)
         case 28: printf("string ");break;
         case 29: printf("boolean ");break;
         case 30: printf("$\n");break;
+        case 41: printf("'%s' ", textPreTerminalis );break;
         default: printf("error input=%d\n", terminal);
     }
 }
@@ -609,14 +616,35 @@ void nt_assign (token tok)
     }
 }
 
+void nt_term (token tok)
+{
+    if (tok->type == t_var_id || tok->type == t_expr_val)
+    {
+        if (tok->type == t_var_id)
+        {
+            match (tok, t_var_id);
+        }
+        else
+        {
+            match (tok, t_expr_val);
+        }
+    }
+    else
+    {
+        printf("syn error in nt_term\n");
+        errorHandler(errSyn);
+    }
+
+}
+
 void nt_term_list (token tok)
 {
-    if (tok->type == t_term || tok->type == t_r_parrent)
+    if (tok->type == t_var_id || tok->type == t_r_parrent || tok->type == t_expr_val)
     {
         /////////////////////////////////////////////////////////////////////RULE26
-        if (tok->type == t_term)
+        if (tok->type == t_var_id || tok->type == t_expr_val)
         {
-            match(tok,t_term);
+            nt_term (tok);
             nt_term_more(tok);
         }
         /////////////////////////////////////////////////////////////////////RULE25
@@ -818,7 +846,7 @@ void startTable () ///////////////////////////////////////////////Funkcia na roz
     printf("╔═══════════════════╗\n║rootTS:     %d║\n║localTS:    %d║\n╚═══════════════════╝\n",&rootTS,&localTS);
 
     if (buildemin()!=0) //////////////////////////////////////////vlozenie vstavanych funkcii
-        errorHandler(errInt)
+        errorHandler(errInt);
 
 }
 
