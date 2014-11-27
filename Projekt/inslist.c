@@ -55,7 +55,7 @@ void InsertLast(tInsList *L, tInstruction I)
 	}
 }
 
-void InsertFirst(tInsList *L, tInstruction I)
+void InsertFirst(tInsList *L, tInstruction I) //TOTO VOBEC NEFUNGUJE
 //vlozi polozku na zaciatok zoznamu
 {
 	tListItem *new;
@@ -66,7 +66,7 @@ void InsertFirst(tInsList *L, tInstruction I)
 
 		if(L->first == NULL)
 		{
-			L->last = new;
+			L->first = new;
 		
 		} else 
 		{
@@ -109,7 +109,7 @@ tInstruction *Copy(tInsList *L)
 	} else return &(L->active->instruction);  	
 }
 
-int main()
+/*int main()
 {
 	return 0;
-}
+}*/
