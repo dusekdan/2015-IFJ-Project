@@ -31,22 +31,22 @@ typedef enum {
 
 typedef enum {
 
-	PLUS,
-	MINUS,
-	MUL,
-	DIV,
-	LEFT,
-	RIGHT,
-	LESS,
-	MORE,
-	LESSEQUAL,
-	MOREEQUAL,
-	EQUAL,
-	NONEQUAL,
-	ID,
-	DOLAR,
-	NETERM,
-	SHIFT
+	PLUS,		//0
+	MINUS,		//1
+	MUL,		//2
+	DIV,		//3
+	LEFT,		//4
+	RIGHT,		//5
+	LESS,		//6
+	MORE,		//7
+	LESSEQUAL,	//8
+	MOREEQUAL,	//9
+	EQUAL,		//10
+	NONEQUAL,	//11
+	ID,			//12
+	DOLAR,		//13
+	NETERM,		//14
+	SHIFT		//15
 
 } tOperators;
 
@@ -95,4 +95,8 @@ bool stackPush(tStack *stack, tOpData element);
 
 int precedenceParser();
 int zpracuj(token tok, tOpData *column);
-int reduction(tStack *stack1, tStack *stack2);
+void reduction(tStack *stack1, tStack *stack2);
+
+void infix2post(tStack *stack1, tStack *stack2);
+
+int priority(int x);
