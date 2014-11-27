@@ -100,10 +100,9 @@ char* keywords[] = {
 
 //void getNextToken();
 int getNextChar(FILE* fd);
-void getNextToken(FILE* fd, token TToken);
+int getNextToken(FILE* fd, token TToken);
 void makeStringLowerCase(char *string);
 void resetString(char *string);
-
 
 
 void makeStringLowerCase(char *string)
@@ -142,7 +141,7 @@ int getNextChar(FILE* fd)
 }
 
 
-void getNextToken(FILE* fd, token TToken)
+int getNextToken(FILE* fd, token TToken)
 {
 
 	int c, cx; 
@@ -172,6 +171,9 @@ void getNextToken(FILE* fd, token TToken)
 			exit(666);
 		}
 
+
+	bool forceTokenSend = false;
+
 	bool inComment = false;
 	bool terminateLoop = false;
 	bool fseeker = true;
@@ -195,8 +197,10 @@ void getNextToken(FILE* fd, token TToken)
 	//resetString(strBuffer);
 
 
-	while ( (c = fgetc(fd)) != EOF )
+	while ( 1 )
 	{
+
+		c = fgetc(fd);
 
 		/****************************** DEALING WITH EXTRA SPACES (WHITE SPACES) ******************************/
 		
@@ -230,7 +234,12 @@ void getNextToken(FILE* fd, token TToken)
 
 
 		/************************** TESTING A NEXT CHARACTER ON BEING EOF *************************/
-		// nutno doplnit
+		// nutno doplnit - nasázeno v každé místě, kde je možné hitnout konec 
+		/*if(cx == EOF || isspace(cx)) && actState == sSTART)
+		{
+			forceTokenSend = true;
+			forceTokenSend = (cx == EOF || isspace(cx)) && actState == sSTART)?true:false;
+		}*/
 
 		/************************** AND THE SWITCH FUN BEGINS **************************************/
 
@@ -248,7 +257,7 @@ void getNextToken(FILE* fd, token TToken)
 
 				if( c == APOSTROF_ASCII )
 				{
-					printf("vyhodnoceno kladne!\n");
+					//printf("vyhodnoceno kladne!\n");
 					actState = sSTRING;
 					apostrof= true;
 					strBuffer[fcv] = c;
@@ -273,8 +282,7 @@ void getNextToken(FILE* fd, token TToken)
 			break; // this is sSTART emergency break
 
 			case sSTRING:
-			printf("Jsem ve stringu!\n");
-
+			//printf("Jsem ve stringu!\n");
 
 			if(apostrof && !entity)	// jsme uvnitř stringu
 			{
@@ -297,7 +305,7 @@ void getNextToken(FILE* fd, token TToken)
 					// pokud narazíme na apostrof, dve moznosti - konec retezce, nebo entita/dvojitej
 					if(cx != APOSTROF_ASCII && cx != '#')
 					{
-						printf("terminated_in_dual_condition!\n");
+						//printf("terminated_in_dual_condition!\n");
 						apostrof = false; // string terminated
 						break;
 					}
@@ -314,7 +322,7 @@ void getNextToken(FILE* fd, token TToken)
 					{
 						fcv--;
 						entity = true;
-						printf("entity time!\n");
+						//printf("entity time!\n");
 					}
 
 				}
@@ -356,7 +364,7 @@ void getNextToken(FILE* fd, token TToken)
 									exit(666);
 								}
 						entityID = tentityID;
-						printf("entityID: %d\n", entityID);
+						//printf("entityID: %d\n", entityID);
 						
 								if(entityID < 1 || entityID > 255)
 								{
@@ -374,7 +382,7 @@ void getNextToken(FILE* fd, token TToken)
 
 					if(isdigit(c))
 					{
-						printf("efc: %d dostavam se sem: %c \n", efcv, c);
+						//printf("efc: %d dostavam se sem: %c \n", efcv, c);
 						fcv--;
 						efcv++;
 						entityBuffer[efcv] =  c;
@@ -996,6 +1004,16 @@ void getNextToken(FILE* fd, token TToken)
 			// Conclusion
 			// When called on ínteger/real, in the responding data type is stored the value, in the other one, -1 is issued, in val_str is left the original string value
 			// When called on string/identifier/whatever requires storage in strBuff, it's left in there (though memory is cleaned in the end)
+			
+		if(c == EOF)
+		{
+			return -1;
+		}
+		else
+		{
+			return 1;
+		}
+
 			break;
 		}
 
@@ -1025,13 +1043,16 @@ int main()
 		}
 
 	printf("Starting a scanning process! \n");
-
-
-			int pica;
-			for(pica = 0; pica <= 50; pica++)
+			int pica = 0;
+			while(1)
 			{
-				getNextToken(fd, TToken);
+				int td = getNextToken(fd, TToken);
+				pica++;
 				printf("Token #%d, structure string='%s', integer='%d', real='%f' (type=%d)\n", pica, TToken->val_str, TToken->val_int, TToken->val_flo, TToken->type);
+				if(td == -1)
+				{
+					break;
+				}				
 			}
 
 	printf("Ending a scanning process! \n");
