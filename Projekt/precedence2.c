@@ -7,6 +7,7 @@
 /* Kódování: UTF-8												*/
 /* Autoři:			Filip Kalous (xkalou03)						*/
 /*					Matúš Bútora (xbutor01)						*/
+/*					Romča Jašků	 (xjaska00)						*/
 /****************************************************************/
 
 #include "precedence.h"
@@ -19,16 +20,14 @@ int main() {
 
 }
 
-token gibTok() {
+token gib_tok() {
 
 	token tok = malloc(sizeof(struct token));
 
 	char x = ' ';
 
-	printf("Zadej dalsi znak\n");
 	while(x == ' ') 
 		scanf("%c", &x);
-	printf("%c\n", x);
 
 	switch(x) {
 
@@ -155,6 +154,18 @@ tOpData stackTop(tStack *stack) {
 	return (stack->top->data);
 }
 
+void stackDispose(tStack *stack) {
+
+	tOpData temp;
+
+	while(stackEmpty(stack) != true) {
+
+		stackPop(stack, &temp);
+	}
+
+	stack->top = NULL;
+}
+
 
 tPriority precedenceTable [14][14] = {
 
@@ -238,6 +249,8 @@ int zpracuj(token tok, tOpData *column) {		// zjisteni typu tokenu, nastaveni in
 
 		case 20:
 
+			column->element = ID;
+
 			if((key = malloc(sizeof(char)*(strlen(tok->val_str) + 1))) == NULL) {
 
 				errorHandler(errInt);
@@ -247,16 +260,20 @@ int zpracuj(token tok, tOpData *column) {		// zjisteni typu tokenu, nastaveni in
 			strcat(key, "V");
 			strcat(key, tok->val_str);
 		
-		/*
-			if((searchSymbol(&localTS, key)) == 0)		// dodelat
+		
+			if((searchSymbol(&localTS, key)) != 0)
+				printf("Nasel jsem v lokalni tabulce symbolu.\n");
 
 			else {
 
-				if((searchSymbol(&rootTS, key)) == 0)
-					return -1;
-			}
+				if((searchSymbol(&rootTS, key)) != 0)
+					printf("Nasel jsem v globalni tabulce symbolu.\n");
 
-		*/
+				else {
+					printf("Promenna nebyla nalezena.\n");
+					return -1;
+				}
+			}
 
 		case 41:							// integer, bool
 		case 42:
@@ -264,6 +281,17 @@ int zpracuj(token tok, tOpData *column) {		// zjisteni typu tokenu, nastaveni in
 
 			column->element = ID;
 
+			if((column->symbol = malloc(sizeof(struct tData))) != NULL) {
+
+				if(tok->type == t_expr_int)
+					column->symbol->type = tok->type;
+
+				if(tok->type == t_expr_int)
+					column->symbol->type = tok->type;
+
+				if(tok->type == t_expr_str)
+					column->symbol->type = tok->type;
+			}
 			break;
 
 		default:
@@ -294,12 +322,17 @@ int precedenceParser() {				// hlavni funkce precedencni analyzy
 		stackPush(&stack1, temp);
 	}
 
-	reduction(&stack1, &stack2);		// provedeni redukce
+	int x = reduction(&stack1, &stack2);		// provedeni redukce
+	printf("Navratovy typ vyrazu: %d\n", x);
 
-	return 0;
+	stackDispose(&stack1);
+	stackDispose(&stack2);
+
+
+	return x;
 }
 
-void reduction(tStack *stack1, tStack *stack2) {
+int reduction(tStack *stack1, tStack *stack2) {
 
 	tOpData temp;
 	tOpData change;
@@ -307,6 +340,8 @@ void reduction(tStack *stack1, tStack *stack2) {
 	int checkRule;
 	int control;
 	int endCheck = 0;
+	int returnType = - 1;
+	int concat;
 
 	while(stackEmpty(stack1) != true) {
 
@@ -346,7 +381,8 @@ void reduction(tStack *stack1, tStack *stack2) {
 		if(change.element == NETERM) {		// pravidlo zatim funguje
 
 			stackPop(stack1, &change);
-			help = stackTop(stack1);		
+			help = stackTop(stack1);
+			returnType = change.symbol->type;
 
 			if(help.element == NETERM) {		// 2. E
 
@@ -413,11 +449,37 @@ void reduction(tStack *stack1, tStack *stack2) {
 
 				if(control == 1) {
 
+					if(change.symbol->type == help.symbol->type) {
+
+						if(change.symbol->type == t_expr_str)
+							concat = 1;
+						else 
+							concat = 0;
+
+						returnType = change.symbol->type;
+					}
+					// pretypovani na real z intu - musim dodelat, abych se dostal k hodnotam
+					else if((change.symbol->type == t_expr_int && help.symbol->type == t_expr_dou) || (help.symbol->type == t_expr_int && help.symbol->type == t_expr_int)) {
+
+						if(change.symbol->type == t_expr_int)
+							change.symbol->type = t_expr_dou;
+
+						if(help.symbol->type == t_expr_int)
+							help.symbol->type == t_expr_dou;
+
+						returnType = change.symbol->type;
+					}
+
+					else {
+						printf("Ve vyrazu nejsou stejne typy.\n");
+						errorHandler(errSemTypArg);
+					}
+
 					temp.element = NETERM;		// misto pravidla pushneme jen E
 					stackPush(stack1, temp);
 
 					if(stackEmpty(stack2) != true) {
-					
+						
 						stackPop(stack2, &temp);
 						stackPush(stack1, temp);
 					}
@@ -438,12 +500,14 @@ void reduction(tStack *stack1, tStack *stack2) {
 		}
 	}
 	
-	printf("------VYSTUP------\n");
+	/*printf("------VYSTUP------\n");		//vypis vystupu
 	while(stackEmpty(stack1) != true) {
 
 		stackPop(stack1, &temp);
 		printf("%d\n", temp.element);
-	}
+	}*/
+
+	return returnType;
 }
 
 
@@ -473,7 +537,7 @@ void infix2post(tStack *stack1, tStack *stack2) {
 
 	do {
 		
-		token tok = gibTok();
+		token tok = gib_tok();
 
 		if((zpracuj(tok, &temp)) == 0) {
 

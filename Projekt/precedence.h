@@ -92,10 +92,11 @@ bool stackEmpty(tStack *stack);		// kontrola prazdneho zasobniku
 tOpData stackTop(tStack *stack);
 void stackPop(tStack *stack, tOpData *data);
 bool stackPush(tStack *stack, tOpData element);
+void stackDispose(tStack *stack);
 
 int precedenceParser();
 int zpracuj(token tok, tOpData *column);
-void reduction(tStack *stack1, tStack *stack2);
+int reduction(tStack *stack1, tStack *stack2);
 
 void infix2post(tStack *stack1, tStack *stack2);
 
