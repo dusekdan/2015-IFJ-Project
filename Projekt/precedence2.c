@@ -357,11 +357,8 @@ int reduction(tStack *stack1, tStack *stack2) {
 			stackPush(stack2, temp);
 			temp = stackTop(stack1);
 
-			if(stackTop(stack1).element == DOLAR) {
-
-				returnType = stackTop(stack1).symbol->type;
-				return returnType;
-			}
+			if(stackTop(stack1).element == DOLAR)
+				return stackTop(stack1).symbol->type;
 		}
 
 		else {
@@ -460,7 +457,15 @@ int reduction(tStack *stack1, tStack *stack2) {
 					if(change.symbol->type == help.symbol->type) {
 
 						if(change.symbol->type == t_expr_str)
-							concat = 1;
+
+							if(checkRule == PLUS)
+								concat = 1;
+							else {
+
+								printf("S retezci se da provest jen konkatenace.\n");
+								return -1;
+							}
+						
 						else 
 							concat = 0;
 
