@@ -3,21 +3,32 @@
 #include "parser.h"
 #include "errorHandler.c"
 
+//#include "precedence2.c"
+
 tNodePtr localTS;//ukazatel na localnu tabulku
 bool searchGlobalOnly = true;//ci ukladam do globalnej tabulky
 int fwdDeclarations=0;//pocet fwd
 int pocetArg = 0;
 bool debug=false;
 char * textPreTerminalis = NULL;
+int argsRead = 0;
+token tok;
 
+#include "precedence3.c"
+
+int get_int_len (int value){
+  int l=1;
+  while(value>9){ l++; value/=10; }
+  return l;
+}
 
 /* Funkcia pre prichystanie key na prácu so symbolom */
 
-char *createKey (char prefix[1], char *suffix)
+char *createKey (char *prefix, char *suffix)
 {
     /* Alokovanie pamäti pre výsledný kľúč */
 
-    char *key = malloc(sizeof(char)*(strlen(suffix)+1));
+    char *key = malloc(sizeof(char)*(strlen(suffix)+strlen(prefix)));
 
     /* Pri zlyhaní malloc volám internú chybu (99)         */
     /* Inak spojím prefix a suffix a vrátim výsledný string*/
@@ -31,6 +42,24 @@ char *createKey (char prefix[1], char *suffix)
         strcat (key, suffix);
     }
     return (key);
+}
+
+char *paramKey (/*token tok*/)
+{
+        
+        //tento cely bol mi pridava cislo za P##########################################################################################################
+        int dlzka = get_int_len(argsRead);
+        //printf("dlzka je %d znakov\n",dlzka );exit(1);
+        //char *prefix = malloc(sizeof(char)*strlen(sprintf()));
+        char * cislo = malloc (sizeof(char)*dlzka);
+        if (cislo == NULL) errorHandler(errInt);
+        sprintf (cislo, "%d",argsRead);
+        //char *tempkey = createKey (cislo, tok->val_str);
+        
+        char *key = createKey ("P", cislo);
+        free (cislo);
+        //free (tempkey);
+        return key;
 }
 
 /* Funkcia ktorá vytvorí nový symbol podľa parametrov ak ešte neexistuje */
@@ -99,11 +128,11 @@ void gib_tok (token tok)
         scanf("%ms",&m);
         tok->val_str=m;
     }
-    if (i ==t_expr_val)
+    /*if (i ==t_expr_int || i == t_expr_dou || i == t_expr_str)
     {
         scanf("%ms",&m);
         textPreTerminalis=m;
-    }  
+    } */ 
     tok->type=i;
 }
 
@@ -111,6 +140,7 @@ void gib_tok (token tok)
 
 void terminalis (int terminal, token tok)
 {
+    if (debug==1)return;
     switch (terminal)
     {
         case 1: printf("var\n");break;
@@ -143,7 +173,9 @@ void terminalis (int terminal, token tok)
         case 28: printf("string ");break;
         case 29: printf("boolean ");break;
         case 30: printf("$\n");break;
-        case 41: printf("'%s' ", textPreTerminalis );break;
+        case 41: printf("integer " );break;
+        case 42: printf("string " );break;
+        case 43: printf("double ");break;
         default: printf("error input=%d\n", terminal);
     }
 }
@@ -154,8 +186,12 @@ void match (token tok, int terminal)
 {
     if (terminal!=30)
     {
+        if (tok->type==terminal)
+        {
         gib_tok (tok);
         terminalis (terminal, tok);
+        }
+        else errorHandler(99);
     }
     else printf("Reach the end of file.\n");
 }
@@ -337,8 +373,11 @@ void nt_fun_def_list (token tok)
             match (tok, t_l_parrent);
 
             /* Spracovanie parametrov funkcie */
-
+            //printf("idem na paramtere\n");
             nt_param_list (tok, nextMustBeBody);
+            //vznulujem pocet precitanych
+            argsRead=0;
+
             if (nextMustBeBody==false)
             {
                 searchSymbol (&rootTS, key)->data->argCount=pocetArg;
@@ -368,11 +407,12 @@ void nt_fun_def_list (token tok)
                     default: errorHandler(errSemTypArg);break;
                 }
 
-            printf("key je teraz %s\n", key );
+            //printf("key je teraz %s\n", key );
 
             
             match (tok, t_semicolon);
 
+            searchSymbol(&rootTS,key)->data->localTSadr = localTS;
 
             nt_fun_body (tok, nextMustBeBody, key);
 
@@ -428,7 +468,14 @@ void nt_fun_body (token tok, bool nextMustBeBody, char *key) //fwd1 body2
             searchGlobalOnly = false;
             nt_var_def_block (tok);
             nt_body (tok);
-            disposeTable(&localTS);
+            //printf("local ukazuje na  %d\n",localTS );
+
+            //ulozil som si lokalnu do data funkcie
+            (hledam->data->localTSadr) = localTS;
+            localTS=NULL;
+
+            
+            //disposeTable(&localTS);
             searchGlobalOnly=true;            
         }
     }
@@ -449,7 +496,9 @@ void nt_body (token tok)
         nt_stmt_list(tok);
         match(tok,t_end);
     }
-    else printf("syn error in nt_body\n");
+    else {printf("syn error in nt_body doslo sem %d\n",tok->type);
+    errorHandler(errSyn);
+    }
 }
 
 void nt_main (token tok)
@@ -510,7 +559,7 @@ void nt_stmt_more (token tok)
     }
     else
     {
-        printf("nt_stmt_more\n");
+        printf("nt_stmt_more doslo sem %d\n",tok->type);
         errorHandler(errSyn);
     }
 }
@@ -539,7 +588,7 @@ void nt_stmt (token tok)
                             if (hledam!=0)
                                 if (hledam->data->type==t_var_id || (hledam->data->type >= 1 && hledam->data->type <= 4))
                                 {
-                                    printf("\n\nSnazim sa priradit do premennej typu %d\n\n",hledam->data->type);
+                                    //printf("\n\nSnazim sa priradit do premennej typu %d\n\n",hledam->data->type);
 
 
                                     match (tok,t_var_id);
@@ -554,18 +603,23 @@ void nt_stmt (token tok)
 
                             //SEMANTICKA KONTROLA
                             int semControlVar = nt_assign (tok);
-                            if (semControlVar != hledam->data->type+4 && semControlVar != hledam->data->type+12)
+                            //printf("semkontrol je %d\n",semControlVar );
+                            //printf("skontroloval som\n");
+                            if (semControlVar != hledam->data->type+4 && semControlVar != hledam->data->type+12 && semControlVar != hledam->data->type)
                             {
                                 printf("nesedeli typy\n");
                                 errorHandler (errSemTypArg);
                             }
+                            //else printf("ok\n");
 
 
                             free (key);
                             break;                
             ////////////////////////////////////////////////////////////////////////////////RULE19               
             case 13:        match   (tok,t_if);
-                            match   (tok,t_expr);
+                            if (tok->type < 44 && tok->type > 40)
+                            match   (tok,tok->type);
+                            else errorHandler(errSyn);
                             match   (tok,t_then);
                             nt_body (tok);
                             match   (tok,t_else);
@@ -573,7 +627,9 @@ void nt_stmt (token tok)
                             break;
             ////////////////////////////////////////////////////////////////////////////////RULE20
             case 16:        match   (tok,t_while);
-                            match   (tok,t_expr);
+                            if (tok->type < 44 && tok->type > 40)
+                            match   (tok,tok->type);
+                            else errorHandler(errSyn);
                             match   (tok,t_do);
                             nt_body (tok);
                             break;
@@ -614,7 +670,7 @@ void nt_stmt (token tok)
             ////////////////////////////////////////////////////////////////////////////////RULE22
             case 19:        match        (tok,t_write);
                             match        (tok,t_l_parrent);
-                            nt_term_list (tok);
+                            nt_term_list (tok, "Fwrite");argsRead=0;
                             match        (tok,t_r_parrent);
                             break;
         }
@@ -628,29 +684,48 @@ void nt_stmt (token tok)
 
 int nt_assign (token tok)
 {
-    if (tok->type == t_expr || tok->type == t_fun_id)
+    if (tok->type == t_expr_int || tok->type == t_expr_str || tok->type == t_expr_dou ||  tok->type == t_fun_id)
     {
         ///////////////////////////////////////////////////////////////////////RULE23
-        if (tok->type == t_expr)
+        if (tok->type == t_expr_int || tok->type == t_expr_str || tok->type == t_expr_dou)
         {
-            match(tok,t_expr);
-            return 0;
+            //printf("TYPE JE %d\n",tok->type);
+            printf("--idem priradenie\n");
+            printf("--idem skusit precedenceParser s tokentom %d \n",tok->type);
+            int kokot = precedenceParser();
+            printf("--precedenceParser presiel a vratil: %d\n",kokot );
+            printf("--stav tok je %d\n",tok->type );
+            
+            //int typ=tok->type;
+            //match(tok,tok->type);
+            switch (kokot)
+            {
+                case 41: return sym_var_int;break;
+                case 42: return sym_var_str;break;
+                case 43: return sym_var_rea;break;
+                default: errorHandler(errSemDef);return 0;
+            }
+            
         }
         ////////////////////////////////////////////////////////////////////////RULE24
         else
         {
             char * key = createKey ("F",tok->val_str);
             tNodePtr hledam = searchSymbol(&rootTS, key);
+            //printf("IDEM HLADAT %s\n",key );
             if (hledam==0)
             {
                 printf("Hladal som key %s\n",key );
                 errorHandler(errSemDef);
             }
-            free(key);
+            //printf("\n funkcia %s ma %d argumentu \n",key,hledam->data->argCount );
+            
             match(tok,t_fun_id);
             match(tok,t_l_parrent);
-            nt_term_list(tok);
+            nt_term_list(tok, key);
+            argsRead=0;
             match(tok,t_r_parrent);
+            free(key);
             return hledam->data->type;
         }
     }
@@ -662,17 +737,78 @@ int nt_assign (token tok)
     return -1;
 }
 
-void nt_term (token tok)
+void nt_term (token tok, char *currentFunctionKey)
 {
-    if (tok->type == t_var_id || tok->type == t_expr_val)
+    if (tok->type == t_var_id || tok->type == t_expr_int || tok->type == t_expr_dou || tok->type == t_expr_str)
     {
         if (tok->type == t_var_id)
         {
+            argsRead++;
+            //printf("\n---IDEM KONTROLOVAT %d. PARAMETER vo funkcii %s\n",argsRead, currentFunctionKey);
+
+            char * key = createKey("V",tok->val_str);
+            //printf("premenna ktoru idem hladat je %s\n",key );
+
+
+            //tNodePtr reload = searchSymbol (&rootTS,currentFunctionKey)->data->localTSadr;
+            
+            tNodePtr hledam = NULL;
+            if (searchGlobalOnly==1)
+                hledam=(searchSymbol(&rootTS, key));
+            else
+            {
+                hledam=(searchSymbol(&localTS, key));   
+                if (hledam==0)
+                hledam=(searchSymbol(&rootTS, key));    
+            }
+            int comparison1;
+            if (hledam!=0)
+            {
+                  comparison1 = hledam->data->type;
+            //printf("COMPARISON1 je %d\n",comparison1 );
+            } //printf("nasiel som typ %d\n",hledam->data->type );
+        if (strcmp(currentFunctionKey, "Fwrite")!=0)
+        {
+            //teraz potrebujem najst argument s cicslom argsread
+            
+            //printf("currentFunctionKey je %s\n",currentFunctionKey );
+            hledam=searchSymbol(&rootTS, currentFunctionKey);
+            if (hledam == 0)
+                {errorHandler(errSemTypArg);exit(5);}
+
+            //printf("\nodpamatana ukazuje na %d\n",hledam->data->localTSadr);
+            tNodePtr novy = hledam->data->localTSadr; //novy ukazuje na adresu danej lokalnej
+            //printf("\nnovy ukazuje na %d\n",novy );
+            //printf("Teraz potrebujem najst %d. parameter funkcie %s\n",argsRead,currentFunctionKey );
+            char * searchParam = paramKey();
+
+            //printf("--------------------------------------------------------------------------------------paramkey je %s\n",searchParam );
+            tNodePtr testprvek = searchSymbol(&novy,searchParam);
+            if (testprvek==0)
+                errorHandler(errSemTypArg);
+
+            //printf("idem kotko\n");
+            int comparison2 = testprvek->data->type;
+            //printf("COMPARISON2 je %d\n",comparison2 );
+            
+                if (comparison1!=comparison2)
+                    errorHandler(errSemTypArg);
+        }
+        //else
+            //printf("---Write kontrola preskocena\n");
+            //printf("-----------------------------------mal som dostat %d aa bolo %d\n", comparison1,comparison2);
+
+            //printf("hledam dva ma v sebe adresu name %d\n",hledam2->data->localTSadr );
+
+
             match (tok, t_var_id);
+            //musi sa tu skontrolovat typ vyrazu
+
         }
         else
         {
-            match (tok, t_expr_val);
+
+            match (tok, tok->type);
         }
     }
     else
@@ -683,19 +819,22 @@ void nt_term (token tok)
 
 }
 
-void nt_term_list (token tok)
+void nt_term_list (token tok, char *currentFunctionKey)
 {
-    if (tok->type == t_var_id || tok->type == t_r_parrent || tok->type == t_expr_val)
+    if (tok->type == t_var_id || tok->type == t_r_parrent || tok->type == t_expr_int || tok->type == t_expr_dou || tok->type == t_expr_str)
     {
         /////////////////////////////////////////////////////////////////////RULE26
-        if (tok->type == t_var_id || tok->type == t_expr_val)
+        if (tok->type == t_var_id || tok->type == t_expr_int || tok->type == t_expr_dou || tok->type == t_expr_str)
         {
-            nt_term (tok);
-            nt_term_more(tok);
+            nt_term (tok, currentFunctionKey);
+            nt_term_more(tok, currentFunctionKey);
         }
         /////////////////////////////////////////////////////////////////////RULE25
         else
+        {
+            
             return;
+        }
     }
     else
     {
@@ -704,7 +843,7 @@ void nt_term_list (token tok)
     }
 }
 
-void nt_term_more (token tok)
+void nt_term_more (token tok, char *currentFunctionKey)
 {
     if (tok->type == t_comma || tok->type == t_r_parrent)
     {
@@ -712,7 +851,7 @@ void nt_term_more (token tok)
         if (tok->type == t_comma)
         {
             match(tok,t_comma);
-            nt_term_list(tok);
+            nt_term_list(tok, currentFunctionKey);
         }
         ////////////////////////////////////////////////////////////////////////RULE28
         else
@@ -729,7 +868,17 @@ void nt_param (token tok, bool testOnly)
 {
     if (tok->type == t_var_id)
     {   
-        char *key = createKey ("P", tok->val_str);
+        argsRead++;
+        char *key = paramKey ();
+
+        
+
+
+
+
+
+        //printf("PRAMETER key je %s\n",key );
+        //char *key = createKey ()
 
         ////////////////////////////////////////////SPRACOVANIE Parametru
         if (testOnly==false)//ak sa idu nove ukladat
@@ -901,10 +1050,13 @@ int main(int argc, char const *argv[])
 {
     if (argc!=1 && strcmp(argv[1],"-d")==0)debug=true;
     startTable();
-    token tok=malloc(sizeof(struct token));
+    /*token*/ tok=malloc(sizeof(struct token));
+    //tokglobal=&tok;
     if (tok!=0)
     {
-        gib_tok (tok);
+        gib_tok (tok);//printf("typ je %d\n",tok->type );
+        //int hevno = precedenceParser();
+        //printf("Hevno je %d\n",hevno);
         nt_program (tok);
         free(tok);
     }
