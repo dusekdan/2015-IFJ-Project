@@ -70,6 +70,7 @@ token gib_tok() {
 		case '*':
 			tok->type = t_mul;
 			break;
+
 		case '/':
 			tok->type = t_div;
 			break;
@@ -93,9 +94,11 @@ token gib_tok() {
 		case 'm':
 			tok->type = t_moreeq;
 			break;
+
 		case 'l':
 			tok->type = t_lesseq;
 			break;
+
 		default:
 			printf("kokot\n");
 			exit(1);
@@ -286,7 +289,7 @@ int zpracuj(token tok, tOpData *column) {		// zjisteni typu tokenu, nastaveni in
 				if(tok->type == t_expr_int)
 					column->symbol->type = tok->type;
 
-				if(tok->type == t_expr_int)
+				if(tok->type == t_expr_dou)
 					column->symbol->type = tok->type;
 
 				if(tok->type == t_expr_str)
@@ -353,6 +356,12 @@ int reduction(tStack *stack1, tStack *stack2) {
 			temp.element = NETERM;
 			stackPush(stack2, temp);
 			temp = stackTop(stack1);
+
+			if(stackTop(stack1).element == DOLAR) {
+
+				returnType = stackTop(stack1).symbol->type;
+				return returnType;
+			}
 		}
 
 		else {
@@ -368,7 +377,6 @@ int reduction(tStack *stack1, tStack *stack2) {
 		stackPop(stack2, &temp);
 		stackPush(stack1, temp);
 	}
-
 
 	endCheck--;		// kvuli Dolaru
 
