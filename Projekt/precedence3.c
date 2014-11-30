@@ -460,6 +460,7 @@ int reduction(tStack *stack1, tStack *stack2) {
 						control = 0;
 						boolean = 0;
 						break;
+				}
 
 				if(control == 1) {
 
