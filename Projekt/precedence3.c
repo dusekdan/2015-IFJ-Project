@@ -347,6 +347,7 @@ int reduction(tStack *stack1, tStack *stack2) {
 	int endCheck = 0;
 	int returnType = - 1;
 	int concat;
+	int boolean = 0;
 
 	while(stackEmpty(stack1) != true) {
 
@@ -427,32 +428,38 @@ int reduction(tStack *stack1, tStack *stack2) {
 					case LESS:
 						checkRule = LESS;
 						control = 1;
+						boolean = 1;
 						break;
 					case MORE:
 						checkRule = MORE;
 						control = 1;
+						boolean = 1;
 						break;
 					case MOREEQUAL:
 						checkRule = MOREEQUAL;
 						control = 1;
+						boolean = 1;
 						break;
 					case LESSEQUAL:
 						checkRule = LESSEQUAL;
 						control = 1;
+						boolean = 1;
 						break;
 					case EQUAL:
 						checkRule = EQUAL;
 						control = 1;
+						boolean = 1;
 						break;
 					case NONEQUAL:
 						checkRule = NONEQUAL;
 						control = 1;
+						boolean = 1;
 						break;
 
 					default:
 						control = 0;
+						boolean = 0;
 						break;
-				}
 
 				if(control == 1) {
 
@@ -486,7 +493,7 @@ int reduction(tStack *stack1, tStack *stack2) {
 							change.symbol->type = t_expr_dou;
 
 						if(help.symbol->type == t_expr_int)			// nebo druhy
-							help.symbol->type == t_expr_dou;
+							help.symbol->type = t_expr_dou;
 
 						if(boolean == 1)							// pokud mame logickou operaci, musime vracet boolean hodnotu
 							returnType = t_expr_boo;
