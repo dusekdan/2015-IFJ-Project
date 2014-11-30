@@ -50,6 +50,7 @@ static const int t_nequal    = 40;//<>
 static const int t_expr_int  = 41;
 static const int t_expr_str  = 42;
 static const int t_expr_dou  = 43;                                    // tento terminal ak prislo nieco konecne ako cislo alebo string, vtomto pripade bude v odpovedajucej casti struktury token obsah
+static const int t_expr_boo  = 44; 
                                   // ale moze sa tam vyskytnut aj premenna cize, var_id a v tom pripade je v *val_str bude obsahovat nazov premennej a po vyhladani
                                   // v tabulke symbolov zistis typ, (hledam->data->type), tam su typy int 1 real 2 string 3 bool 4, iny typ nieje platna premenna
 
