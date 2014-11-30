@@ -471,16 +471,27 @@ int reduction(tStack *stack1, tStack *stack2) {
 						else 
 							concat = 0;
 
+
+						if(boolean == 1)
+							returnType = t_expr_boo;
+						else
+							returnType = change.symbol->type;
+
 						returnType = change.symbol->type;
 					}
 					// pretypovani na real z intu - musim dodelat, abych se dostal k hodnotam
 					else if((change.symbol->type == t_expr_int && help.symbol->type == t_expr_dou) || (help.symbol->type == t_expr_int && help.symbol->type == t_expr_int)) {
-
-						if(change.symbol->type == t_expr_int)
+						
+						if(change.symbol->type == t_expr_int)		// bud prvni je int a pretypujeme
 							change.symbol->type = t_expr_dou;
 
-						if(help.symbol->type == t_expr_int)
+						if(help.symbol->type == t_expr_int)			// nebo druhy
 							help.symbol->type == t_expr_dou;
+
+						if(boolean == 1)							// pokud mame logickou operaci, musime vracet boolean hodnotu
+							returnType = t_expr_boo;
+						else
+							returnType = change.symbol->type;
 
 						returnType = change.symbol->type;
 					}
