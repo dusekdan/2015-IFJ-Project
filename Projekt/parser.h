@@ -47,7 +47,10 @@ static const int t_lesseq    = 37;//<=
 static const int t_moreeq    = 38;//>=
 static const int t_equal     = 39;//=
 static const int t_nequal    = 40;//<>
-static const int t_expr_val  = 41;// tento terminal ak prislo nieco konecne ako cislo alebo string, vtomto pripade bude v odpovedajucej casti struktury token obsah
+static const int t_expr_int  = 41;
+static const int t_expr_str  = 42;
+static const int t_expr_dou  = 43;                                    // tento terminal ak prislo nieco konecne ako cislo alebo string, vtomto pripade bude v odpovedajucej casti struktury token obsah
+static const int t_expr_boo  = 44; 
                                   // ale moze sa tam vyskytnut aj premenna cize, var_id a v tom pripade je v *val_str bude obsahovat nazov premennej a po vyhladani
                                   // v tabulke symbolov zistis typ, (hledam->data->type), tam su typy int 1 real 2 string 3 bool 4, iny typ nieje platna premenna
 
@@ -87,7 +90,7 @@ typedef struct token
     //////////Bool netreba naten pouzijeme val_int
 }*token;
 
-
+void gib_tok (token tok);
 void terminalis (int terminal, token tok); //na debug
 void nt_var_def_block (token tok);
 void nt_var_def (token tok);
@@ -100,9 +103,9 @@ void nt_stmt_list (token tok);
 void nt_stmt_more (token tok);
 void nt_stmt (token tok);
 int nt_assign (token tok);
-void nt_term (token tok);
-void nt_term_list (token tok);
-void nt_term_more (token tok);
+void nt_term (token tok, char * currentFunctionKey);
+void nt_term_list (token tok, char * currentFunctionKey);
+void nt_term_more (token tok, char * currentFunctionKey);
 void nt_type (token tok, char * key);
 void nt_param_list (token tok, bool testOnly);
 void nt_param_more (token tok, bool testOnly);

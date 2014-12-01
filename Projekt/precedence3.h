@@ -1,4 +1,4 @@
-/***********************precedence.h*****************************/
+/***********************precedence3.h****************************/
 /* Soubor: precedence.h - Syntaktická analýza výrazů 			*/
 /* Předmět: Formalní jazyky a překladače (IFJ) 					*/
 /* Projekt: Implementace interpretu imperativního jazyka IFJ14  */
@@ -6,19 +6,20 @@
 /* Datum: prosinec 2014											*/
 /* Kódování: UTF-8												*/
 /* Autoři:			Filip Kalous (xkalou03)						*/
-/*					Matúš Bútora (xbutor01)						*/
+/*					Matúš Bútora (xbutor01)                     */
+/*                  Roman Jaška  (xjaska00)						*/
 /****************************************************************/
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include "parser.h"
-#include "ial.c"
-#include "errorHandler.c"
+//#include "parser.h"
+//#include "ial.c"
+//#include "errorHandler.c"
 
 
 #define STACKSIZE 50;
-
 
 typedef enum {
 

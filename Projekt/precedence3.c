@@ -1,4 +1,4 @@
-/***********************precedence.c*****************************/
+/***********************precedence3.c****************************/
 /* Soubor: precedence.c - Syntaktická analýza výrazů 			*/
 /* Předmět: Formalní jazyky a překladače (IFJ) 					*/
 /* Projekt: Implementace interpretu imperativního jazyka IFJ14  */
@@ -7,21 +7,22 @@
 /* Kódování: UTF-8												*/
 /* Autoři:			Filip Kalous (xkalou03)						*/
 /*					Matúš Bútora (xbutor01)						*/
-/*					Romča Jašků	 (xjaska00)						*/
+/*					Roman Jaška	 (xjaska00)						*/
 /****************************************************************/
 
-#include "precedence.h"
-
+#include "precedence3.h"
+/*
 int main() {
 
 	precedenceParser();
 
 	return 0;
 
-}
+}*/
 
-token gib_tok() {
-
+token gibtok() {
+	gib_tok(tok);
+/*
 	token tok = malloc(sizeof(struct token));
 
 	char x = ' ';
@@ -103,7 +104,7 @@ token gib_tok() {
 			printf("kokot\n");
 			exit(1);
 	}	
-
+*/
 	return tok;
 }
 
@@ -192,6 +193,7 @@ int zpracuj(token tok, tOpData *column) {		// zjisteni typu tokenu, nastaveni in
 
 	//printf("zpracovavam\n");
 	char *key;
+	tNodePtr node;
 
 	switch(tok->type) {
 
@@ -246,6 +248,7 @@ int zpracuj(token tok, tOpData *column) {		// zjisteni typu tokenu, nastaveni in
 		case 3:								// strednik
 		case 14:							// then
 		case 17:							// do
+		case 9:								// end
 
 			column->element = DOLAR;
 			break;
@@ -253,6 +256,12 @@ int zpracuj(token tok, tOpData *column) {		// zjisteni typu tokenu, nastaveni in
 		case 20:
 
 			column->element = ID;
+
+			if((node = malloc(sizeof(struct tUzel))) == NULL) {
+
+				errorHandler(errInt);
+				return -1;
+			}
 
 			if((key = malloc(sizeof(char)*(strlen(tok->val_str) + 1))) == NULL) {
 
@@ -263,13 +272,12 @@ int zpracuj(token tok, tOpData *column) {		// zjisteni typu tokenu, nastaveni in
 			strcat(key, "V");
 			strcat(key, tok->val_str);
 		
-		
-			if((searchSymbol(&localTS, key)) != 0)
+			if((node = searchSymbol(&localTS, key)) != 0)
 				printf("Nasel jsem v lokalni tabulce symbolu.\n");
 
 			else {
 
-				if((searchSymbol(&rootTS, key)) != 0)
+				if((node = searchSymbol(&rootTS, key)) != 0)
 					printf("Nasel jsem v globalni tabulce symbolu.\n");
 
 				else {
@@ -278,22 +286,51 @@ int zpracuj(token tok, tOpData *column) {		// zjisteni typu tokenu, nastaveni in
 				}
 			}
 
+			if((column->symbol = malloc(sizeof(struct tData))) != NULL) {
+
+				if(node->data->type == sym_var_rea)
+					column->symbol->type = t_expr_dou;
+			
+				if(node->data->type == sym_var_int)
+					column->symbol->type = t_expr_int;
+			
+				if(node->data->type == sym_var_str)
+					column->symbol->type = t_expr_str;
+			
+				if(node->data->type == sym_var_boo)
+					column->symbol->type = t_expr_boo;
+			}
+
+			break;
+
 		case 41:							// integer, bool
 		case 42:
 		case 43:
+		case 44:
 
 			column->element = ID;
 
 			if((column->symbol = malloc(sizeof(struct tData))) != NULL) {
 
-				if(tok->type == t_expr_int)
+				if(tok->type == t_expr_int) {
 					column->symbol->type = tok->type;
+					column->symbol->content.integer = tok->val_int;
+				}
 
-				if(tok->type == t_expr_dou)
+				if(tok->type == t_expr_dou) {
 					column->symbol->type = tok->type;
+					column->symbol->content.real = tok->val_flo;
+				}
 
-				if(tok->type == t_expr_str)
+				if(tok->type == t_expr_str) {
 					column->symbol->type = tok->type;
+					column->symbol->content.string = tok->val_str;
+				}
+
+				if(tok->type == t_expr_boo) {
+					column->symbol->type = tok->type;
+					column->symbol->content.boolean = tok->val_int;
+				}
 			}
 			break;
 
@@ -345,6 +382,7 @@ int reduction(tStack *stack1, tStack *stack2) {
 	int endCheck = 0;
 	int returnType = - 1;
 	int concat;
+	int boolean = 0;
 
 	while(stackEmpty(stack1) != true) {
 
@@ -425,30 +463,37 @@ int reduction(tStack *stack1, tStack *stack2) {
 					case LESS:
 						checkRule = LESS;
 						control = 1;
+						boolean = 1;
 						break;
 					case MORE:
 						checkRule = MORE;
 						control = 1;
+						boolean = 1;
 						break;
 					case MOREEQUAL:
 						checkRule = MOREEQUAL;
 						control = 1;
+						boolean = 1;
 						break;
 					case LESSEQUAL:
 						checkRule = LESSEQUAL;
 						control = 1;
+						boolean = 1;
 						break;
 					case EQUAL:
 						checkRule = EQUAL;
 						control = 1;
+						boolean = 1;
 						break;
 					case NONEQUAL:
 						checkRule = NONEQUAL;
 						control = 1;
+						boolean = 1;
 						break;
 
 					default:
 						control = 0;
+						boolean = 0;
 						break;
 				}
 
@@ -456,8 +501,8 @@ int reduction(tStack *stack1, tStack *stack2) {
 
 					if(change.symbol->type == help.symbol->type) {
 
-						if(change.symbol->type == t_expr_str)
-
+						if(change.symbol->type == t_expr_str) {
+							
 							if(checkRule == PLUS)
 								concat = 1;
 							else {
@@ -465,22 +510,33 @@ int reduction(tStack *stack1, tStack *stack2) {
 								printf("S retezci se da provest jen konkatenace.\n");
 								return -1;
 							}
-						
+						}
 						else 
 							concat = 0;
 
-						returnType = change.symbol->type;
+
+						if(boolean == 1)
+							returnType = t_expr_boo;
+						else
+							returnType = change.symbol->type;
+
+						//returnType = change.symbol->type;
 					}
 					// pretypovani na real z intu - musim dodelat, abych se dostal k hodnotam
 					else if((change.symbol->type == t_expr_int && help.symbol->type == t_expr_dou) || (help.symbol->type == t_expr_int && help.symbol->type == t_expr_int)) {
-
-						if(change.symbol->type == t_expr_int)
+						
+						if(change.symbol->type == t_expr_int)		// bud prvni je int a pretypujeme
 							change.symbol->type = t_expr_dou;
 
-						if(help.symbol->type == t_expr_int)
-							help.symbol->type == t_expr_dou;
+						if(help.symbol->type == t_expr_int)			// nebo druhy
+							help.symbol->type = t_expr_dou;
 
-						returnType = change.symbol->type;
+						if(boolean == 1)							// pokud mame logickou operaci, musime vracet boolean hodnotu
+							returnType = t_expr_boo;
+						else
+							returnType = change.symbol->type;
+
+						//returnType = change.symbol->type;
 					}
 
 					else {
@@ -546,11 +602,15 @@ void infix2post(tStack *stack1, tStack *stack2) {
 
 	tOpData temp;		// token
 	tOpData help;		// pomocne
-
+	bool skipGib=true;
 
 	do {
 		
-		token tok = gib_tok();
+		//Doplnene osetrenie prveho tokenu
+		if (skipGib==false)
+			tok=gibtok();
+		skipGib=false;
+printf("--token je %d a skipGib je %d\n",tok->type, skipGib);
 
 		if((zpracuj(tok, &temp)) == 0) {
 

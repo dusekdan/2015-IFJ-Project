@@ -11,12 +11,14 @@
 
 #include "ial.h"
 
+
 #define ASCIISIZE 256
 
 tNodePtr rootTS;
+tNodePtr localTS;
 
 
-
+/*
 int main() {
 
 	char *pattern = "alibaba";
@@ -36,11 +38,14 @@ int main() {
 
 	printf("volam qucik\n");
 
-	quickSort(text, 0, delka - 1);		// volani quicksortu
-
+	quickSort(text, 0, delka - 1);		// volani quicksortu - nesmim zapomenout na malloc
 
 
 	init(&rootTS);
+	init(&localTS);
+
+	printf("%d\n", &rootTS);
+	printf("%d\n", &localTS);
 
 	tNodePtr node;
 	tNodePtr node2;
@@ -55,7 +60,7 @@ int main() {
 	if(data != NULL) {
 
 		data->name = "ahoj";
-        data->type = t_var_id;
+        //data->type = t_var_id;
 		data->content.integer = 10;
 
 		data2->name = "zetko";
@@ -96,7 +101,7 @@ int main() {
 
 	return 0;
 }
-
+*/
 void init(tNodePtr *rootTS) {
 
 	initTable(rootTS);
@@ -149,12 +154,19 @@ tNodePtr createNode(char *key, tData data) {
 
 	tNodePtr new;
 	if((new = malloc(sizeof(struct tUzel))) == NULL) 
-		
 		return 0;
 	
 	else {
-		
-		new->key = key;
+
+		int length = strlen(key);
+		char *keyName;
+
+		if((keyName = malloc(sizeof(char) * length)) == NULL)
+			return 0;
+
+		strcpy(keyName, key);
+
+		new->key = keyName;
 		new->data = data; 
 		new->lptr = NULL;
 		new->rptr = NULL;
@@ -219,21 +231,30 @@ void partition(char *text, int *i, int *j) { 	// rozdeleni
 
  void quickSort(char *text, int l, int r) { // razeni
 
+ 	if((char *textAlloc = malloc(sizeof(char) * strlen(text))) !+ NULL) {
 
-	int i, j;
+ 		strcpy(textAlloc, text);
 
-	i = l; j = r;
+		int i, j;
 
-	partition(text, &i, &j);
+		i = l; j = r;
 
-	if(j > l)
-		quickSort(text, l, j);
+		partition(textAlloc, &i, &j);
 
-	if(i < r)
-		quickSort(text, i, r);
+		if(j > l)
+			quickSort(textAlloc, l, j);
+
+		if(i < r)
+			quickSort(textAlloc, i, r);
 
 
-	printf("%s\n", text);
+		printf("%s\n", textAlloc);
+	}
+	else {
+
+		errorHandler(errInt);
+		return;
+	}
 }
 
 
