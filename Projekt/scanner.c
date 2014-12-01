@@ -233,6 +233,19 @@ int getNextToken(FILE* fd, token TToken)
 		cx = getNextChar(fd);	// getting the next character and testing it for end of file -> if it would be end of file, we would have to force send token, because there will be no next loop walkthrough
 
 
+		/*if(fcv == (maxStringLength-1))
+		{
+			printf("inhere!\n");
+			strBuffer = realloc(strBuffer, (2*sizeof(strBuffer)));
+			printf("%s", strBuffer);
+			if(strBuffer == NULL)
+			{
+				printf("yup, we're fucked!\n");
+				exit(99);
+			}
+		}*/
+
+
 		/************************** TESTING A NEXT CHARACTER ON BEING EOF *************************/
 		// nutno doplnit - nasázeno v každé místě, kde je možné hitnout konec 
 		/*if(cx == EOF || isspace(cx)) && actState == sSTART)
