@@ -3,7 +3,17 @@
 #include "ial.c"
 
 
+char *concate(char *s1, char *s2)
+{
+	size_t len1 = strlen(s1);
+	size_t len2 = strlen(s2);
 
+	char *result = malloc(len1+len2 + 1);
+
+	memcpy(result, s1, len1);
+	memcpy(result + len1, s2, len2 + 1);
+	return result;
+}
 
 int interpret()
 {
@@ -17,7 +27,7 @@ int interpret()
 	
 	tInstruction *new = malloc(sizeof(tInstruction));
 
-	new->instype = I_NEQUAL;
+	new->instype = I_SORT;
 
 	InsertFirst(&IL, *new);
 	//printf("%d\n",IL.first->instruction.instype);
@@ -34,21 +44,21 @@ int interpret()
 	tData data3 = malloc(sizeof(struct tData));
 
 	data->name = "adr1";
-	data->content.integer = 50;
+	data->content.string = "alibaba";
 
 	data2->name = "adr2";
-	data2->content.integer = 500;
+	data2->content.string = "li";
 
 	data3->name = "result";
-	data3->content.integer = 0;
+	data3->content.string = "macka";
 
 	node = insertSymbol(&rootTS, "adr1", data);
 	node2 = insertSymbol(&rootTS, "adr2", data2);
 	node3 = insertSymbol(&rootTS, "result", data3);
 
-
-	printf("%i je hodnota adr1\n", node->data->content.integer);
-	printf("%i je hodnota adr2\n", node2->data->content.integer);
+	
+	//printf("%s je hodnota adr1\n", node->data->content.string);
+	//printf("%s je hodnota adr2\n", node2->data->content.string);
 
 	//printf("%s\n", (*rootTS).key);
 	//printf("%s\n", (*rootTS).lptr->key);
@@ -70,6 +80,12 @@ int interpret()
 				printf("vysledok ADD: %i\n", node3->data->content.integer);
 				break;
 			
+			case I_CONCATE:
+				node3->data->content.string = concate(node->data->content.string, node2->data->content.string);
+				printf("%s\n", node3->data->content.string);
+				free(node3->data->content.string);
+				break;
+
 			case I_SUB:
 				(node3->data->content.integer) = (node->data->content.integer) - (node2->data->content.integer);
 				printf("vysledok SUB: %i\n", node3->data->content.integer);
@@ -169,17 +185,35 @@ int interpret()
 				}
 				break;
 							/*FUNKCIE*/
+			
 			case I_READ:
-				scanf("%i", &node->data->content.integer);
+				scanf("%i", &(node3->data->content.integer));
+				printf("%i\n", (node3->data->content.integer));		
 				break;
 
 			case I_WRITE:
-				printf("%i", node->data->content.integer);
-
-			case I_COPY:
+				printf("%i\n", (node3->data->content.integer));
 				break;
 
-			case I_FIND:			
+			case I_LENGTH:
+				printf("nie je funkcia nie je interpret\n");
+				break;
+
+			case I_COPY:
+				printf("nie je funkcia nie je interpret\n");
+				break;
+
+			case I_FIND:
+				(node3->data->content.integer) = BMASearch((node->data->content.string), (node2->data->content.string));
+				printf("%d\n", node3->data->content.integer);
+				break;
+		
+			case I_SORT:
+				int l = 0;
+				int r = strlen((node3->data->content.string));
+				printf("%i\n", (node3->data->content.integer));
+				break;
+				
 		}	
 	
 
@@ -193,6 +227,7 @@ int main()
 	//tInsList IL;
 	//tNodePtr *rootTS;
 	interpret();
+
 	/*printf("%d\n", I_ADD);
 	tInsList IL;
 	InitList(&IL);
