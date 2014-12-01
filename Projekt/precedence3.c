@@ -257,6 +257,12 @@ int zpracuj(token tok, tOpData *column) {		// zjisteni typu tokenu, nastaveni in
 
 			column->element = ID;
 
+			if((node = malloc(sizeof(struct tUzel))) == NULL) {
+
+				errorHandler(errInt);
+				return -1;
+			}
+
 			if((key = malloc(sizeof(char)*(strlen(tok->val_str) + 1))) == NULL) {
 
 				errorHandler(errInt);
@@ -280,17 +286,20 @@ int zpracuj(token tok, tOpData *column) {		// zjisteni typu tokenu, nastaveni in
 				}
 			}
 
-			if(node->data->type == sym_var_rea)
-				column->symbol->type = t_expr_dou;
+			if((column->symbol = malloc(sizeof(struct tData))) != NULL) {
+
+				if(node->data->type == sym_var_rea)
+					column->symbol->type = t_expr_dou;
 			
-			if(node->data->type == sym_var_int)
-				column->symbol->type = t_expr_int;
+				if(node->data->type == sym_var_int)
+					column->symbol->type = t_expr_int;
 			
-			if(node->data->type == sym_var_str)
-				column->symbol->type = t_expr_str;
+				if(node->data->type == sym_var_str)
+					column->symbol->type = t_expr_str;
 			
-			if(node->data->type == sym_var_boo)
-				column->symbol->type = t_expr_int;
+				if(node->data->type == sym_var_boo)
+					column->symbol->type = t_expr_boo;
+			}
 
 			break;
 
@@ -492,8 +501,8 @@ int reduction(tStack *stack1, tStack *stack2) {
 
 					if(change.symbol->type == help.symbol->type) {
 
-						if(change.symbol->type == t_expr_str)
-
+						if(change.symbol->type == t_expr_str) {
+							
 							if(checkRule == PLUS)
 								concat = 1;
 							else {
@@ -501,7 +510,7 @@ int reduction(tStack *stack1, tStack *stack2) {
 								printf("S retezci se da provest jen konkatenace.\n");
 								return -1;
 							}
-						
+						}
 						else 
 							concat = 0;
 
@@ -511,7 +520,7 @@ int reduction(tStack *stack1, tStack *stack2) {
 						else
 							returnType = change.symbol->type;
 
-						returnType = change.symbol->type;
+						//returnType = change.symbol->type;
 					}
 					// pretypovani na real z intu - musim dodelat, abych se dostal k hodnotam
 					else if((change.symbol->type == t_expr_int && help.symbol->type == t_expr_dou) || (help.symbol->type == t_expr_int && help.symbol->type == t_expr_int)) {
@@ -527,7 +536,7 @@ int reduction(tStack *stack1, tStack *stack2) {
 						else
 							returnType = change.symbol->type;
 
-						returnType = change.symbol->type;
+						//returnType = change.symbol->type;
 					}
 
 					else {
