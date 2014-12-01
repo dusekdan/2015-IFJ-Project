@@ -1,11 +1,12 @@
 /***********************ial.c************************************/
-/* Soubor: ial.h - Hlavičkový soubor pro ial.c 			*/
+/* Soubor: ial.h - Hlavičkový soubor pro ial.c 			        */
 /* Předmět: Formalní jazyky a překladače (IFJ) 					*/
 /* Projekt: Implementace interpretu imperativního jazyka IFJ14  */
 /* Varianta zadání: b/1/I 										*/
 /* Datum: prosinec 2014											*/
 /* Kódování: UTF-8												*/
-/* Autoři:			Filip Kalous (xkalou03)						*/
+/* Autoři:			Filip Kalous (xkalou03)                     */
+/*                  Roman Jaška  (xjaska00)						*/
 /****************************************************************/
 
 
@@ -13,7 +14,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
-#include "parser.h"
+//#include "parser.h"
 
 
 #ifndef max
@@ -29,22 +30,25 @@ typedef struct {			// data promenne v symbolu
 
 } tContent;
 /*  LEX ČÁST */
+
 typedef struct tData {		// symbol
 
 	char *name;				// nazev symbolu
 	int type; 			    // datovy typ symbolu
 	int argCount;			// pocet argumentu funkce, pro promennou hodnota NULL
-	void *nextArg;			// ukazatel na dalsi argument funkce
+	struct tNodePtr *localTSadr; //Adresa lokalnej tabulky
+	//void *nextArg;			// ukazatel na dalsi argument funkce
 	tContent content;		// obsah promenne		
 } *tData;
 
 
-typedef struct tUzel {		// uzel tabulky symbolu
+typedef struct tNodePtr {		// uzel tabulky symbolu
 
 	char *key;
 	tData data;
-	struct tUzel *rptr;
-	struct tUzel *lptr;
+
+	struct tNodePtr *rptr;
+	struct tNodePtr *lptr;
 } *tNodePtr;
 
 extern tNodePtr rootTS;		// ukazatel na zacatek tabulky symbolu

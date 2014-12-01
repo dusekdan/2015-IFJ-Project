@@ -128,11 +128,14 @@ void gib_tok (token tok)
         scanf("%ms",&m);
         tok->val_str=m;
     }
-    /*if (i ==t_expr_int || i == t_expr_dou || i == t_expr_str)
+    if (i==t_expr_int)
     {
-        scanf("%ms",&m);
-        textPreTerminalis=m;
-    } */ 
+        int inte;
+        scanf("%d",&inte);
+        //printf("idem priradit hodnotu k %d\n",i);
+        tok->val_int=inte;
+        //printf("priradil som %d\n",inte);
+    } 
     tok->type=i;
 }
 
@@ -335,6 +338,7 @@ void nt_fun_def_list (token tok)
 
             if (saveSymbol (&rootTS, key, tok->val_str, t_fun_id, 0, false)==true)
             {
+                init(&localTS);
 
                 /*Uloženie lokálnej premennej patriacej k práve uloženej fun.*/
 
@@ -349,7 +353,7 @@ void nt_fun_def_list (token tok)
 
             else
             {   
-
+                localTS=searchSymbol(&rootTS,key)->data->localTSadr;
                 /* Ak v rámci programu bola aspoň jedna forward deklarácia, */
                 /* tak v tejto deklarácií už musí byť telo funkcie, inak by */
                 /* šlo o redeklaráciu                                       */
@@ -415,7 +419,7 @@ void nt_fun_def_list (token tok)
             searchSymbol(&rootTS,key)->data->localTSadr = localTS;
 
             nt_fun_body (tok, nextMustBeBody, key);
-
+            localTS=NULL;
             free (key);
 
             match (tok, t_semicolon);
@@ -617,9 +621,9 @@ void nt_stmt (token tok)
                             break;                
             ////////////////////////////////////////////////////////////////////////////////RULE19               
             case 13:        match   (tok,t_if);
-                            if (tok->type < 44 && tok->type > 40)
-                            match   (tok,tok->type);
-                            else errorHandler(errSyn);
+                            printf("local ts je %d\n",&localTS );
+                            if (precedenceParser(NULL)!=t_expr_boo)//docasne sem dam integer lebo bool este neni hotovy v precedenci ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                errorHandler(errSemTypArg);
                             match   (tok,t_then);
                             nt_body (tok);
                             match   (tok,t_else);
@@ -627,9 +631,8 @@ void nt_stmt (token tok)
                             break;
             ////////////////////////////////////////////////////////////////////////////////RULE20
             case 16:        match   (tok,t_while);
-                            if (tok->type < 44 && tok->type > 40)
-                            match   (tok,tok->type);
-                            else errorHandler(errSyn);
+                            if (precedenceParser(NULL)!=t_expr_boo)//docasne sem dam integer lebo bool este neni hotovy v precedenci ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                errorHandler(errSyn);
                             match   (tok,t_do);
                             nt_body (tok);
                             break;
@@ -684,16 +687,17 @@ void nt_stmt (token tok)
 
 int nt_assign (token tok)
 {
-    if (tok->type == t_expr_int || tok->type == t_expr_str || tok->type == t_expr_dou ||  tok->type == t_fun_id)
+    if (tok->type == t_expr_int || tok->type == t_expr_str || tok->type == t_expr_dou ||  tok->type == t_fun_id || tok->type == t_var_id)
     {
         ///////////////////////////////////////////////////////////////////////RULE23
-        if (tok->type == t_expr_int || tok->type == t_expr_str || tok->type == t_expr_dou)
+        if (tok->type == t_expr_int || tok->type == t_expr_str || tok->type == t_expr_dou || tok->type == t_var_id)
         {
             //printf("TYPE JE %d\n",tok->type);
-            printf("--idem priradenie\n");
+            //printf("--idem priradenie\n");
             printf("--idem skusit precedenceParser s tokentom %d \n",tok->type);
-            int kokot = precedenceParser();
-            printf("--precedenceParser presiel a vratil: %d\n",kokot );
+            
+            int kokot = precedenceParser(NULL);
+            //printf("--precedenceParser presiel a vratil: %d\n",kokot );
             printf("--stav tok je %d\n",tok->type );
             
             //int typ=tok->type;
@@ -807,7 +811,13 @@ void nt_term (token tok, char *currentFunctionKey)
         }
         else
         {
-
+            /*int precedenceResult = precedenceParser();
+            if (precedenceResult<t_expr_int||precedenceResult>t_expr_boo)//docasne sem dam integer lebo bool este neni hotovy v precedenci ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                errorHandler(errSyn);
+            else
+                if (currentFunctionKey=="Fwrite")
+                    printf("idem testovat fwritr\n");
+                errorHandler(2);*/
             match (tok, tok->type);
         }
     }
@@ -1037,7 +1047,7 @@ void startTable () ///////////////////////////////////////////////Funkcia na roz
 {
     init(&rootTS);
     /*Vetvenie stromu na globalnu a lokalnu polovicu*/
-    init(&localTS);
+    
     printf("╔═══════════════════╗\n║rootTS:     %d║\n║localTS:    %d║\n╚═══════════════════╝\n",&rootTS,&localTS);
 
     if (buildemin()!=0) //////////////////////////////////////////vlozenie vstavanych funkcii

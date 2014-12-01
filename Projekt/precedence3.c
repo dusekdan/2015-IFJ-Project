@@ -257,7 +257,7 @@ int zpracuj(token tok, tOpData *column) {		// zjisteni typu tokenu, nastaveni in
 
 			column->element = ID;
 
-			if((node = malloc(sizeof(struct tUzel))) == NULL) {
+			if((node = malloc(sizeof(struct tNodePtr))) == NULL) {
 
 				errorHandler(errInt);
 				return -1;
@@ -269,6 +269,7 @@ int zpracuj(token tok, tOpData *column) {		// zjisteni typu tokenu, nastaveni in
 				return -1;
 			}
 
+			memset (key, 0, strlen(key)); //Treba key pred prvým strcatom vynulovať, inak ak je tam bordel, pripája sa až zaň.
 			strcat(key, "V");
 			strcat(key, tok->val_str);
 		
@@ -610,7 +611,7 @@ void infix2post(tStack *stack1, tStack *stack2) {
 		if (skipGib==false)
 			tok=gibtok();
 		skipGib=false;
-printf("--token je %d a skipGib je %d\n",tok->type, skipGib);
+		//printf("--token je %d a skipGib je %d\n",tok->type, skipGib);
 
 		if((zpracuj(tok, &temp)) == 0) {
 
