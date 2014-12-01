@@ -1,24 +1,23 @@
-/*ARITEMETICKE OPERACIE*/
-#define I_ADD 		0
-#define I_SUB 		1
-#define I_MUL 		2
-#define I_DIV 		3
-#define I_ASGN 		4
-/***LOGICKE OPERACIE***/
-#define	I_MORE 		5
-#define I_LESS 		6
-#define I_EMORE 	7
-#define I_ELESS 	8
-#define I_EQUAL 	9
-#define I_NEQUAL 	10
 /********FUNKCIE********/
-#define I_READ 		11
-#define I_WRITE 	12
-#define I_LENGTH 	13
-#define I_COPY 		14
-#define I_FIND 		15
-#define I_SORT 		16
-
+#define I_READ 		0
+#define I_WRITE 	1
+#define I_LENGTH 	2
+#define I_COPY 		3
+#define I_FIND 		4
+#define I_SORT 		5
+/*ARITEMETICKE OPERACIE*/
+#define I_ADD 		6
+#define I_SUB 		7
+#define I_MUL 		8
+#define I_DIV 		9
+#define I_ASGN 		10
+/***LOGICKE OPERACIE***/
+#define	I_MORE 		11
+#define I_LESS 		12
+#define I_EMORE 	13
+#define I_ELESS 	14
+#define I_EQUAL 	15
+#define I_NEQUAL 	16
 
 typedef struct 
 {

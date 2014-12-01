@@ -283,19 +283,31 @@ int zpracuj(token tok, tOpData *column) {		// zjisteni typu tokenu, nastaveni in
 		case 41:							// integer, bool
 		case 42:
 		case 43:
+		case 44:
 
 			column->element = ID;
 
 			if((column->symbol = malloc(sizeof(struct tData))) != NULL) {
 
-				if(tok->type == t_expr_int)
+				if(tok->type == t_expr_int) {
 					column->symbol->type = tok->type;
+					column->symbol->content.integer = tok->val_int;
+				}
 
-				if(tok->type == t_expr_dou)
+				if(tok->type == t_expr_dou) {
 					column->symbol->type = tok->type;
+					column->symbol->content.real = tok->val_dou;
+				}
 
-				if(tok->type == t_expr_str)
+				if(tok->type == t_expr_str) {
 					column->symbol->type = tok->type;
+					column->symbol->content.string = tok->val_str;
+				}
+
+				if(tok->type == t_expr_boo) {
+					column->symbol->type = tok->type;
+					column->symbol->content.boolean = tok->val_int;
+				}
 			}
 			break;
 
