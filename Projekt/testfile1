@@ -1,4 +1,5 @@
 {ahpj}
+var a : integer;
 function prdel(ahoj, ahoj2)
 begin:
 	promenna := 2+2E2;

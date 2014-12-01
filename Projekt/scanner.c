@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
-#include <regex.h>
 #define APOSTROF_ASCII 39
 
 /************************ VYTRŽENO Z PARSER.H **********************-*/
@@ -78,7 +77,8 @@ enum states {
 	sNUMBER,
 	sREAL,
 	sSINGLEOPER,
-	sDOUBLEOPER
+	sDOUBLEOPER,
+	sENTITY
 };	
 
 int maxStringLength = 200; // maximal string length that we've been able to reach (string allocation based on it)
@@ -100,10 +100,9 @@ char* keywords[] = {
 
 //void getNextToken();
 int getNextChar(FILE* fd);
-void getNextToken(FILE* fd, token TToken);
+int getNextToken(FILE* fd, token TToken);
 void makeStringLowerCase(char *string);
 void resetString(char *string);
-
 
 
 void makeStringLowerCase(char *string)
@@ -142,11 +141,11 @@ int getNextChar(FILE* fd)
 }
 
 
-void getNextToken(FILE* fd, token TToken)
+int getNextToken(FILE* fd, token TToken)
 {
 
 	int c, cx; 
-	int actState = 0; 
+	int actState = sSTART; 
 	int fcv = -1;
 
 
@@ -163,12 +162,30 @@ void getNextToken(FILE* fd, token TToken)
 			exit(666);
 		}
 
+
+	char *entityBuffer;
+	entityBuffer = malloc(sizeof(char)*maxStringLength);
+		if(entityBuffer == NULL)
+		{
+			printf("Alocation error!\n");
+			exit(666);
+		}
+
+
+	bool forceTokenSend = false;
+
 	bool inComment = false;
 	bool terminateLoop = false;
 	bool fseeker = true;
 	bool numberIntCase = false;
 	bool numberDoubleCase = false;
 
+	bool inString = false;
+	bool apostrof = false;
+	bool entity = false;
+	int skipChar = 0;
+	int efcv = -1;
+	int entityID;
 
 	// I actually hate myself for doing this, but time is the time
 	bool signContained = false;
@@ -177,15 +194,17 @@ void getNextToken(FILE* fd, token TToken)
 
 
 	/******* STARTING BUFFER RESET *******/
-	resetString(strBuffer);
+	//resetString(strBuffer);
 
 
-	while ( (c = fgetc(fd)) != EOF )
+	while ( 1 )
 	{
+
+		c = fgetc(fd);
 
 		/****************************** DEALING WITH EXTRA SPACES (WHITE SPACES) ******************************/
 		
-		if(isspace(c) && actState != sSTRING)
+		if(isspace(c) && actState == sSTART)
 		{
 			continue; // when we hit the white space and we are not in the middle of the string, we skip the rest of the loop. For greater good.
 		}
@@ -212,10 +231,15 @@ void getNextToken(FILE* fd, token TToken)
 
 		fcv++; // increasing the flow control variable (it is set to -1 by default, so it is 0 for the first loop after this line)
 		cx = getNextChar(fd);	// getting the next character and testing it for end of file -> if it would be end of file, we would have to force send token, because there will be no next loop walkthrough
-		
+
 
 		/************************** TESTING A NEXT CHARACTER ON BEING EOF *************************/
-		// nutno doplnit
+		// nutno doplnit - nasázeno v každé místě, kde je možné hitnout konec 
+		/*if(cx == EOF || isspace(cx)) && actState == sSTART)
+		{
+			forceTokenSend = true;
+			forceTokenSend = (cx == EOF || isspace(cx)) && actState == sSTART)?true:false;
+		}*/
 
 		/************************** AND THE SWITCH FUN BEGINS **************************************/
 
@@ -233,17 +257,13 @@ void getNextToken(FILE* fd, token TToken)
 
 				if( c == APOSTROF_ASCII )
 				{
+					//printf("vyhodnoceno kladne!\n");
 					actState = sSTRING;
+					apostrof= true;
 					strBuffer[fcv] = c;
+					fcv--; // decrease index in string
 					break;
 				}
-
-				/*if( c == '0') // so far appears to be useless condition
-				{
-					actState = sZERO;	// this case maybe won't be required
-					// don't know what to put to buffer yet (#!#)
-					break;
-				}*/
 
 				if( c >= '0' && c <= '9')
 				{
@@ -260,6 +280,127 @@ void getNextToken(FILE* fd, token TToken)
 				}
 			
 			break; // this is sSTART emergency break
+
+			case sSTRING:
+			//printf("Jsem ve stringu!\n");
+
+			if(apostrof && !entity)	// jsme uvnitř stringu
+			{
+
+
+				if(skipChar == 1)
+				{
+					fcv--;
+					skipChar--;
+					break;
+				}
+
+				if(c > 31 && c <= 255 && c != APOSTROF_ASCII)
+				{
+					strBuffer[fcv] = c;
+					break;
+				}
+				else if(c == APOSTROF_ASCII)
+				{
+					// pokud narazíme na apostrof, dve moznosti - konec retezce, nebo entita/dvojitej
+					if(cx != APOSTROF_ASCII && cx != '#')
+					{
+						//printf("terminated_in_dual_condition!\n");
+						apostrof = false; // string terminated
+						break;
+					}
+
+					if(cx == APOSTROF_ASCII)
+					{
+						skipChar = 1;
+						strBuffer[fcv] = APOSTROF_ASCII;
+						//fcv--; // decreasing the fcv variable to make sure we use the proper index in a string next time we store in it
+						break;
+					}
+
+					if(cx == '#')
+					{
+						fcv--;
+						entity = true;
+						//printf("entity time!\n");
+					}
+
+				}
+
+ 
+			}
+			else 
+			{
+				if(entity)
+				{
+
+					if(c == '#' && cx == APOSTROF_ASCII)
+					{
+						printf("Incorrect entity entry!\n");
+						exit(666);
+					}
+
+					if(c == '#' && !isdigit(cx))
+					{
+						printf("Incorrect entity entry!\n");
+						exit(666);
+					}
+
+						// at this we should be sure we get at least #number (letter may occur later though)
+
+					if(c == '#')
+					{
+						fcv--;
+						break;
+					}
+
+					if(!isdigit(c) && c == APOSTROF_ASCII)	// v tento moment je konec entity
+					{
+						char *strtolErrPtr;
+						long tentityID = strtol(entityBuffer, &strtolErrPtr, 10); // base of 10
+								if(entityBuffer == strtolErrPtr)
+								{
+									printf("Non-convertable entity, fuck you.\n");
+									exit(666);
+								}
+						entityID = tentityID;
+						//printf("entityID: %d\n", entityID);
+						
+								if(entityID < 1 || entityID > 255)
+								{
+									printf("You tried to use entity out of its range, didn't you motherfucker?!%d\n", entityID);
+									exit(666);
+								}
+
+						//fcv--;
+						strBuffer[fcv] = entityID;
+						resetString(entityBuffer); // reset entityBufferu
+						efcv = -1; // reset efcv
+						entity = false;
+						break;
+					}
+
+					if(isdigit(c))
+					{
+						//printf("efc: %d dostavam se sem: %c \n", efcv, c);
+						fcv--;
+						efcv++;
+						entityBuffer[efcv] =  c;
+						break;
+					}
+				}
+				else
+				{
+					strBuffer[fcv] = '\0';
+					tokType = t_expr_val;
+					terminateLoop = true;
+					inString = true;
+					break;
+				}
+			}
+
+
+			break;
 
 			case sIDENT:
 				tokType = t_var_id; // (#!#) - nejsem si jistý, že sem dávám správný typ
@@ -621,7 +762,7 @@ void getNextToken(FILE* fd, token TToken)
 							strBuffer[fcv] = c;
 							break;
 						}
-						else 	// nutno odeslat token
+						else 	
 						{
 							strBuffer[fcv] = '\0';
 							tokType = t_expr_val;
@@ -724,11 +865,20 @@ void getNextToken(FILE* fd, token TToken)
 				TToken->val_int = -1;
 				TToken->val_flo = -1.0;
 			
+		
 
-				TToken->val_str = strBuffer;
-				
 
-				// here I'm gonna test the string on being a key word and base on that I redecide what tokenType I send in the end
+			if(inString)
+			{
+				TToken->val_str = malloc(sizeof(char)*strlen(strBuffer));
+				strcpy(TToken->val_str, strBuffer);
+			}
+
+
+
+			// here I'm gonna test the string on being a key word and base on that I redecide what tokenType I send in the end
+			if(!inString)
+			{
 
 				makeStringLowerCase(strBuffer); // makes content of strBuffer lowercase (required for successfull comparism)
 
@@ -760,6 +910,8 @@ void getNextToken(FILE* fd, token TToken)
 				else if(strcmp(strBuffer, "find") == 0)
 				{
 					TToken->type = t_fun_id;
+					TToken->val_str = malloc(sizeof(char)*strlen(strBuffer));
+					strcpy(TToken->val_str,strBuffer);
 				}
 				else if(strcmp(strBuffer, "forward") == 0)
 				{
@@ -788,6 +940,8 @@ void getNextToken(FILE* fd, token TToken)
 				else if(strcmp(strBuffer, "sort") == 0)
 				{
 					TToken->type = t_fun_id;
+					TToken->val_str = malloc(sizeof(char)*strlen(strBuffer));
+					strcpy(TToken->val_str,strBuffer);
 				}
 				else if(strcmp(strBuffer, "string") == 0)
 				{	
@@ -814,6 +968,15 @@ void getNextToken(FILE* fd, token TToken)
 				{
 					TToken->type = t_write;
 				}	
+			}
+
+			//printf("varID: %d\n", tokType);
+
+			if(TToken->type == t_var_id)
+			{
+				TToken->val_str = malloc(sizeof(char)*strlen(strBuffer));
+				strcpy(TToken->val_str,strBuffer);
+			}
 
 			if(fseeker)
 			{
@@ -824,24 +987,33 @@ void getNextToken(FILE* fd, token TToken)
 			{
 				TToken->val_int = tokInt; // we ended in integer branch, so we fill "val_int" with fresh mea... I mean data.
 				TToken->val_flo = -1.0;
-				resetString(strBuffer);
-				free(strBuffer);
+				//resetString(strBuffer);
+				//free(strBuffer);
 			}
 			else if(numberDoubleCase)
 			{
 				TToken->val_flo = tokDouble; // we ended in integer branch, so we fill "val_flo" with data.
 				TToken->val_int = -1;
-				resetString(strBuffer);
-				free(strBuffer);
+				//resetString(strBuffer);
+				//free(strBuffer);
 			}
 			else
 			{
-				free(strBuffer);
+				//free(strBuffer);
 			}
-
 			// Conclusion
 			// When called on ínteger/real, in the responding data type is stored the value, in the other one, -1 is issued, in val_str is left the original string value
 			// When called on string/identifier/whatever requires storage in strBuff, it's left in there (though memory is cleaned in the end)
+			
+		if(c == EOF)
+		{
+			return -1;
+		}
+		else
+		{
+			return 1;
+		}
+
 			break;
 		}
 
@@ -863,7 +1035,7 @@ int main()
 			return 1;
 		}
 
-	FILE* fd = fopen("testfile1", "r");
+	FILE* fd = fopen("testFiles/t1string", "r");
 		if(fd == NULL)
 		{
 			printf("Encountered an error while opening the file!\n");
@@ -871,13 +1043,16 @@ int main()
 		}
 
 	printf("Starting a scanning process! \n");
-
-
-			int pica;
-			for(pica = 0; pica <= 150; pica++)
+			int pica = 0;
+			while(1)
 			{
-				getNextToken(fd, TToken);
+				int td = getNextToken(fd, TToken);
+				pica++;
 				printf("Token #%d, structure string='%s', integer='%d', real='%f' (type=%d)\n", pica, TToken->val_str, TToken->val_int, TToken->val_flo, TToken->type);
+				if(td == -1)
+				{
+					break;
+				}				
 			}
 
 	printf("Ending a scanning process! \n");

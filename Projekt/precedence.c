@@ -30,7 +30,7 @@ token gibTok(int count) {
 	}
 	if(count == 1) {
 		
-		tok->type = t_plus;
+		tok->type = t_mul;
 	}
 	if(count == 2) {
 
@@ -39,8 +39,19 @@ token gibTok(int count) {
 	}
 	if(count == 3) {
 	
+		tok->type = t_plus;
+	}
+
+	if(count == 4) {
+	
+		tok->type = t_expr_int;
+		tok->val_int = 30;
+	}
+	if(count == 5) {
+
 		tok->type = t_semicolon;
 	}
+
 	count++;
 	return tok;
 }
@@ -65,7 +76,7 @@ bool stackPush(tStack *stack, tOpData element) {
 
 
 	if((newElem = malloc(sizeof(struct tElement))) == NULL) {
-		printf("jsem v pici, nepovedl se malloc\n");
+		errorHandler(errInt);
 		return false;
 	}
 
@@ -170,13 +181,20 @@ int zpracuj(token tok, tOpData *column) {		// zjisteni typu tokenu, nastaveni in
 			break;
 
 		case 3:								// strednik
+		case 14:							// then
+		case 17:							// do
 
 			column->element = DOLAR;
 			break;
 
 		case 20:
 
-			key = malloc(sizeof(char)*(strlen(tok->val_str) + 1));
+			if((key = malloc(sizeof(char)*(strlen(tok->val_str) + 1))) == NULL) {
+
+				errorHandler(errInt);
+				return -1;
+			}
+
 			strcat(key, "V");
 			strcat(key, tok->val_str);
 
@@ -196,7 +214,7 @@ int zpracuj(token tok, tOpData *column) {		// zjisteni typu tokenu, nastaveni in
 			break;
 
 		default:
-			fprintf(stderr, "Chyba pri cteni tokenu vyrazu\n");
+			errorHandler(errSyn);
 			return -1;	
 	}
 
@@ -227,15 +245,14 @@ int precedenceParser() {				// hlavni funkce precedencni analyzy
 
 		token tok = gibTok(count);
 		count++;
-
+		
 		if((error = zpracuj(tok, &column)) != 0)		// pokud skoncime s chybou, breakujeme
 			break;
-
-
-		row = stackTop(&stack1);						// precteni tokenu na vrcholu zasobniku
+		
+		row = stackTop(&stack1);		// precteni tokenu na vrcholu zasobniku
 
 		
-		while((row.element == NETERM || row.element == SHIFT) && row.element != DOLAR) {			// preskakujeme na zasobniku neterminaly
+		while((row.element == NETERM || row.element == SHIFT) && row.element != DOLAR) { // preskakujeme na zasobniku neterminaly
 			
 			stackPop(&stack1, &change);
 			stackPush(&stack2, change);
@@ -260,14 +277,15 @@ int precedenceParser() {				// hlavni funkce precedencni analyzy
 
 			case pLESS:					// shift
 				printf("shift\n");
-				while(row.element == NETERM || row.element == SHIFT) {			// preskakujeme na zasobniku neterminaly
+
+				while(row.element == NETERM || row.element == SHIFT) {	// preskakujeme na zasobniku neterminaly
 			
 					stackPop(&stack1, &change);
 					stackPush(&stack2, change);
 					row = stackTop(&stack1);
 				}
 
-				temp.element = SHIFT;
+				temp.element = SHIFT;						// pushnuti SHIFTu pred neterminal
 				stackPush(&stack1, temp);
 
 				while(stackEmpty(&stack2) != true) {		// vraceni neterminalu na zasobnik
@@ -286,15 +304,24 @@ int precedenceParser() {				// hlavni funkce precedencni analyzy
 
 				if(reduction(&stack1, &stack2) < 0)
 					return -1;
+
+				if(column.element < DOLAR) {		// pokud mame jeste neco na vstupu potrebujeme pred E pushnout SHIFT
+					
+					stackPop(&stack1, &change);
+					temp.element = SHIFT;
+					stackPush(&stack1, temp);
+					stackPush(&stack1, change);
+				}
 				
-				stackPush(&stack1, column);	// pushujeme az po redukci, zbytecne by se nam tam operator pletl
+				stackPush(&stack1, column);			// pushujeme az po redukci, zbytecne by se nam tam operator pletl
 
 				break;
 
-			case pEMPTY:				// empty, syntax error
+			case pEMPTY:							// empty, syntax error
 
 				printf("empty\n");
 				printf("Syntaktická chyba.\n");
+				errorHandler(errSyn);
 				return -1;
 				break;
 		}
@@ -302,9 +329,17 @@ int precedenceParser() {				// hlavni funkce precedencni analyzy
 
 	while(stack1.top->data.element != DOLAR);
 
-	stackPop(&stack1, &temp);		
+	stackPop(&stack1, &temp);			// odstraneni dolaru
 
-	return 0;			// jeste nedokonceno, zatim mi to funguje jen pro pravidlo E -> i, protoze se nedokazu vickrat zacyklit v te redukci
+	while(stackEmpty(&stack1) != true) {		// vypis zbytku na zasobniku
+
+		stackPop(&stack1, &temp);
+		printf("%d\n", temp.element);
+
+	}
+
+
+	return 0;	// jeste nedokonceno, zatim mi to funguje jen pro pravidlo E -> i, protoze se nedokazu vickrat zacyklit v te redukci
 }
 
 
@@ -344,28 +379,57 @@ int reduction(tStack *stack1, tStack *stack2) {
 		else if(temp.element == NETERM) {	// nyni vsechna pravidla pro neterminaly
 
 			int control = 0;
+			int checkRule;
 
 			stackPop(stack2, &temp);
 
 			switch(temp.element) {
 
 				case PLUS:
+					checkRule = PLUS;
+					control = 1;
+					break;
 				case MINUS:
+					checkRule = MINUS;
+					control = 1;
+					break;
 				case MUL:
+					checkRule = MUL;
+					control = 1;
+					break;
 				case DIV:
+					checkRule = DIV;
+					control = 1;
+					break;
 				case LESS:
+					checkRule = LESS;
+					control = 1;
+					break;
 				case MORE:
+					checkRule = MORE;
+					control = 1;
+					break;
 				case MOREEQUAL:
+					checkRule = MOREEQUAL;
+					control = 1;
+					break;
 				case LESSEQUAL:
+					checkRule = LESSEQUAL;
+					control = 1;
+					break;
 				case EQUAL:
+					checkRule = EQUAL;
+					control = 1;
+					break;
 				case NONEQUAL:
-
+					checkRule = NONEQUAL;
 					control = 1;
 					break;
 
 				default:
-					fprintf(stderr, "Nevyhovuje pravidlum.\n");
+					fprintf(stderr, "Nevyhovuje pravidlum1.\n");
 					control = 0;
+					errorHandler(errSyn);
 					break;
 			}
 
@@ -384,13 +448,14 @@ int reduction(tStack *stack1, tStack *stack2) {
 						temp.element = NETERM;
 						stackPush(stack2, temp);
 
-						printf("Vyhovuje jednomu z pravidel 1-10\n");
+						printf("Vyhovuje pravidlu %d.\n", checkRule + 1);
 					}
 				}
 
 				else {
 
-					fprintf(stderr, "Nevyhovuje pravidlum.\n");
+					fprintf(stderr, "Nevyhovuje pravidlum2.\n");
+					errorHandler(errSyn);
 					return -1;
 				} 
 			}
@@ -411,6 +476,13 @@ int reduction(tStack *stack1, tStack *stack2) {
 					stackPush(stack1, temp);
 				}
 			}
+		}
+
+		else {
+
+			fprintf(stderr, "Nevyhovuje pravidlum\n");
+			errorHandler(errSyn);
+			return -1;
 		}
 	}
 

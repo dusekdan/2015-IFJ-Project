@@ -9,5 +9,5 @@ int errorHandler (int errorType)
                     break;
     }*/
     printf("chyba %d\n",errorType );
-    exit(errorType);
+    return(errorType);
 }
