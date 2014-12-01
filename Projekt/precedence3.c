@@ -193,6 +193,7 @@ int zpracuj(token tok, tOpData *column) {		// zjisteni typu tokenu, nastaveni in
 
 	//printf("zpracovavam\n");
 	char *key;
+	tNodePtr node;
 
 	switch(tok->type) {
 
@@ -265,13 +266,12 @@ int zpracuj(token tok, tOpData *column) {		// zjisteni typu tokenu, nastaveni in
 			strcat(key, "V");
 			strcat(key, tok->val_str);
 		
-		
-			if((searchSymbol(&localTS, key)) != 0)
+			if((node = searchSymbol(&localTS, key)) != 0)
 				printf("Nasel jsem v lokalni tabulce symbolu.\n");
 
 			else {
 
-				if((searchSymbol(&rootTS, key)) != 0)
+				if((node = searchSymbol(&rootTS, key)) != 0)
 					printf("Nasel jsem v globalni tabulce symbolu.\n");
 
 				else {
@@ -279,6 +279,20 @@ int zpracuj(token tok, tOpData *column) {		// zjisteni typu tokenu, nastaveni in
 					return -1;
 				}
 			}
+
+			if(node->data->type == sym_var_rea)
+				column->symbol->type = t_expr_dou;
+			
+			if(node->data->type == sym_var_int)
+				column->symbol->type = t_expr_int;
+			
+			if(node->data->type == sym_var_str)
+				column->symbol->type = t_expr_str;
+			
+			if(node->data->type == sym_var_boo)
+				column->symbol->type = t_expr_int;
+
+			break;
 
 		case 41:							// integer, bool
 		case 42:
