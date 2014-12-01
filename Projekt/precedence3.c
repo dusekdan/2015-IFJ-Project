@@ -296,7 +296,7 @@ int zpracuj(token tok, tOpData *column) {		// zjisteni typu tokenu, nastaveni in
 
 				if(tok->type == t_expr_dou) {
 					column->symbol->type = tok->type;
-					column->symbol->content.real = tok->val_dou;
+					column->symbol->content.real = tok->val_flo;
 				}
 
 				if(tok->type == t_expr_str) {
