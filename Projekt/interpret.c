@@ -169,8 +169,17 @@ int interpret()
 				}
 				break;
 							/*FUNKCIE*/
-		
-				
+			case I_READ:
+				scanf("%i", &node->data->content.integer);
+				break;
+
+			case I_WRITE:
+				printf("%i", node->data->content.integer);
+
+			case I_COPY:
+				break;
+
+			case I_FIND:			
 		}	
 	
 
