@@ -1,0 +1,12 @@
+{ Program 1: Vypocet faktorialu (iterativne) }
+var
+ab : integer; vysl : integer;
+begin 
+{write(’Zadejte cislo pro vypocet faktorialu: ’);}
+
+ readln(ab);
+ if ab then
+ begin 
+ readln(ab);
+ end
+ else begin vysl := 1; while 5 do begin vysl := 5; a := 4 end; {write(’Vysledek je: ’, vysl, ’’#10’’)} end end.
