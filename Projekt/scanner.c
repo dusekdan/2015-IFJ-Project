@@ -48,10 +48,13 @@ static const int t_lesseq    = 37;//<=
 static const int t_moreeq    = 38;//>=
 static const int t_equal     = 39;//=
 static const int t_nequal    = 40;//<>
-static const int t_expr_val  = 41;// tento terminal ak prislo nieco konecne ako cislo alebo string, vtomto pripade bude v odpovedajucej casti struktury token obsah
+static const int t_expr_int  = 41;
+static const int t_expr_str  = 42;
+static const int t_expr_dou  = 43;                                    // tento terminal ak prislo nieco konecne ako cislo alebo string, vtomto pripade bude v odpovedajucej casti struktury token obsah
+static const int t_expr_boo  = 44; 
                                   // ale moze sa tam vyskytnut aj premenna cize, var_id a v tom pripade je v *val_str bude obsahovat nazov premennej a po vyhladani
                                   // v tabulke symbolov zistis typ, (hledam->data->type), tam su typy int 1 real 2 string 3 bool 4, iny typ nieje platna premenna
-static const int t_striska = 42; //^
+
 
 
 typedef struct token
@@ -78,10 +81,14 @@ enum states {
 	sREAL,
 	sSINGLEOPER,
 	sDOUBLEOPER,
-	sENTITY
+	sENTITY,
+	A_JSI_V_PCI
 };	
 
 int maxStringLength = 200; // maximal string length that we've been able to reach (string allocation based on it)
+
+int baseStringLength = 200; // base is 200, everytime we reach this limit, we double it (expecatation that if string level is reached, next even longer string may be present)
+int newAllocationSpace;
 
 /************************ ENUM PRO CASE ****************************-*/
 
@@ -108,7 +115,8 @@ void resetString(char *string);
 void makeStringLowerCase(char *string)
 {
 	int i;
-	int stringLength = strlen(string);
+	int stringLength;
+	stringLength = strlen(string);
 	for(i = 0; i < stringLength; i++)
 	{
 		string[i] = tolower(string[i]);
@@ -118,7 +126,8 @@ void makeStringLowerCase(char *string)
 void resetString(char *string)
 {
 	int i;
-	int stringLength = strlen(string);
+	int stringLength;
+	stringLength = strlen(string);
 	for(i = 0; i < stringLength; i++)
 	{
 		string[i] = '\0';
@@ -146,7 +155,7 @@ int getNextToken(FILE* fd, token TToken)
 
 	int c, cx; 
 	int actState = sSTART; 
-	int fcv = -1;
+	int fcv = 0;
 
 
 	int tokType;
@@ -155,22 +164,23 @@ int getNextToken(FILE* fd, token TToken)
 	double tokDouble;
 
 	char *strBuffer;
-	strBuffer = malloc(sizeof(char)*maxStringLength);
+	strBuffer = malloc(baseStringLength); // we alloc only to "baseStringLength", because size of char is one by definition
 		if(strBuffer == NULL)
 		{
-			printf("Allocation error!\n");
-			exit(666);
+			printf("Allocation error! (strBuffer)\n");
+			exit(99);
 		}
+
+	char *tmpBuffer; // reallocation purposes only 
 
 
 	char *entityBuffer;
-	entityBuffer = malloc(sizeof(char)*maxStringLength);
+	entityBuffer = malloc(baseStringLength);	// same as few lines up
 		if(entityBuffer == NULL)
 		{
-			printf("Alocation error!\n");
-			exit(666);
+			printf("Alocation error! (entityBuffer)\n");
+			exit(99);
 		}
-
 
 	bool forceTokenSend = false;
 
@@ -192,6 +202,16 @@ int getNextToken(FILE* fd, token TToken)
 	bool eContained = false;
 	bool dotContained = false;
 
+
+	char *strtolErrPtr; // error string from strtol() comes here
+	char *strtodErrPtr; // same here for strtod() 
+
+
+
+	/*if(TToken->val_str != NULL)
+	{
+		free(TToken->val_str);
+	}*/
 
 	/******* STARTING BUFFER RESET *******/
 	//resetString(strBuffer);
@@ -229,7 +249,7 @@ int getNextToken(FILE* fd, token TToken)
 
 		/*************************** SETTING UP FLOW-CONTROL VARIABLES AND STUFF ***************************/
 
-		fcv++; // increasing the flow control variable (it is set to -1 by default, so it is 0 for the first loop after this line)
+		
 		cx = getNextChar(fd);	// getting the next character and testing it for end of file -> if it would be end of file, we would have to force send token, because there will be no next loop walkthrough
 
 
@@ -266,9 +286,7 @@ int getNextToken(FILE* fd, token TToken)
 					actState = sIDENT;
 					strBuffer[fcv] = c;
 					break; // break comes here because we already identified what kind of state we're dealing with
-				}
-
-				if( c == APOSTROF_ASCII )
+				} else if( c == APOSTROF_ASCII )
 				{
 					//printf("vyhodnoceno kladne!\n");
 					actState = sSTRING;
@@ -276,20 +294,20 @@ int getNextToken(FILE* fd, token TToken)
 					strBuffer[fcv] = c;
 					fcv--; // decrease index in string
 					break;
-				}
-
-				if( c >= '0' && c <= '9')
+				}else if( c >= '0' && c <= '9')
 				{
 					actState = sNUMBER;
 					strBuffer[fcv] = c;
 					break;
-				}
-
-				if(c == '+' || c == '.' || c == '-' || c == '*' || c == '/' || c == '(' || c == ')' || c == ',' || c == '^' || c == '=' ||  c== ';' || /* tyto znaky mohou vést na double op*/ c == ':' || c == '<' || c == '>')
+				} else if(c == '+' || c == '.' || c == '-' || c == '*' || c == '/' || c == '(' || c == ')' || c == ',' || c == '^' || c == '=' ||  c== ';' || /* tyto znaky mohou vést na double op*/ c == ':' || c == '<' || c == '>')
 				{
 					actState = sSINGLEOPER;	 // je třeba provést kontrolu na doubleop
 					strBuffer[fcv] = c;
 					break;
+				}
+				else
+				{
+					actState = A_JSI_V_PCI;
 				}
 			
 			break; // this is sSTART emergency break
@@ -320,6 +338,7 @@ int getNextToken(FILE* fd, token TToken)
 					{
 						//printf("terminated_in_dual_condition!\n");
 						apostrof = false; // string terminated
+						strBuffer[fcv] = '\0';	// NULL TERMINATION FOR THE WIN!!!
 						break;
 					}
 
@@ -369,7 +388,15 @@ int getNextToken(FILE* fd, token TToken)
 
 					if(!isdigit(c) && c == APOSTROF_ASCII)	// v tento moment je konec entity
 					{
-						char *strtolErrPtr;
+
+
+						/*if(entityBuffer == NULL)
+						{
+							printf("Unable to proceed with entityBuffer set to NULL. \n");
+							fclose(fd);
+							exit(99);
+						}*/
+
 						long tentityID = strtol(entityBuffer, &strtolErrPtr, 10); // base of 10
 								if(entityBuffer == strtolErrPtr)
 								{
@@ -381,13 +408,17 @@ int getNextToken(FILE* fd, token TToken)
 						
 								if(entityID < 1 || entityID > 255)
 								{
-									printf("You tried to use entity out of its range, didn't you motherfucker?!%d\n", entityID);
-									exit(666);
+									printf("Entity out of its range. Or you possibly run the script too many times in a short time -> buffer was not empty on time. %d\n", entityID);
+									exit(99);
 								}
 
 						//fcv--;
 						strBuffer[fcv] = entityID;
-						resetString(entityBuffer); // reset entityBufferu
+						
+						
+							resetString(entityBuffer); // reset entityBufferu
+						
+						
 						efcv = -1; // reset efcv
 						entity = false;
 						break;
@@ -404,8 +435,8 @@ int getNextToken(FILE* fd, token TToken)
 				}
 				else
 				{
-					strBuffer[fcv] = '\0';
-					tokType = t_expr_val;
+					//strBuffer[fcv] = '\0';
+					tokType = t_expr_str;
 					terminateLoop = true;
 					inString = true;
 					break;
@@ -558,14 +589,6 @@ int getNextToken(FILE* fd, token TToken)
 					break;
 				}
 
-				if(strBuffer[fcv-1] == '^')		// "striska" case
-				{
-					strBuffer[fcv] = '\0';
-					tokType = t_striska;
-					terminateLoop = true;
-					break;
-				}
-
 				if(strBuffer[fcv-1] == '/')		// "slash" or "divide" case
 				{
 					strBuffer[fcv] = '\0';
@@ -635,7 +658,7 @@ int getNextToken(FILE* fd, token TToken)
 					// here we get when we get "terminal" for numeric type
 						// so we got to save, fseekback and send token
 					strBuffer[fcv] = '\0';
-					tokType = t_expr_val;
+					tokType = t_expr_int;
 					
 					// situation: in strBuffer is stored nullterminated string containing INTEGER, with possible leading zeroes.
 					// we need to strip this mothef*cker of this zeroes and make him play it our way.
@@ -643,7 +666,7 @@ int getNextToken(FILE* fd, token TToken)
 
 					int strtolBase = 10; // there's only decadic notation allowed in project, so base is 10
 					long tmpTokInt;		 // temporary long variable, to be semantically correct
-					char *strtolErrPtr;	 // error string from strtol() comes here
+					
 
 						tmpTokInt = strtol(strBuffer, &strtolErrPtr, strtolBase);
 						if(strtolErrPtr == strBuffer)
@@ -698,9 +721,9 @@ int getNextToken(FILE* fd, token TToken)
 							else
 							{
 								strBuffer[fcv] = '\0';	// posíláme token, neboť jsme narazili na double tvaru "#.#"
-								tokType = t_expr_val;
+								tokType = t_expr_dou;
 
-								char *strtodErrPtr;
+
 								tokDouble = strtod(strBuffer, &strtodErrPtr);
 									if(strBuffer == strtodErrPtr)
 									{
@@ -778,9 +801,9 @@ int getNextToken(FILE* fd, token TToken)
 						else 	
 						{
 							strBuffer[fcv] = '\0';
-							tokType = t_expr_val;
+							tokType = t_expr_dou;
 
-							char *strtodErrPtr;
+							
 							tokDouble = strtod(strBuffer, &strtodErrPtr);
 								if(strBuffer == strtodErrPtr)
 								{
@@ -838,9 +861,8 @@ int getNextToken(FILE* fd, token TToken)
 
 
 							strBuffer[fcv] = '\0';
-							tokType = t_expr_val;
+							tokType = t_expr_dou;
 
-							char *strtodErrPtr;
 							tokDouble = strtod(strBuffer, &strtodErrPtr);
 								if(strBuffer == strtodErrPtr)
 								{
@@ -862,8 +884,48 @@ int getNextToken(FILE* fd, token TToken)
 			break; // same as one level up
 
 			default:
-				printf("This should not occur! (case default)\n");		
+				printf("Character not allowed!\n");
+				exit(1);		
 		}
+
+		if((fcv+1) == baseStringLength)
+		{
+			// time for reallocation
+			printf("Additional memory required!\n");
+
+			newAllocationSpace = 2*baseStringLength;
+
+
+			tmpBuffer = realloc(strBuffer, newAllocationSpace);
+				if(!tmpBuffer)
+				{
+					free(strBuffer);	// in case reallocation failed, it is important to free strBuffer
+					printf("Realloc failed!\n");
+					fclose(fd);	// closing the file
+					exit(99);
+				}
+				else
+				{
+					strBuffer = tmpBuffer;
+				}
+
+				if(strBuffer == NULL)
+				{
+					printf("Failed to allocate additional space!\n");
+					fclose(fd);
+					exit(99);
+				}
+				else
+				{
+					baseStringLength = newAllocationSpace;
+					printf("Reallocation successfull!\n");
+					printf("Allocated %d bytes of memory.\n", baseStringLength);
+				}
+
+
+		}
+
+		fcv++; // increasing the flow control variable 
 
 
 		/* end of switch fun */
@@ -876,14 +938,19 @@ int getNextToken(FILE* fd, token TToken)
 			TToken->type = tokType; // anytime we get here, we set the tokType
 
 				TToken->val_int = -1;
-				TToken->val_flo = -1.0;
-			
+				TToken->val_flo = -1.0;		
 		
 
 
 			if(inString)
 			{
-				TToken->val_str = malloc(sizeof(char)*strlen(strBuffer));
+				TToken->val_str = malloc(baseStringLength);	// once again, sizeof(char) is one by its definition, so there's no need to use it
+					if(TToken->val_str == NULL)
+					{
+						printf("Token allocation for string failed!\n");
+						fclose(fd);
+						exit(99);
+					}
 				strcpy(TToken->val_str, strBuffer);
 			}
 
@@ -917,13 +984,19 @@ int getNextToken(FILE* fd, token TToken)
 				}
 				else if(strcmp(strBuffer, "false") == 0)
 				{
-					TToken->type = t_expr_val;
+					TToken->type = t_expr_boo;
 					TToken->val_int = 0;	//(#!#)
 				}
 				else if(strcmp(strBuffer, "find") == 0)
 				{
 					TToken->type = t_fun_id;
-					TToken->val_str = malloc(sizeof(char)*strlen(strBuffer));
+					TToken->val_str = malloc(baseStringLength);
+						if(TToken->val_str == NULL)
+						{
+							printf("Token allocation for string failed!\n");
+							fclose(fd);
+							exit(99);
+						}
 					strcpy(TToken->val_str,strBuffer);
 				}
 				else if(strcmp(strBuffer, "forward") == 0)
@@ -953,7 +1026,13 @@ int getNextToken(FILE* fd, token TToken)
 				else if(strcmp(strBuffer, "sort") == 0)
 				{
 					TToken->type = t_fun_id;
-					TToken->val_str = malloc(sizeof(char)*strlen(strBuffer));
+					TToken->val_str = malloc(baseStringLength);
+						if(TToken->val_str == NULL)
+						{
+							printf("Token allocation for string failed!\n");
+							fclose(fd);
+							exit(99);
+						}
 					strcpy(TToken->val_str,strBuffer);
 				}
 				else if(strcmp(strBuffer, "string") == 0)
@@ -966,7 +1045,7 @@ int getNextToken(FILE* fd, token TToken)
 				}
 				else if(strcmp(strBuffer, "true") == 0)
 				{
-					TToken->type = t_expr_val;
+					TToken->type = t_expr_boo;
 					TToken->val_int = 1; //(#!#)
 				}
 				else if(strcmp(strBuffer, "var") == 0)
@@ -987,7 +1066,13 @@ int getNextToken(FILE* fd, token TToken)
 
 			if(TToken->type == t_var_id)
 			{
-				TToken->val_str = malloc(sizeof(char)*strlen(strBuffer));
+				TToken->val_str = malloc(baseStringLength);
+					if(TToken->val_str == NULL)
+					{
+						printf("Token allocation for string failed!\n");
+						fclose(fd);
+						exit(99);
+					}
 				strcpy(TToken->val_str,strBuffer);
 			}
 
@@ -1012,12 +1097,17 @@ int getNextToken(FILE* fd, token TToken)
 			}
 			else
 			{
-				//free(strBuffer);
+				// do nothing atm
 			}
 			// Conclusion
 			// When called on ínteger/real, in the responding data type is stored the value, in the other one, -1 is issued, in val_str is left the original string value
 			// When called on string/identifier/whatever requires storage in strBuff, it's left in there (though memory is cleaned in the end)
 			
+
+				free(strBuffer);
+				free(entityBuffer);
+
+
 		if(c == EOF)
 		{
 			return -1;
@@ -1029,8 +1119,6 @@ int getNextToken(FILE* fd, token TToken)
 
 			break;
 		}
-
-		//(#!#) Místo posledního středníku (A jakékoliv další žádosti o další lexém) to pakuje dohromady středník a předchozí řetězec. Weird stuff
  	}
 
 
@@ -1061,7 +1149,16 @@ int main()
 			{
 				int td = getNextToken(fd, TToken);
 				pica++;
-				printf("Token #%d, structure string='%s', integer='%d', real='%f' (type=%d)\n", pica, TToken->val_str, TToken->val_int, TToken->val_flo, TToken->type);
+
+
+//				printf("Token #%d, structure string='%s', integer='%d', real='%f' (type=%d)\n", pica, TToken->val_str, TToken->val_int, TToken->val_flo, TToken->type);
+
+				if(TToken->type == t_expr_str || TToken->type == t_var_id)
+				{
+					free(TToken->val_str);
+				}
+
+				
 				if(td == -1)
 				{
 					break;
@@ -1069,6 +1166,8 @@ int main()
 			}
 
 	printf("Ending a scanning process! \n");
+	fclose(fd);
+	free(TToken);
 	return 0;
 
 }
