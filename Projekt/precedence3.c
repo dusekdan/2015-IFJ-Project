@@ -273,19 +273,23 @@ int zpracuj(token tok, tOpData *column) {		// zjisteni typu tokenu, nastaveni in
 			strcat(key, "V");
 			strcat(key, tok->val_str);
 		
-			if((node = searchSymbol(&localTS, key)) != 0)
-				printf("Nasel jsem v lokalni tabulce symbolu.\n");
+			if((node = searchSymbol(&localTS, key)) != 0);
+				//printf("Nasel jsem %s v lokalni tabulce symbolu.\n",key);
 
 			else {
 
-				if((node = searchSymbol(&rootTS, key)) != 0)
-					printf("Nasel jsem v globalni tabulce symbolu.\n");
+				if((node = searchSymbol(&rootTS, key)) != 0);
+					//printf("Nasel jsem %s v globalni tabulce symbolu.\n",key);
 
 				else {
+					free(key);
+					free(node);
 					printf("Promenna nebyla nalezena.\n");
 					return -1;
 				}
 			}
+
+			free(key);
 
 			if((column->symbol = malloc(sizeof(struct tData))) != NULL) {
 
@@ -300,7 +304,10 @@ int zpracuj(token tok, tOpData *column) {		// zjisteni typu tokenu, nastaveni in
 			
 				if(node->data->type == sym_var_boo)
 					column->symbol->type = t_expr_boo;
+				
 			}
+
+			
 
 			break;
 
@@ -364,7 +371,7 @@ int precedenceParser() {				// hlavni funkce precedencni analyzy
 	}
 
 	int x = reduction(&stack1, &stack2);		// provedeni redukce
-	printf("Navratovy typ vyrazu: %d\n", x);
+	//printf("Navratovy typ vyrazu: %d\n", x);
 
 	stackDispose(&stack1);
 	stackDispose(&stack2);
