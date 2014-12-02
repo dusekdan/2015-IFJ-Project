@@ -225,9 +225,8 @@ int getNextToken(FILE* fd, token TToken)
 
 		/****************************** DEALING WITH EXTRA SPACES (WHITE SPACES) ******************************/
 		
-		if((isspace(c) && actState == sSTART ) || (actState == sIDENT && isspace(c)))
+		if(isspace(c) && actState == sSTART)
 		{
-
 			continue; // when we hit the white space and we are not in the middle of the string, we skip the rest of the loop. For greater good.
 		}
 
@@ -451,27 +450,42 @@ int getNextToken(FILE* fd, token TToken)
 			case sIDENT:
 				tokType = t_var_id; // (#!#) - nejsem si jistý, že sem dávám správný typ
 				
-				if(isalpha(c) || c == '_' || isdigit(c) || c == '(')
+				if(isalpha(c) || c == '_' || isdigit(c))
 				{
-
-					if(c == '(')
-					{
-						strBuffer[fcv] = '\0';
-						terminateLoop = true;
-						fseek(fd, -1, SEEK_CUR);
-						fseeker = false;
-						tokType = t_fun_id;
-						break;
-					}
+				
 
 					strBuffer[fcv] = c;	// if the loaded char respond to the mask, we extend outcoming value of the token
+				
+
 				}
 				else // if character does not respond to the mask, we set terminator on true causing while interuption (and function end)
 				{
-					strBuffer[fcv] = '\0'; // making sure that string is null terminated... you know that joke ... :)
-					terminateLoop = true;
-					fseek(fd, -1, SEEK_CUR);
-					fseeker = false;
+
+						strBuffer[fcv] = '\0'; // making sure that string is null terminated... you know that joke ... :)
+						terminateLoop = true;
+
+						if(c == '(')
+						{
+							tokType = t_fun_id;
+						}
+						else
+						{
+							while(isspace(c))
+							{
+								c = fgetc(fd);
+							}
+
+							if(c == '(')
+							{
+								tokType = t_fun_id;
+							}
+
+						}
+
+
+						fseek(fd, -1, SEEK_CUR);
+						fseeker = false;
+
 				}
 
 			break; // this is sIDENT emergency break
@@ -953,14 +967,19 @@ int getNextToken(FILE* fd, token TToken)
 				TToken->val_int = -1;
 				TToken->val_flo = -1.0;		
 		
+
 			if(tokType == t_fun_id)
 			{
-				TToken->val_str = malloc(baseStringLength);
-					if(TToken->val_str != NULL)
+				TToken->val_str = malloc(baseStringLength);	// once again, sizeof(char) is one by its definition, so there's no need to use it
+					if(TToken->val_str == NULL)
 					{
-						strcpy(TToken->val_str, strBuffer);
+						printf("Token allocation for string failed!\n");
+						fclose(fd);
+						exit(99);
 					}
+				strcpy(TToken->val_str, strBuffer);
 			}
+
 
 			if(inString)
 			{
