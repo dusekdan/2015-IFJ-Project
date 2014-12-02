@@ -1,5 +1,3 @@
-#include "stdio.h"
-#include "string.h"
 #include "ial.c"
 
 
@@ -25,7 +23,7 @@ static const int t_do        = 17;
 static const int t_readln    = 18;
 static const int t_write     = 19;
 static const int t_var_id    = 20;
-static const int t_expr      = 21;
+//static const int t_expr      = 21;
 static const int t_fun_id    = 22;
 //static const int t_term      = 23;
 //static const int t_param     = 24;
@@ -107,9 +105,9 @@ void nt_term (token tok, char * currentFunctionKey);
 void nt_term_list (token tok, char * currentFunctionKey);
 void nt_term_more (token tok, char * currentFunctionKey);
 void nt_type (token tok, char * key);
-void nt_param_list (token tok, bool testOnly);
-void nt_param_more (token tok, bool testOnly);
-void nt_param (token tok, bool testOnly);
+void nt_param_list (token tok, bool testOnly, char * currentFunctionKey);
+void nt_param_more (token tok, bool testOnly, char * currentFunctionKey);
+void nt_param (token tok, bool testOnly, char * currentFunctionKey);
 
 int buildemin ();
 
