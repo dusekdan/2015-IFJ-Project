@@ -82,6 +82,7 @@ enum states {
 	sSINGLEOPER,
 	sDOUBLEOPER,
 	sENTITY,
+	sFUNCTIONID,
 	A_JSI_V_PCI
 };	
 
@@ -224,8 +225,9 @@ int getNextToken(FILE* fd, token TToken)
 
 		/****************************** DEALING WITH EXTRA SPACES (WHITE SPACES) ******************************/
 		
-		if(isspace(c) && actState == sSTART)
+		if((isspace(c) && actState == sSTART ) || (actState == sIDENT && isspace(c)))
 		{
+
 			continue; // when we hit the white space and we are not in the middle of the string, we skip the rest of the loop. For greater good.
 		}
 
@@ -449,8 +451,19 @@ int getNextToken(FILE* fd, token TToken)
 			case sIDENT:
 				tokType = t_var_id; // (#!#) - nejsem si jistý, že sem dávám správný typ
 				
-				if(isalpha(c) || c == '_' || isdigit(c))
+				if(isalpha(c) || c == '_' || isdigit(c) || c == '(')
 				{
+
+					if(c == '(')
+					{
+						strBuffer[fcv] = '\0';
+						terminateLoop = true;
+						fseek(fd, -1, SEEK_CUR);
+						fseeker = false;
+						tokType = t_fun_id;
+						break;
+					}
+
 					strBuffer[fcv] = c;	// if the loaded char respond to the mask, we extend outcoming value of the token
 				}
 				else // if character does not respond to the mask, we set terminator on true causing while interuption (and function end)
@@ -940,7 +953,14 @@ int getNextToken(FILE* fd, token TToken)
 				TToken->val_int = -1;
 				TToken->val_flo = -1.0;		
 		
-
+			if(tokType == t_fun_id)
+			{
+				TToken->val_str = malloc(baseStringLength);
+					if(TToken->val_str != NULL)
+					{
+						strcpy(TToken->val_str, strBuffer);
+					}
+			}
 
 			if(inString)
 			{
@@ -1151,12 +1171,12 @@ int main()
 				pica++;
 
 
-//				printf("Token #%d, structure string='%s', integer='%d', real='%f' (type=%d)\n", pica, TToken->val_str, TToken->val_int, TToken->val_flo, TToken->type);
+		printf("Token #%d, structure string='%s', integer='%d', real='%f' (type=%d)\n", pica, TToken->val_str, TToken->val_int, TToken->val_flo, TToken->type);
 
-				if(TToken->type == t_expr_str || TToken->type == t_var_id)
+	/*			if(TToken->type == t_expr_str || TToken->type == t_var_id)
 				{
 					free(TToken->val_str);
-				}
+				}*/
 
 				
 				if(td == -1)
