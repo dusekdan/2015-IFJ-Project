@@ -1,24 +1,16 @@
 ////////////////////Roman Jaška
 ////////////////////rozrobené
 #include "parser.h"
-//#include "precedence2.c"
 
 tNodePtr localTS;//ukazatel na localnu tabulku
 bool searchGlobalOnly = true;//ci ukladam do globalnej tabulky
 int fwdDeclarations=0;//pocet fwd
 int pocetArg = 0;
 bool debug=false;
-char * textPreTerminalis = NULL;
 int argsRead = 0;
 token tok;
 
 #include "precedence3.c"
-
-int get_int_len (int value){
-  int l=1;
-  while(value>9){ l++; value/=10; }
-  return l;
-}
 
 /* Funkcia pre prichystanie key na prácu so symbolom */
 
@@ -104,27 +96,6 @@ int buildemin ()
     return 0;
 }
 
-/* Funkcia simulujúca činnnosť Lex analyzátora */
-
-/*void gib_tok (token tok)
-{
-    int i=0;
-    char *m;    
-    scanf("%d",&i);
-    if (i==t_var_id || i == t_fun_id)
-    {
-        scanf("%ms",&m);
-        tok->val_str=m;
-    }
-    if (i==t_expr_int)
-    {
-        int inte;
-        scanf("%d",&inte);
-        tok->val_int=inte;
-    } 
-    tok->type=i;
-}
-
 /* Funkcia vypisujúca názov terminálu z jeho typu */
 
 void terminalis (int terminal, token tok)
@@ -176,18 +147,21 @@ void match (token tok, int terminal)
 {
     if (terminal!=30)
     {
+        
         if (tok->type==terminal)
         {
-        if (getNextToken (fd,tok)==-1)
-        {
-            printf("konec\n");
-            return;
-        }
-        terminalis (terminal, tok);
+            if (getNextToken (fd,tok)==-1)
+            {
+                //printf("konesc\n");
+                return;
+            }
+            terminalis (terminal, tok);
         }
         else
-            {printf("jebol match lebo dosttal v tokene typ %d\n", tok->type);
-                errorHandler(99);
+            {
+                printf("som vnutri a toktzpe je %d a terminal je %d\n",tok->type, terminal );
+                printf("jebol match lebo dosttal v tokene typ %d\n", tok->type);
+                errorHandler(69);
             }
     }
     else printf("Reached the end of file.\n");
@@ -764,7 +738,13 @@ void nt_term (token tok, char *currentFunctionKey)
                   comparison1 = hledam->data->type;
             //printf("COMPARISON1 je %d\n",comparison1 );
             } //printf("nasiel som typ %d\n",hledam->data->type );
-            if (strcmp(currentFunctionKey, "Fwrite")!=0)
+            
+
+            if (strcmp(currentFunctionKey, "Fwrite") !=0 &&
+                strcmp(currentFunctionKey, "Fcopy")  !=0 &&
+                strcmp(currentFunctionKey, "Flength")!=0 &&
+                strcmp(currentFunctionKey, "Fsort")  !=0 &&
+                strcmp(currentFunctionKey, "Ffind")  !=0)
             {
                 //teraz potrebujem najst argument s cicslom argsread
                 
@@ -797,6 +777,7 @@ void nt_term (token tok, char *currentFunctionKey)
                         errorHandler(errSemTypArg);
                     }
             }
+
             else
                 //printf("---Write kontrola preskocena\n");
                 if (comparison1<1 || comparison1>4)
@@ -901,15 +882,11 @@ void nt_param (token tok, bool testOnly, char * currentFunctionKey)
                 currentFunction->data->nextArg=searchSymbol(&localTS, key);
             else
             {
-                //printf("som v else\n");
                 while (currentFunction->data->nextArg!=NULL)
                 {
-                    //printf("prechadzam\n");
                     currentFunction=currentFunction->data->nextArg;
                 }
                 currentFunction->data->nextArg=searchSymbol(&localTS, key);
-                //printf("kokotttttttttttt%s\n",searchSymbol(&localTS, "Vn")->data->nextArg->data->name);
-                //printf("\n\n\n\n\nsom vonku z cyklu a zastal som na premennej %s\n\n\n\n\n",currentFunction->data->name );
             }
 
 
@@ -926,16 +903,11 @@ void nt_param (token tok, bool testOnly, char * currentFunctionKey)
             else
             {
                 match (tok, t_var_id);
-                //printf("type co idem matchovat je %d\n",hledam->data->type );
                 match (tok, t_colon);
-
                 match (tok, hledam->data->type+25);
             }
-
         }
         ///////////////////////////////////////////////Premenna ulozena
-
-
         //searchSymbol(&rootTS, currentFunctionKey)->data->nextArg=key;
         //printf("podarilo sa \n");
         free(key);
@@ -1061,35 +1033,10 @@ void startTable () ///////////////////////////////////////////////Funkcia na roz
     init(&rootTS);
     /*Vetvenie stromu na globalnu a lokalnu polovicu*/
     
-    printf("╔═══════════════════╗\n║rootTS:     %d║\n║localTS:    %d║\n╚═══════════════════╝\n",&rootTS,&localTS);
+    //printf("╔═══════════════════╗\n║rootTS:     %d║\n║localTS:    %d║\n╚═══════════════════╝\n",&rootTS,&localTS);
 
     if (buildemin()!=0) //////////////////////////////////////////vlozenie vstavanych funkcii
     {
         printf("jebol startTable\n");errorHandler(errInt);
-    }    
-        
-
-
+    }
 }
-/*
-int main(int argc, char const *argv[])
-{
-    if (argc!=1 && strcmp(argv[1],"-d")==0)debug=true;
-    startTable();
-    tok=malloc(sizeof(struct token));
-    if (tok!=0)
-    {
-        gib_tok (tok);
-        nt_program (tok);
-        free(tok);
-    }
-    else
-    {
-        free(tok);
-        errorHandler(errInt);
-        return 1;
-    }
-    disposeTable(&rootTS);
-    if (localTS!=0) disposeTable(&localTS);
-    return 0;
-}*/
