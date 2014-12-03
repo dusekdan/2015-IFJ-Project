@@ -513,6 +513,8 @@ int reduction(tStack *stack1, tStack *stack2) {
 							
 							if(checkRule == PLUS)
 								concat = 1;
+							else if( checkRule == LESS || checkRule == MORE || checkRule == MOREEQUAL || checkRule == LESSEQUAL || checkRule == EQUAL || checkRule == NONEQUAL)
+								concat = 0;
 							else {
 
 								printf("S retezci se da provest jen konkatenace.\n");
