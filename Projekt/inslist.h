@@ -1,23 +1,43 @@
-/********FUNKCIE********/
-#define I_READ 		0
-#define I_WRITE 	1
-#define I_LENGTH 	2
-#define I_COPY 		3
-#define I_FIND 		4
-#define I_SORT 		5
 /*ARITEMETICKE OPERACIE*/
-#define I_ADD 		6
-#define I_SUB 		7
-#define I_MUL 		8
-#define I_DIV 		9
-#define I_ASGN 		10
+#define I_ADDI 		0
+#define I_ADDR 		1
+#define I_CONCATE	2
+#define I_SUBI 		3
+#define I_SUBR 		4
+#define I_MULI 		5
+#define I_MULR 		6
+#define I_DIVI 		7
+#define I_DIVR 		8
+#define I_ASGNI 	9	
+#define I_ASGNR		10
+#define I_ASGNS		11
 /***LOGICKE OPERACIE***/
-#define	I_MORE 		11
-#define I_LESS 		12
-#define I_EMORE 	13
-#define I_ELESS 	14
-#define I_EQUAL 	15
-#define I_NEQUAL 	16
+#define	I_MORE 		12
+#define I_LESS 		13
+#define I_EMORE 	14
+#define I_ELESS 	15
+#define I_EQUAL 	16
+#define I_NEQUAL 	17
+/********FUNKCIE********/
+#define I_READI 	18
+#define I_READR		19
+#define I_READS		20
+#define I_WRITEI 	21
+#define I_WRITER	22
+#define I_WRITES	23
+#define I_LENGTH 	24
+#define I_COPY 		25
+#define I_FIND 		26
+#define I_SORT 		27
+
+/*#include <malloc.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <ctype.h>
+#include <string.h>
+#include "errorHandler.c"
+#include "ial.c"*/
 
 typedef struct 
 {

@@ -1,9 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <malloc.h>
-
-#include "inslist.h"
-#include "errorHandler.c"
+//#include "inslist.h"
 
 void InitList(tInsList *L)
 //inicializuje zoznam
@@ -92,7 +87,7 @@ void Succ(tInsList *L)
 	{
 		if(L->active->next != NULL)
 		{
-			L->active = L->active->next;
+			 L->active = L->active->next;
 
 		} else L->active = NULL;	
 	}
@@ -109,7 +104,7 @@ tInstruction *Copy(tInsList *L)
 	} else return &(L->active->instruction);  	
 }
 
-int main()
+/*int main()
 {
 	return 0;
-}
+}*/
