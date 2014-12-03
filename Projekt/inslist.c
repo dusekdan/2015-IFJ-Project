@@ -1,4 +1,4 @@
-//#include "inslist.h"
+#include "inslist.h"
 
 void InitList(tInsList *L)
 //inicializuje zoznam
@@ -104,9 +104,9 @@ tInstruction *Copy(tInsList *L)
 	} else return &(L->active->instruction);  	
 }
 
-bool insertInst (tInsList*list, int operace, void*adr1, void*adr2, void*result)
+bool insertInst (tInsList *list, int operace, void*adr1, void*adr2, void*result)
 {
-    bool retval = false
+    bool retval = false;
     tInstruction *new = malloc(sizeof(tInstruction));
     new->instype = operace;
     if (adr1!=NULL)
@@ -119,7 +119,7 @@ bool insertInst (tInsList*list, int operace, void*adr1, void*adr2, void*result)
                 result=NULL;
         }
     }
-    InsertLast(&list, *new);
+    InsertLast(list, *new);
     retval=true;
     return retval;
 }

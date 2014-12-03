@@ -1,4 +1,4 @@
-//#include "inslist.c"
+#include "inslist.c"
 
 
 
@@ -144,7 +144,7 @@ int interpret(tNodePtr *TS, tInsList *IL)
 
 			case I_ASGNS:
 				(node3->data->content.string) = (node->data->content.string);
-				printf("vysledok ASGNS %f\n", node3->data->content.string);		
+				printf("vysledok ASGNS: %s\n", node3->data->content.string);		
 
 							/*LOGICKE OPERACIE*/
 			case I_MORE:
@@ -232,12 +232,12 @@ int interpret(tNodePtr *TS, tInsList *IL)
 				break;
 
 			case I_READR:
-				scanf("%f", &(node3->data->content.real));
-				printf("%f\n", (node3->data->content.real));
+				scanf("%lf", &(node3->data->content.real));
+				printf("%lf\n", (node3->data->content.real));
 				break;	
 
 			case I_READS:
-				scanf("%s", &(node3->data->content.string));
+				scanf("%s", (node3->data->content.string));
 				printf("%s\n", (node3->data->content.string));
 				break;
 
@@ -250,7 +250,7 @@ int interpret(tNodePtr *TS, tInsList *IL)
 				break;
 
 			case I_WRITES:
-				pritnf("%s\n", (node3->data->content.string));
+				printf("%s\n", (node3->data->content.string));
 				break;
 				
 			case I_LENGTH:
@@ -274,11 +274,9 @@ int interpret(tNodePtr *TS, tInsList *IL)
 				printf("%s\n", node3->data->content.string);
 				break;
 			
-			case I_IF:
-
-				if(node3->data->content.)
-			break;
-
+			//case I_IF:
+				//if(node3->data->content.boolean == true)	
+		
 		}	
 		Succ(IL);
 
@@ -298,8 +296,8 @@ int main()
 
 
 	insertInst (&IL,I_CONCATE, NULL, NULL, NULL);
-	/*
-	tInstruction *new = malloc(sizeof(tInstruction));
+	
+	/*tInstruction *new = malloc(sizeof(tInstruction));
 
 	new->instype = I_CONCATE;
 
@@ -307,7 +305,8 @@ int main()
 
 	insertInst (&IL,I_ADDR, NULL, NULL, NULL);
 
-	InsertLast(&IL, *new);
+	//new->instype = I_ADDR;
+	//InsertLast(&IL, *new);
 	//printf("%d\n",IL.first->instruction.instype);
 
 

@@ -30,14 +30,14 @@
 #define I_FIND 		26
 #define I_SORT 		27
 
-/*#include <malloc.h>
+#include <malloc.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <ctype.h>
 #include <string.h>
 #include "errorHandler.c"
-#include "ial.c"*/
+#include "ial.c"
 
 typedef struct 
 {
@@ -68,4 +68,5 @@ void InsertFirst(tInsList *L, tInstruction I);  //vlozi polozku na zaciatok zozn
 tInstruction *Copy(tInsList *L);				//vrati hodnotu aktivneho prvku v zozname
 void Succ(tInsList *L);							//posune aktivitu na dalsi prvok v zozname
 void First(tInsList *L); 						//nastavi aktivitu na prvy prvok
+bool insertInst (tInsList *list, int operace, void*adr1, void*adr2, void*result); //vlozi instrukciu do listu
 
