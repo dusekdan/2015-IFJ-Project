@@ -297,15 +297,15 @@ int main()
 	InitList(&IL);
 
 
-	
-	
+	insertInst (&IL,I_CONCATE, NULL, NULL, NULL);
+	/*
 	tInstruction *new = malloc(sizeof(tInstruction));
 
 	new->instype = I_CONCATE;
 
-	InsertLast(&IL, *new);
+	InsertLast(&IL, *new);*/
 
-	new->instype = I_ADDR;
+	insertInst (&IL,I_ADDR, NULL, NULL, NULL);
 
 	InsertLast(&IL, *new);
 	//printf("%d\n",IL.first->instruction.instype);
