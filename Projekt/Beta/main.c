@@ -4,10 +4,12 @@
 #include <stdbool.h>
 #include <ctype.h>
 #include "errorHandler.c"
+#include "inslist.c"
 #include "ial.c"
 
 FILE*fd=NULL;
-
+tInsList IL;
+//#include "inslist.c"
 //#include "precedence3.c"
 #include "parser.c"
 #include "scanner2.c"
@@ -15,8 +17,7 @@ FILE*fd=NULL;
 int main(int argc, char const *argv[])
 {
     //if (argc!=1 && strcmp(argv[1],"-d")==0)debug=true;
-    
-
+    InitList(&IL);
 
     fd = fopen(argv[1], "r");
     if(fd == NULL)
@@ -43,5 +44,6 @@ int main(int argc, char const *argv[])
     disposeTable(&rootTS);
     if (localTS!=NULL) disposeTable(&localTS);
     fclose(fd);
+    DisposeList(&IL);
     return 0;
 }

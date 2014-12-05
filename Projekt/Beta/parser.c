@@ -32,6 +32,7 @@
 /* Ukazateľ na lokálnu tabuľku */
 
 tNodePtr localTS;
+tInsList *localIL;
 
 /* Premenná rozhodujúca či mám hladať len v globálnej tabuľke */
 
@@ -41,13 +42,10 @@ bool searchGlobalOnly = true;
 
 int fwdDeclarations = 0;
 
-/* Počítadlo počtu argumentov funkcie pri ich spracovaní v deklarácií */
+/* Počítadlo počtu argumentov funkcie pri ich spracovaní v deklarácií **
+** a pri následnom volaní                                             */
 
 int pocetArg = 0;
-
-/* Počítadlo počtu argumentov funkcie pri ich spracovaní vo volaní funkcie */
-
-int argsRead = 0;
 
 /* Token pre lexikálny analyzátor */
 
@@ -105,6 +103,8 @@ bool saveSymbol (tNodePtr * currTS, char * key, char * name, int type, int argCo
         newsymbol -> type     = type;
         newsymbol -> nextArg  = NULL;
         newsymbol -> argCount = argCount;
+        newsymbol -> localTSadr = NULL;
+        newsymbol -> localILadr = NULL;
 
         /*Uložím do aktuálnej tabulky nový symbol ktorý som si práve pripravil*/
         /*Ak vloženie zlyhá, vraciam internú chybu errInt(99)                 */
@@ -188,25 +188,20 @@ void terminalis (int terminal, token tok)
 
 void match (token tok, int terminal)
 {
-    if (terminal != 30)
+    if (tok -> type == terminal)
     {
-        
-        if (tok -> type == terminal)
-        {
-            if (getNextToken (fd, tok) == -1)
-            {
-                return;
-            }
-            terminalis (terminal, tok);
-        }
+        getNextToken (fd, tok);
+        terminalis (terminal, tok);
+        /*if (localTS==NULL)
+            printf("LOCALNULL\n");
         else
-            {
-                printf ("jebol match dostal v tokene typ %d\n", tok -> type);
-                errorHandler (errSyn);
-            }
+            printf("LOCAL %d\n",&*localTS );*/
     }
     else
-        printf ("Reached the end of file.\n");
+        {
+            printf ("jebol match dostal v tokene typ %d\n", tok -> type);
+            errorHandler (errSyn);
+        }
 }
 
 
@@ -320,6 +315,22 @@ void nt_var_def (token tok)
         /* Porovnanie zvyšného terminálu */
 
         match (tok, t_semicolon);
+
+        //Sem pride instrukcia
+        tNodePtr currentVar = searchSymbol(&*currTS, key);
+
+        if (localIL==NULL){
+            insertInst (&IL, I_VAR, currentVar, NULL, NULL);
+            printf("GLOBAL\n");
+        }
+
+        else{
+            insertInst (localIL, I_VAR, currentVar, NULL, NULL);
+            printf("LOCAL\n");
+        }
+
+        printf("Vlozil som instrukciu I_VAR s ukazatelom %d\n", &currentVar);
+
         free (key);
 
     }
@@ -355,13 +366,22 @@ void nt_fun_def_list (token tok)
 
             if (saveSymbol (&rootTS, key, tok -> val_str, t_fun_id, 0, false) == true)
             {
-                init(&localTS);
+                //Kedze vytvaram novu funkciu potrebujem novu lokalnu tabulku
+                tNodePtr newLocalTS;
+                init(&newLocalTS);
+                //musel som tam nieco vloyit lebo nad prazdnou to blblo
+                saveSymbol(&newLocalTS, "placeholder", "testname", 0,0,true);
+                localTS=newLocalTS;
+                //Do funkcie ulozim jej lokalnuTS
+                //printf("localTS je teraz %d\n",&*localTS );
+                searchSymbol(&rootTS, key)->data->localTSadr=newLocalTS;
 
                 /*Uloženie lokálnej premennej patriacej k práve uloženej fun.*/
 
                 char *funVarKey = createKey ("V", tok -> val_str);
                 rememberVarName = createKey ("V", tok -> val_str);
                 saveSymbol (&localTS, funVarKey, tok->val_str, t_var_id, 0, true);
+                //printf("vnorena kokotina nasla %s\n",searchSymbol(&(searchSymbol(&rootTS, key)->data->localTSadr),funVarKey)->data->name);
                 free (funVarKey);
             }
 
@@ -371,7 +391,7 @@ void nt_fun_def_list (token tok)
             else
             {   
                 localTS = searchSymbol (&rootTS, key) -> data -> localTSadr;
-
+                //printf("kotrola priradil som %d\n",&*localTS ); //printf("Som v inej a nasiel som%s\n",searchSymbol(&localTS, "test")->data->name);
                 /* Ak v rámci programu bola aspoň jedna forward deklarácia, */
                 /* tak v tejto deklarácií už musí byť telo funkcie, inak by */
                 /* šlo o redeklaráciu                                       */
@@ -399,8 +419,8 @@ void nt_fun_def_list (token tok)
             nt_param_list (tok, nextMustBeBody, key);
             
             /* Nulujem počítadlo aktuálneho param, lebo skončili parametre */
-
-            argsRead = 0;
+//bolo tu povodne argsRead
+            pocetArg = 0;
 
             /* Ak ide o prvú delkaráciu funkcie, uložím počet jej argumentov **
             ** do jej symbolu do premennej argCount                          */
@@ -461,7 +481,8 @@ void nt_fun_def_list (token tok)
 
             /* Do symbolu funkcie uložím ukazateľ na jej lokálnu tabuľku sym. */
 
-            searchSymbol (&rootTS, key) -> data -> localTSadr = localTS;
+            //searchSymbol (&rootTS, key) -> data -> localTSadr = localTS;
+
 
             /* Spracovanie tela funkcie. nextMustBeBody mi hovorí či už musí **
             ** prísť telo funkcie (true) alebo môže byť forward (false)      **
@@ -513,6 +534,7 @@ void nt_fun_body (token tok, bool nextMustBeBody, char * key)
         tok -> type == t_begin   ||
         tok -> type == t_var      )
     {   
+        
         ///////////////////////////////////////////////////////////////////RULE9 +++treba zaistit ze neskor bude definovana
         
         /* Ak som miesto tela funkcie dostal kľúčové slovo FORWARD a zároveň  **
@@ -542,9 +564,19 @@ void nt_fun_body (token tok, bool nextMustBeBody, char * key)
 
         else
         {
+            // Potrebujem tabulku instrukcii
+            tInsList newLocalIL;
+            tInsList *newLocalILptr=&newLocalIL;
+            InitList (&newLocalIL);
+
             /* Do "hledam" si uložím symbol aktuálnej funkcie */
 
             tNodePtr hledam = searchSymbol(&rootTS, key);
+
+            hledam->data->localILadr=newLocalILptr;
+
+            localIL=newLocalILptr;
+            printf("localIL je teraz %d\n",&*localIL );
 
             /* Ak už teraz musí prísť telo, čiže ak aktuálna funkcia už mala  **
             ** forward deklaráciu, tak to znamená že tým že mi sem neprišlo   **
@@ -578,8 +610,8 @@ void nt_fun_body (token tok, bool nextMustBeBody, char * key)
             /* Do symbolu funkcie uložím ukazateľ na jej lokálnu tabuľku sym- **
             ** bolov a vynuluje globálny ukazateľ                             */
 
-             (hledam -> data -> localTSadr) = localTS;
-            localTS = NULL;
+             //(hledam -> data -> localTSadr) = localTS;
+            localIL = NULL;
 
             //disposeTable(&localTS);
         }
@@ -626,7 +658,6 @@ void nt_main (token tok)
     {
         nt_body (tok);
         match (tok, t_period);
-        match (tok, t_dollar);
     }
 
     /* Prípad keď prišiel nesprávny terminál */
@@ -821,7 +852,8 @@ void nt_stmt (token tok)
             ////////////////////////////////////////////////////////////////////////////////RULE22
             case 19:        match        (tok,t_write);
                             match        (tok,t_l_parrent);
-                            nt_term_list (tok, "Fwrite");argsRead=0;
+                            nt_term_list (tok, "Fwrite");
+/*bolo tu povodne argc*/    pocetArg = 0;
                             match        (tok,t_r_parrent);
                             break;
         }
@@ -843,7 +875,7 @@ int nt_assign (token tok)
             //printf("TYPE JE %d\n",tok->type);
             //printf("--idem priradenie\n");
             //printf("--idem skusit precedenceParser s tokentom %d \n",tok->type);
-            
+            //printf("localTS je momentalne %d\n",&*localTS );
             int kokot = precedenceParser(NULL);
             //printf("--precedenceParser presiel a vratil: %d\n",kokot );
             //printf("--stav tok je %d\n",tok->type );
@@ -878,7 +910,8 @@ int nt_assign (token tok)
             match(tok,t_fun_id);
             match(tok,t_l_parrent);
             nt_term_list(tok, key);
-            argsRead=0;
+            pocetArg = 0;
+            //povodne argsRead=0;
             match(tok,t_r_parrent);
             free(key);
             return hledam->data->type;
@@ -898,7 +931,9 @@ void nt_term (token tok, char *currentFunctionKey)
     {
         if (tok->type == t_var_id)
         {
-            argsRead++;
+            
+            pocetArg++;
+            //povodne argsRead++;
             //printf("\n---IDEM KONTROLOVAT %d. PARAMETER vo funkcii %s\n",argsRead, currentFunctionKey);
 
             char * key = createKey("V",tok->val_str);
@@ -940,14 +975,14 @@ void nt_term (token tok, char *currentFunctionKey)
                     }
 
                 //printf("\nodpamatana ukazuje na %d\n",hledam->data->localTSadr);
-                tNodePtr novy = hledam->data->localTSadr; //novy ukazuje na adresu danej lokalnej
+                //tNodePtr novy = hledam->data->localTSadr; //novy ukazuje na adresu danej lokalnej
                 //printf("\nnovy ukazuje na %d\n",novy );
                 //printf("Teraz potrebujem najst %d. parameter funkcie %s\n",argsRead,currentFunctionKey );
                 /*char * searchParam = createKey("V", tok->val_str);
                 printf("IDEM HLADAT %s\n",searchParam);*/
 
                 tNodePtr currentFunction = searchSymbol(&rootTS, currentFunctionKey);
-                for (int i = 1; i<argsRead;i++)
+                for (int i = 1; i</*pvoodne argsRead*/pocetArg;i++)
                 {
                     currentFunction=currentFunction->data->nextArg;
                 }
@@ -956,7 +991,7 @@ void nt_term (token tok, char *currentFunctionKey)
                 
                     if (comparison1!=comparison2)
                     {
-                        printf("copmarizony sa dojebali\n");
+                        printf("copmarizony sa dojebali %d!=%d %s\n",comparison1,comparison2,currentFunction->data->nextArg->data->name);
 
                         errorHandler(errSemTypArg);
                     }
@@ -978,6 +1013,8 @@ void nt_term (token tok, char *currentFunctionKey)
         }
         else
         {
+            pocetArg++;
+            //printf("\nTYP JE TU %d a currentFunctionKey je %s\n",tok->type,currentFunctionKey );
             match (tok, tok->type);
         }
     }
@@ -1038,7 +1075,8 @@ void nt_param (token tok, bool testOnly, char * currentFunctionKey)
 {
     if (tok->type == t_var_id)
     {   
-        argsRead++;
+        pocetArg++;
+        //pvoodne argsRead++;
         char *key = createKey("V",tok->val_str);
 
         //printf("PRAMETER key je %s\n",key );
@@ -1047,7 +1085,7 @@ void nt_param (token tok, bool testOnly, char * currentFunctionKey)
         ////////////////////////////////////////////SPRACOVANIE Parametru
         if (testOnly==false)//ak sa idu nove ukladat
         {  
-            saveSymbol (&localTS, key, tok->val_str, t_var_id, argsRead, true);
+            saveSymbol (&localTS, key, tok->val_str, t_var_id, pocetArg /*povodne argsRead*/, true);
             //printf("&&&&&&&&&&&&&&&&&&& ulozil som %s s argcountom %d\n",key,argsRead );
             match (tok, t_var_id);
             match (tok, t_colon);
@@ -1215,6 +1253,7 @@ void nt_type (token tok, char * key)
 void startTable () ///////////////////////////////////////////////Funkcia na rozbehanie tabulky symbolov
 {
     init(&rootTS);
+    init(&localTS);
     /*Vetvenie stromu na globalnu a lokalnu polovicu*/
     
     //printf("╔═══════════════════╗\n║rootTS:     %d║\n║localTS:    %d║\n╚═══════════════════╝\n",&rootTS,&localTS);
