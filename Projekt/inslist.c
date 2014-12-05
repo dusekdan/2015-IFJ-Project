@@ -106,6 +106,8 @@ tInstruction *Copy(tInsList *L)
 
 bool insertInst (tInsList *list, int operace, void*adr1, void*adr2, void*result)
 {
+    
+	if(list == NULL) return 0;
     bool retval = false;
     tInstruction *new = malloc(sizeof(tInstruction));
     new->instype = operace;
@@ -116,12 +118,13 @@ bool insertInst (tInsList *list, int operace, void*adr1, void*adr2, void*result)
         {
             new->adr2=adr2;
             if (result!=NULL)
-                result=NULL;
+                new->result=result;
         }
     }
     InsertLast(list, *new);
     retval=true;
     return retval;
+
 }
 
 /*int main()
