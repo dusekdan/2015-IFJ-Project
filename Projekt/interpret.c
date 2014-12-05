@@ -17,68 +17,15 @@ char *concate(char *s1, char *s2)
 	return result;
 }
 
-int interpret(tNodePtr *TS, tInsList *IL)
+int interpret(tNodePtr *TS, tInsList *IL)	//precitaj si zadanie real %g, atd
 {
 
 	int l;
 	int r;
-	/*tInsList IL;
-	InitList(&IL);
 
-
-	
-	
-	tInstruction *new = malloc(sizeof(tInstruction));
-
-	new->instype = I_SORT;
-
-	InsertFirst(&IL, *new);
-	//printf("%d\n",IL.first->instruction.instype);
-
-
-	init(&rootTS);*/
-	
-	tNodePtr node;
-	tNodePtr node2;
-	tNodePtr node3;
-
-	tData data = malloc(sizeof(struct tData));
-	tData data2 = malloc(sizeof(struct tData));
-	tData data3 = malloc(sizeof(struct tData));
-
-	data->name = "adr1";
-	data->content.string = "alibaba";
-	data->content.real = 2;
-	
-	data2->name = "adr2";
-	data2->content.string = "li";
-	data2->content.real = 10;
-	
-	data3->name = "result";
-	data3->content.string = "macka";
-	//data3->content.integer = 0;
-	
-	node = insertSymbol(&rootTS, "adr1", data);
-	node2 = insertSymbol(&rootTS, "adr2", data2);
-	node3 = insertSymbol(&rootTS, "result", data3);
-
-	
-
-	
-	//printf("%s je hodnota adr1\n", node->data->content.string);
-	//printf("%s je hodnota adr2\n", node2->data->content.string);*/
-
-	//printf("%s\n", (*rootTS).key);
-	//printf("%s\n", (*rootTS).lptr->key);
-	//printf("%s\n", (*rootTS).rptr->key);
-	//printf("%s\n", (*rootTS).rptr->lptr->key);
-
-	/*tNodePtr hledam = searchSymbol(&rootTS, "adr1");
-
-		printf("%s\n", hledam->key);*/
 	First(IL);
 	tInstruction *new;
-	
+	//tData vysl;
 	do
 	{
 
@@ -88,169 +35,168 @@ int interpret(tNodePtr *TS, tInsList *IL)
 		{
 							/*ARITMETICKE OPERACIE*/
 			case I_ADDI:
-				(node3->data->content.integer) = (node->data->content.integer) + (node2->data->content.integer);
-				printf("vysledok ADDI: %i\n", node3->data->content.integer);
+				(((tData) new->result)->content.integer) = (((tData) new->adr1)->content.integer + ((tData)new->adr2)->content.integer);
+				printf("%d\n", ((tData)new->result)->content.integer);
 				break;
 
 			case I_ADDR:
-				(node3->data->content.real) = (node->data->content.real) + (node2->data->content.real);
-				printf("vysledok ADDR: %f\n", node3->data->content.real);
-				break;	
+				(((tData) new->result)->content.real) = (((tData) new->adr1)->content.real + ((tData)new->adr2)->content.real);
+				printf("%g\n", ((tData)new->result)->content.real);
+				break;
 			
-			case I_CONCATE:
-				node3->data->content.string = concate(node->data->content.string, node2->data->content.string);
-				printf("%s\n", node3->data->content.string);
-				free(node3->data->content.string);
+			case I_CONCATE:		
+				(((tData) new->result)->content.string) =  concate(((tData) new->adr1)->content.string, ((tData) new->adr2)->content.string);			
+				printf("%s\n", ((tData)new->result)->content.string);
 				break;
 
 			case I_SUBI:
-				(node3->data->content.integer) = (node->data->content.integer) - (node2->data->content.integer);
-				printf("vysledok SUBI: %i\n", node3->data->content.integer);
+				(((tData) new->result)->content.integer) = (((tData) new->adr1)->content.integer - ((tData)new->adr2)->content.integer);
+				printf("%d\n", ((tData)new->result)->content.integer);
 				break;
 
 			case I_SUBR:
-				(node3->data->content.real) = (node->data->content.real) - (node2->data->content.real);
-				printf("vysledok SUBR: %f\n", node3->data->content.real);
+				(((tData) new->result)->content.real) = (((tData) new->adr1)->content.real - ((tData)new->adr2)->content.real);
+				printf("%g\n", ((tData)new->result)->content.real);
 				break;
 
 			case I_MULI:
-				(node3->data->content.integer) = (node->data->content.integer) * (node2->data->content.integer);
-				printf("vysledok MULI: %i\n", node3->data->content.integer);
+				(((tData) new->result)->content.integer) = (((tData) new->adr1)->content.integer * ((tData)new->adr2)->content.integer);
+				printf("%d\n", ((tData)new->result)->content.integer);
 				break;		
 
 			case I_MULR:
-				(node3->data->content.real) = (node->data->content.real) * (node2->data->content.real);
-				printf("vysledok MULR: %f\n", node3->data->content.real);
+				(((tData) new->result)->content.real) = (((tData) new->adr1)->content.real * ((tData)new->adr2)->content.real);
+				printf("%g\n", ((tData)new->result)->content.real);
 				break;
 			
 			case I_DIVI:
-				(node3->data->content.integer) = (node->data->content.integer) / (node2->data->content.integer);
-				printf("vysledok DIV: %i\n", node3->data->content.integer);
+				(((tData) new->result)->content.integer) = (((tData) new->adr1)->content.integer / ((tData)new->adr2)->content.integer);
+				printf("%d\n", ((tData)new->result)->content.integer);
 				break;
 
 			case I_DIVR:
-				(node3->data->content.real) = (node->data->content.real) / (node2->data->content.real);
-				printf("vysledok DIVR: %f\n", node3->data->content.real);
+				(((tData) new->result)->content.real) = (((tData) new->adr1)->content.real / ((tData)new->adr2)->content.real);
+				printf("%g\n", ((tData)new->result)->content.real);
 				break;		
 			
 			case I_ASGNI:
-				(node3->data->content.integer) = (node->data->content.integer);
-				printf("vysledok ASGNI: %i\n", node3->data->content.integer);
+				(((tData) new->result)->content.integer) = (((tData) new->adr1)->content.integer);
+				printf("vysledok ASGNI: %i\n", (((tData) new->result)->content.integer));
 				break;		
 
 			case I_ASGNR:
-				(node3->data->content.real) = (node->data->content.real);
-				printf("vysledok ASGNR: %f\n", node3->data->content.real);
+				(((tData) new->result)->content.real) = (((tData) new->adr1)->content.real);
+				printf("vysledok ASGNR: %g\n", (((tData) new->result)->content.real));
 
 			case I_ASGNS:
-				(node3->data->content.string) = (node->data->content.string);
-				printf("vysledok ASGNS: %s\n", node3->data->content.string);		
+				(((tData) new->result)->content.string) = (((tData) new->adr1)->content.string);
+				printf("vysledok ASGNS: %s\n", (((tData) new->result)->content.string));		
 
 							/*LOGICKE OPERACIE*/
 			case I_MORE:
-				if((node->data->content.integer) > (node2->data->content.integer))
+				if((((tData) new->adr1)->content.integer) > (((tData) new->adr2)->content.integer))
 				{
-					node3->data->content.boolean = true;
-					printf("%d\n", node3->data->content.boolean);
+					(((tData) new->result)->content.boolean)= true;
+					printf("%d\n", (((tData) new->result)->content.boolean));
 				
 				} else 
 				{
-					node3->data->content.boolean = false;
-					printf("%d\n", node3->data->content.boolean);
+					(((tData) new->result)->content.boolean) = false;
+					printf("%d\n", (((tData) new->result)->content.boolean));
 				}
 				break;
 			
 			case I_LESS:
-				if((node->data->content.integer) < (node2->data->content.integer))
+				if((((tData) new->adr1)->content.integer) < (((tData) new->adr2)->content.integer))
 				{
-					node3->data->content.boolean = true;
-					printf("%d\n", node3->data->content.boolean);
+					(((tData) new->result)->content.boolean) = true;
+					printf("%d\n", (((tData) new->result)->content.boolean));
 				
 				} else 
 				{
-					node3->data->content.boolean = false;
-					printf("%d\n", node3->data->content.boolean);
+					(((tData) new->result)->content.boolean) = false;
+					printf("%d\n", (((tData) new->result)->content.boolean));
 				}
 				break;
 
 			case I_EMORE:
-				if((node->data->content.integer) >= (node2->data->content.integer))
+				if((((tData) new->adr1)->content.integer) >= (((tData) new->adr2)->content.integer))
 				{
-					node3->data->content.boolean = true;
-					printf("%d\n", node3->data->content.boolean);
+					(((tData) new->result)->content.boolean) = true;
+					printf("%d\n", (((tData) new->result)->content.boolean));
 				
 				} else 
 				{
-					node3->data->content.boolean = false;
-					printf("%d\n", node3->data->content.boolean);
+					(((tData) new->result)->content.boolean) = false;
+					printf("%d\n", (((tData) new->result)->content.boolean));
 				}
 				break;
 
 			case I_ELESS:
-				if((node->data->content.integer) <= (node2->data->content.integer))
+				if((((tData) new->adr1)->content.integer) <= (((tData) new->adr1)->content.integer))
 				{
-					node3->data->content.boolean = true;
-					printf("%d\n", node3->data->content.boolean);
+					(((tData) new->result)->content.boolean)  = true;
+					printf("%d\n", (((tData) new->result)->content.boolean));
 				
 				} else 
 				{
-					node3->data->content.boolean = false;
-					printf("%d\n", node3->data->content.boolean);
+					(((tData) new->result)->content.boolean) = false;
+					printf("%d\n", (((tData) new->result)->content.boolean));
 				}
 				break;
 		
 			case I_EQUAL:
-				if((node->data->content.integer) == (node2->data->content.integer))
+				if((((tData) new->adr1)->content.integer) == (((tData) new->adr2)->content.integer))
 				{
-					node3->data->content.boolean = true;
-					printf("%d\n", node3->data->content.boolean);
+					(((tData) new->result)->content.boolean) = true;
+					printf("%d\n", (((tData) new->result)->content.boolean));
 				
 				} else 
 				{
-					node3->data->content.boolean = false;
-					printf("%d\n", node3->data->content.boolean);
+					(((tData) new->result)->content.boolean) = false;
+					printf("%d\n", (((tData) new->result)->content.boolean));
 				}
 				break;
 			
 			case I_NEQUAL:
-				if((node->data->content.integer) != (node2->data->content.integer))
+				if((((tData) new->adr1)->content.integer) != (((tData) new->adr2)->content.integer))
 				{
-					node3->data->content.boolean = true;
-					printf("%d\n", node3->data->content.boolean);
+					(((tData) new->result)->content.boolean) = true;
+					printf("%d\n", (((tData) new->result)->content.boolean));
 				
 				} else 
 				{
-					node3->data->content.boolean = false;
-					printf("%d\n", node3->data->content.boolean);
+					(((tData) new->result)->content.boolean) = false;
+					printf("%d\n", (((tData) new->result)->content.boolean));
 				}
 				break;
 							/*FUNKCIE*/
 			
 			case I_READI:
-				scanf("%i", &(node3->data->content.integer));
-				printf("%i\n", (node3->data->content.integer));		
+				scanf("%i", &(((tData) new->result)->content.integer));
+				printf("%i\n", (((tData) new->result)->content.integer));		
 				break;
 
 			case I_READR:
-				scanf("%lf", &(node3->data->content.real));
-				printf("%lf\n", (node3->data->content.real));
+				scanf("%lg", &(((tData) new->result)->content.real));
+				printf("%lg\n", (((tData) new->result)->content.real));
 				break;	
 
 			case I_READS:
-				scanf("%s", (node3->data->content.string));
-				printf("%s\n", (node3->data->content.string));
+				scanf("%s", (((tData) new->result)->content.string));
+				printf("%s\n", (((tData) new->result)->content.string));
 				break;
 
 			case I_WRITEI:
-				printf("%i\n", (node3->data->content.integer));
+				printf("%i\n", (((tData) new->result)->content.integer));
 				break;
 
 			case I_WRITER:
-				printf("%f\n", (node3->data->content.real));
+				printf("%g\n", (((tData) new->result)->content.real));
 				break;
 
 			case I_WRITES:
-				printf("%s\n", (node3->data->content.string));
+				printf("%s\n", (((tData) new->result)->content.string));
 				break;
 				
 			case I_LENGTH:
@@ -262,26 +208,40 @@ int interpret(tNodePtr *TS, tInsList *IL)
 				break;
 
 			case I_FIND:
-				(node3->data->content.integer) = BMASearch((node->data->content.string), (node2->data->content.string));
-				printf("%d\n", node3->data->content.integer);
+				(((tData) new->result)->content.integer) = BMASearch((((tData) new->adr1)->content.string), (((tData) new->adr2)->content.string));
+				printf("%d\n", (((tData) new->result)->content.integer));
 				break;
 		
 			case I_SORT:
 				l = 0;
-				r = strlen((node->data->content.string));
+				r = strlen((((tData) new->adr1)->content.string));
 				r--;
-				node3->data->content.string = allocQuickSort((node->data->content.string), l, r);
-				printf("%s\n", node3->data->content.string);
+				(((tData) new->result)->content.string) = allocQuickSort((((tData) new->adr1)->content.string), l, r);
+				printf("%s\n", (((tData) new->result)->content.string));
 				break;
 			
-			//case I_IF:
-				//if(node3->data->content.boolean == true)	
-		
+			/*case I_IF:
+				if(node3->data->content.boolean == true)	
+				{
+					//interpret(&rootTS, IL);
+					printf("robim\n");
+					break;
+				} else 
+				{
+					//interpret(&rootTS, &IL);
+					printf("robim else\n");
+				break;
+				}
+			case I_WHILE:
+				while(node->data->content.boolean == true)
+				{
+					
+					break;
+				}*/
 		}	
 		Succ(IL);
 
 	} while(IL->active != NULL);
-
  return 0; 
 }
 
@@ -294,52 +254,51 @@ int main()
 	tInsList IL;
 	InitList(&IL);
 
-
-	insertInst (&IL,I_CONCATE, NULL, NULL, NULL);
-	
-	/*tInstruction *new = malloc(sizeof(tInstruction));
-
-	new->instype = I_CONCATE;
-
-	InsertLast(&IL, *new);*/
-
-	insertInst (&IL,I_ADDR, NULL, NULL, NULL);
-
-	//new->instype = I_ADDR;
-	//InsertLast(&IL, *new);
-	//printf("%d\n",IL.first->instruction.instype);
-
-
 	init(&rootTS);
+
+	tData koks = malloc(sizeof(struct tData));
+
+	koks->name = "jmeno";
+	koks->type = t_expr_int;
+	koks->content.integer = 5;
+	koks->content.string = "aliba";
+	koks->content.real = 4;
+
+	tData koks2 = malloc(sizeof(struct tData));
+
+	koks2->name = "prijmenie";
+	koks2->type = t_expr_int;
+	koks2->content.integer = 50;
+	koks2->content.string = "ba";
+	koks2->content.real = 6;
+
+	tData koks3 = malloc(sizeof(struct tData));
+
+	koks3->name ="kokrspaniel";
+	koks3->type = t_expr_int;
+	koks3->content.integer = 2;
+
+
+	tNodePtr node1 = insertSymbol(&rootTS, koks->name, koks);
+	tNodePtr node2 = insertSymbol(&rootTS, koks2->name, koks2);
+	tNodePtr node3 = insertSymbol(&rootTS, koks3->name, koks3);
+
+
 	
-	/*tNodePtr node;
-	tNodePtr node2;
-	tNodePtr node3;
-
-	tData data = malloc(sizeof(struct tData));
-	tData data2 = malloc(sizeof(struct tData));
-	tData data3 = malloc(sizeof(struct tData));
-
-	data->name = "adr1";
-	data->content.string = "alibaba";
-
-	data2->name = "adr2";
-	data2->content.string = "li";
-
-	data3->name = "result";
-	data3->content.string = "macka";
-
-	node = insertSymbol(&rootTS, "adr1", data);
-	node2 = insertSymbol(&rootTS, "adr2", data2);
-	node3 = insertSymbol(&rootTS, "result", data3);
+	insertInst(&IL, I_ADDI, (node1->data), (node2->data), (node3->data));
+	insertInst(&IL, I_ADDR, (node1->data), (node2->data), (node3->data));
+	insertInst(&IL, I_CONCATE, (node1->data), (node2->data), (node3->data));
+	insertInst(&IL, I_FIND, (node1->data), (node2->data), (node3->data));
+	insertInst(&IL, I_SORT, (node1->data), (node2->data), (node3->data));	
 
 
-
-	
-	//printf("%s je hodnota adr1\n", node->data->content.string);
-	//printf("%s je hodnota adr2\n", node2->data->content.string);*/
 	
 	interpret(&rootTS, &IL);
+
+	//disposeTable(&rootTS);
+	//DisposeList(&IL);
+	//free(koks);
+	//free(koks2);
 	
 	return 0;
 }
