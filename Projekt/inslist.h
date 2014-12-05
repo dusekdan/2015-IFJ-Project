@@ -11,27 +11,30 @@
 #define I_ASGNI 	9	//result = adr1
 #define I_ASGNR		10  //result = adr1 
 #define I_ASGNS		11  //result = adr1
+#define I_ASGNB		12  //result = adr1
 /***LOGICKE OPERACIE***/
-#define	I_MORE 		12  //adr1 > adr2   result = true
-#define I_LESS 		13  //adr1 < adr2   result = true
-#define I_EMORE 	14  //adr1 >= adr2  result = true
-#define I_ELESS 	15  //adr1 <= adr2  result = true
-#define I_EQUAL 	16  //adr1 == adr2  result = true
-#define I_NEQUAL 	17  //adr1 != adr2  result = true
+#define	I_MORE 		13  //adr1 > adr2   result = true
+#define I_LESS 		14  //adr1 < adr2   result = true
+#define I_EMORE 	15  //adr1 >= adr2  result = true
+#define I_ELESS 	16  //adr1 <= adr2  result = true
+#define I_EQUAL 	17  //adr1 == adr2  result = true
+#define I_NEQUAL 	18  //adr1 != adr2  result = true
 /********FUNKCIE********/
-#define I_READI 	18  //scanf result
-#define I_READR		19  //scanf result
-#define I_READS		20  //scanf result
-#define I_WRITEI 	21  //printf result
-#define I_WRITER	22  //printf result
-#define I_WRITES	23  //printf result
-#define I_LENGTH 	24  //nie je funkcia
-#define I_COPY 		25  //nie je funkcia
-#define I_FIND 		26  //result = BMASearch(adr1, adr2)  vrati v resulte poziciu podretazca adr2 v retazci adr1; adr1,adr2 su stringy result je integer
-#define I_SORT 		27  //result =  allocQuickSort(adr1)
-#define I_IF		28  //result == true spravi cast instrukcii od then, inak robi else
-#define I_WHILE		29	//result == true
-#define I_FOR		30  //result == true
+#define I_READI 	19  //scanf result
+#define I_READR		20  //scanf result
+#define I_READS		21  //scanf result
+#define I_WRITEI 	22  //printf result
+#define I_WRITER	23  //printf result
+#define I_WRITES	24  //printf result
+#define I_LENGTH 	25  //nie je funkcia
+#define I_COPY 		26  //nie je funkcia
+#define I_FIND 		27  //result = BMASearch(adr1, adr2)  vrati v resulte poziciu podretazca adr2 v retazci adr1; adr1,adr2 su stringy result je integer
+#define I_SORT 		28  //result =  allocQuickSort(adr1)
+#define I_IF		29  //result == true spravi cast instrukcii od then, inak robi else
+#define I_WHILE		30	//result == true podmienky
+#define I_FOR		31  //result == true podmienky
+#define I_FCE		32  //
+#define I_VAR		33	//adr1
 
 #include <malloc.h>
 #include <stdio.h>
