@@ -38,6 +38,7 @@ typedef struct tData {		// symbol
 	int argCount;			// pocet argumentu funkce, pro promennou hodnota NULL
 	struct tNodePtr *localTSadr; //Adresa lokalnej tabulky
 	struct tNodePtr *nextArg;			// ukazatel na dalsi argument funkce
+	tInsList *localILadr;        //ukazatel na adresu lokalnych instrukcii
 	tContent content;		// obsah promenne		
 } *tData;
 
