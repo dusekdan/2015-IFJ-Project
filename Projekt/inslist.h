@@ -1,34 +1,37 @@
 /*ARITEMETICKE OPERACIE*/
-#define I_ADDI 		0
-#define I_ADDR 		1
-#define I_CONCATE	2
-#define I_SUBI 		3
-#define I_SUBR 		4
-#define I_MULI 		5
-#define I_MULR 		6
-#define I_DIVI 		7
-#define I_DIVR 		8
-#define I_ASGNI 	9	
-#define I_ASGNR		10
-#define I_ASGNS		11
+#define I_ADDI 		0	//adr1 + adr2 = result
+#define I_ADDR 		1   //adr1 + adr2 = result
+#define I_CONCATE	2   //adr1 + adr2 = result
+#define I_SUBI 		3   //adr1 - adr2 = result
+#define I_SUBR 		4   //adr1 - adr2 = result 
+#define I_MULI 		5   //adr1 * adr2 = result
+#define I_MULR 		6   //adr1 * adr2 = result
+#define I_DIVI 		7   //adr1 / adr2 = result
+#define I_DIVR 		8   //adr1 / adr2 = result
+#define I_ASGNI 	9	//result = adr1
+#define I_ASGNR		10  //result = adr1 
+#define I_ASGNS		11  //result = adr1
 /***LOGICKE OPERACIE***/
-#define	I_MORE 		12
-#define I_LESS 		13
-#define I_EMORE 	14
-#define I_ELESS 	15
-#define I_EQUAL 	16
-#define I_NEQUAL 	17
+#define	I_MORE 		12  //adr1 > adr2   result = true
+#define I_LESS 		13  //adr1 < adr2   result = true
+#define I_EMORE 	14  //adr1 >= adr2  result = true
+#define I_ELESS 	15  //adr1 <= adr2  result = true
+#define I_EQUAL 	16  //adr1 == adr2  result = true
+#define I_NEQUAL 	17  //adr1 != adr2  result = true
 /********FUNKCIE********/
-#define I_READI 	18
-#define I_READR		19
-#define I_READS		20
-#define I_WRITEI 	21
-#define I_WRITER	22
-#define I_WRITES	23
-#define I_LENGTH 	24
-#define I_COPY 		25
-#define I_FIND 		26
-#define I_SORT 		27
+#define I_READI 	18  //scanf result
+#define I_READR		19  //scanf result
+#define I_READS		20  //scanf result
+#define I_WRITEI 	21  //printf result
+#define I_WRITER	22  //printf result
+#define I_WRITES	23  //printf result
+#define I_LENGTH 	24  //nie je funkcia
+#define I_COPY 		25  //nie je funkcia
+#define I_FIND 		26  //result = BMASearch(adr1, adr2)  vrati v resulte poziciu podretazca adr2 v retazci adr1; adr1,adr2 su stringy result je integer
+#define I_SORT 		27  //result =  allocQuickSort(adr1)
+#define I_IF		28  //result == true spravi cast instrukcii od then, inak robi else
+#define I_WHILE		29	//result == true
+#define I_FOR		30  //result == true
 
 #include <malloc.h>
 #include <stdio.h>
