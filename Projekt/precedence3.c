@@ -1,5 +1,5 @@
 /***********************precedence3.c****************************/
-/* Soubor: precedence.c - Syntaktická analýza výrazů 			*/
+/* Soubor: precedenc3e.c - Syntaktická analýza výrazů 			*/
 /* Předmět: Formalní jazyky a překladače (IFJ) 					*/
 /* Projekt: Implementace interpretu imperativního jazyka IFJ14  */
 /* Varianta zadání: b/1/I 										*/
@@ -11,17 +11,12 @@
 /****************************************************************/
 
 #include "precedence3.h"
-/*
-int main() {
+#include <unistd.h>
+//#include "scanner2.c"
 
-	precedenceParser();
-
-	return 0;
-
-}*/
 
 token gibtok() {
-	gib_tok(tok);
+	getNextToken(fd, tok);
 /*
 	token tok = malloc(sizeof(struct token));
 
@@ -107,12 +102,16 @@ token gibtok() {
 */
 	return tok;
 }
+/*
+	Blok funkcí pro prácí se zásobníkem
+*/
 
+	/* Inicializace zásobníku */
 void stackInit(tStack *stack) {
 
 	stack->top = NULL;
 }
-
+	/* Funkce vrácí hodnotu true, pokud je zásobník prázdný. False v opačném případě. */
 bool stackEmpty(tStack *stack) {
 
 	if(stack->top == NULL)
@@ -121,7 +120,8 @@ bool stackEmpty(tStack *stack) {
 	else
 		return false;
 }
-
+	
+	/* Funkce vloží na zásobník novou položku i s daty. Pokud se vložení nepovede, vrací false. */
 bool stackPush(tStack *stack, tOpData element) {
 
 	tElement newElem;
@@ -138,7 +138,7 @@ bool stackPush(tStack *stack, tOpData element) {
 
 	return true;
 }
-
+	/* Funkce smaže vrchní položku zásobníku a přes ukazatel tOpData *data vrací její data. */
 void stackPop(tStack *stack, tOpData *data) {
 
 	if(stack->top != NULL) {
@@ -153,11 +153,13 @@ void stackPop(tStack *stack, tOpData *data) {
 	}
 }
 
+	/* Funkce přečte vrchní položku a vrátí její data. Nic ze zásobníku nemaže! */
 tOpData stackTop(tStack *stack) {
 
 	return (stack->top->data);
 }
 
+	/* Funkce pro uvolnění celého zásobníku. Postupně prochází zásobníkem a maže každou položku zásobníku. */
 void stackDispose(tStack *stack) {
 
 	tOpData temp;
@@ -170,7 +172,7 @@ void stackDispose(tStack *stack) {
 	stack->top = NULL;
 }
 
-
+	/* Dvourozměrné pole pro uchování precedenční tabulky. */
 tPriority precedenceTable [14][14] = {
 
 	{pMORE, pMORE, pLESS, pLESS, pLESS, pMORE, pMORE, pMORE, pMORE, pMORE, pMORE, pMORE, pLESS, pMORE},
@@ -189,9 +191,10 @@ tPriority precedenceTable [14][14] = {
 	{pLESS, pLESS, pLESS, pLESS, pLESS, pEMPTY, pLESS, pLESS, pLESS, pLESS, pLESS, pLESS, pLESS, pEMPTY},
 };
 
-int zpracuj(token tok, tOpData *column) {		// zjisteni typu tokenu, nastaveni inxdexu
+	/* Funkce příjímá přečtěný token a ukazatel na data. Zjístí typ operace nebo hodnoty v tokenu (např. int nebo minus) a do dat uloží odpovídající hodnotu, 
+	 * s kterou se dále pracuje při práci s precedenční tabulkou. */
+int zpracuj(token tok, tOpData *column) {
 
-	//printf("zpracovavam\n");
 	char *key;
 	tNodePtr node;
 
@@ -304,42 +307,87 @@ int zpracuj(token tok, tOpData *column) {		// zjisteni typu tokenu, nastaveni in
 			
 				if(node->data->type == sym_var_boo)
 					column->symbol->type = t_expr_boo;
-				
 			}
-
-			
-
 			break;
 
 		case 41:							// integer, bool
-		case 42:
-		case 43:
-		case 44:
-
-			column->element = ID;
+		case 44:	
 
 			if((column->symbol = malloc(sizeof(struct tData))) != NULL) {
-
-				if(tok->type == t_expr_int) {
-					column->symbol->type = tok->type;
-					column->symbol->content.integer = tok->val_int;
-				}
-
-				if(tok->type == t_expr_dou) {
-					column->symbol->type = tok->type;
-					column->symbol->content.real = tok->val_flo;
-				}
-
-				if(tok->type == t_expr_str) {
-					column->symbol->type = tok->type;
-					column->symbol->content.string = tok->val_str;
-				}
-
-				if(tok->type == t_expr_boo) {
-					column->symbol->type = tok->type;
-					column->symbol->content.boolean = tok->val_int;
-				}
+				column->element = ID;
+				column->symbol->content.integer = tok->val_int;
+				column->symbol->type = tok->type;
 			}
+
+			if((key = malloc(sizeof(char)*(strlen(randstring(20))))) == NULL) {
+
+				errorHandler(errInt);
+				return -1;
+			}
+
+			if((node = malloc(sizeof(struct tNodePtr))) == NULL) {
+
+				errorHandler(errInt);
+				return -1;
+			}
+
+			node = insertSymbol(&rootTS, key, column->symbol);
+			column->key = key;
+
+			free(key);
+			//free(column->symbol);
+			break;
+
+		case 42: 						// string
+
+			if((column->symbol = malloc(sizeof(struct tData))) != NULL) {
+				column->element = ID;
+				column->symbol->content.string = tok->val_str;
+				column->symbol->type = tok->type;
+			}
+
+			if((key = malloc(sizeof(char)*(strlen(randstring(20))))) == NULL) {
+
+				errorHandler(errInt);
+				return -1;
+			}
+
+			if((node = malloc(sizeof(struct tNodePtr))) == NULL) {
+
+				errorHandler(errInt);
+				return -1;
+			}
+
+			node = insertSymbol(&rootTS, key, column->symbol);
+			column->key = key;
+			free(key);
+			//free(column->symbol);
+			break;
+
+		case 43:						// realna hodnota
+
+			if((column->symbol = malloc(sizeof(struct tData))) != NULL) {
+				column->element = ID;
+				column->symbol->content.real = tok->val_flo;
+				column->symbol->type = tok->type;
+			}
+
+			if((key = malloc(sizeof(char)*(strlen(randstring(20))))) == NULL) {
+
+				errorHandler(errInt);
+				return -1;
+			}
+
+			if((node = malloc(sizeof(struct tNodePtr))) == NULL) {
+
+				errorHandler(errInt);
+				return -1;
+			}
+
+			node = insertSymbol(&rootTS, key, column->symbol);
+			column->key = key;
+			free(key);
+			//free(column->symbol);
 			break;
 
 		default:
@@ -351,20 +399,21 @@ int zpracuj(token tok, tOpData *column) {		// zjisteni typu tokenu, nastaveni in
 	return 0;
 }
 
-
-int precedenceParser() {				// hlavni funkce precedencni analyzy
+/* Řídící funkce precedenční syntaktické analýzy. Při správném průchodu celou analýzou výrazu vrací datový typ výsledku. 
+ * Celý výraz je před zpracováním převeden z infixové reprezentace výrazu na postfixovou. */
+int precedenceParser() {
 
 	tStack stack1;
 	stackInit(&stack1);
 
 	tStack stack2;
-	stackInit(&stack2);
+	stackInit(&stack2);							// inicializace zásobníků
 
 	tOpData temp;
 
-	infix2post(&stack1, &stack2);		// prevedeni vyrazu na postfixovou notaci
+	infix2post(&stack1, &stack2);				// prevedeni vyrazu na postfixovou notaci
 
-	while(stackEmpty(&stack2) != true) {		// prechozeni na druhy zasobnik + kontrolni vypsani
+	while(stackEmpty(&stack2) != true) {		// prechozeni na druhy zasobnik
 
 		stackPop(&stack2, &temp);
 		stackPush(&stack1, temp);
@@ -373,24 +422,27 @@ int precedenceParser() {				// hlavni funkce precedencni analyzy
 	int x = reduction(&stack1, &stack2);		// provedeni redukce
 	//printf("Navratovy typ vyrazu: %d\n", x);
 
-	stackDispose(&stack1);
+	stackDispose(&stack1);						// zrušení a uvolnění paměti obou zásobníků
 	stackDispose(&stack2);
 
 
 	return x;
 }
 
+/* Funkce zajišťující zkontrolování výrazu podle pravidel a precedenční tabulky. */
 int reduction(tStack *stack1, tStack *stack2) {
 
 	tOpData temp;
 	tOpData change;
-	tOpData help;
+	tOpData help;				// pomocné proměnné se strukturou tOpData pro práci se zásobníkem
 	int checkRule;
 	int control;
 	int endCheck = 0;
-	int returnType = - 1;
-	int concat;
+	int returnType = - 1;		// proměnná uchovávající návrátový typ výrazu
+	int concat;					// rozlišení zda budeme provádět matematickou operaci sčítání nebo konkatenaci řetězců
 	int boolean = 0;
+	int matusOp;
+
 
 	while(stackEmpty(stack1) != true) {
 
@@ -450,7 +502,7 @@ int reduction(tStack *stack1, tStack *stack2) {
 
 				stackPop(stack1, &temp);	// nacteme 3. znak
 
-				switch(temp.element) {
+				switch(temp.element) {		// zjisteni operatoru, nyni uz vime, kterou operaci budeme s neterminaly provadet
 
 					case PLUS:
 						checkRule = PLUS;
@@ -506,16 +558,19 @@ int reduction(tStack *stack1, tStack *stack2) {
 				}
 
 				if(control == 1) {
-
+					/* Pokud jsou oba neterminály stejného typu */
 					if(change.symbol->type == help.symbol->type) {
 
 						if(change.symbol->type == t_expr_str) {
 							
 							if(checkRule == PLUS)
 								concat = 1;
+							
+							else if(checkRule == LESS || checkRule == MORE || checkRule == MOREEQUAL || checkRule == LESSEQUAL || checkRule == EQUAL || checkRule == NONEQUAL)
+								concat = 0;
 							else {
 
-								printf("S retezci se da provest jen konkatenace.\n");
+								printf("S retezci se tato operace neda provest.\n");
 								return -1;
 							}
 						}
@@ -523,32 +578,47 @@ int reduction(tStack *stack1, tStack *stack2) {
 							concat = 0;
 
 
-						if(boolean == 1)
+						if(boolean == 1)						// pokud budeme provádět logickou operaci, výsledný datový typ musí být boolean
 							returnType = t_expr_boo;
 						else
 							returnType = change.symbol->type;
 
-						//returnType = change.symbol->type;
+						if((matusOp = myOp2matousOp(checkRule, change.symbol->type)) != -1) {		// zapsani instrukce do instrukcniho listu
+
+							insertInst(NULL, matusOp, &change.symbol, &help.symbol, NULL);
+							printf("Vlozil jsem instrukci %d s ukazateli %u a %u\n", matusOp, &change.symbol, &help.symbol);
+						}
 					}
-					// pretypovani na real z intu - musim dodelat, abych se dostal k hodnotam
+					/* Pokud je jeden z neterminálů typu integer a druhý je reálného typu */
 					else if((change.symbol->type == t_expr_int && help.symbol->type == t_expr_dou) || (help.symbol->type == t_expr_int && help.symbol->type == t_expr_int)) {
 						
-						if(change.symbol->type == t_expr_int)		// bud prvni je int a pretypujeme
+						if(change.symbol->type == t_expr_int) {		// bud prvni je int a pretypujeme
+							
+							change.symbol->content.real = (double) change.symbol->content.integer;
 							change.symbol->type = t_expr_dou;
+						}
 
-						if(help.symbol->type == t_expr_int)			// nebo druhy
+						if(help.symbol->type == t_expr_int)	{		// nebo druhy
+							
+							help.symbol->content.real = (double) help.symbol->content.integer;
 							help.symbol->type = t_expr_dou;
+						}
+
 
 						if(boolean == 1)							// pokud mame logickou operaci, musime vracet boolean hodnotu
 							returnType = t_expr_boo;
 						else
 							returnType = change.symbol->type;
 
-						//returnType = change.symbol->type;
-					}
+						if((matusOp = myOp2matousOp(checkRule, change.symbol->type)) != -1) {		// zapsani instrukce do instrukcniho listu
 
+							insertInst(&IL, matusOp, &change.symbol, &help.symbol, NULL);
+							printf("Vlozil jsem instrukci %d s ukazateli %u a %u\n", matusOp, &change.symbol, &help.symbol);
+						}
+					}
+					/* Chybné výrazy */
 					else {
-						printf("Ve vyrazu nejsou stejne typy.\n");
+						//printf("Ve vyrazu nejsou stejne typy.\n");
 						errorHandler(errSemTypArg);
 					}
 
@@ -571,7 +641,6 @@ int reduction(tStack *stack1, tStack *stack2) {
 		}
 
 		else {
-
 			printf("Pro toto neexistuje zadne pravidlo222.\n");
 			errorHandler(errSyn);
 		}
@@ -588,9 +657,37 @@ int reduction(tStack *stack1, tStack *stack2) {
 }
 
 
+	/* Pomocná funkce pro převod z infixu na postfix, určuje prioritu mezi operátory pomocí precedenční tabulky */
+int priority(int x, int y) {
 
-int priority(int x) {
+	switch(precedenceTable[x][y]) {
 
+		case pEQUAL:
+
+			return pEQUAL;
+			break;
+
+		case pEMPTY:
+
+			return pEMPTY;
+			break;
+
+		case pLESS:
+
+			return pLESS;
+			break;
+
+		case pMORE:
+
+			return pMORE;
+			break;
+
+		default:
+
+			return -1;
+			break;
+	}
+/*
 	if(x == LEFT)
 		return 0;
 
@@ -604,8 +701,10 @@ int priority(int x) {
 		return 3;
 
 	return -1;
+	*/
 }
 
+	/* Funkce zajišťující převod z infixové reprezentace na postfixovou reprezentaci výrazu */
 void infix2post(tStack *stack1, tStack *stack2) {
 
 	tOpData temp;		// token
@@ -618,14 +717,12 @@ void infix2post(tStack *stack1, tStack *stack2) {
 		if (skipGib==false)
 			tok=gibtok();
 		skipGib=false;
-		//printf("--token je %d a skipGib je %d\n",tok->type, skipGib);
 
 		if((zpracuj(tok, &temp)) == 0) {
 
-			if(temp.element == ID) {
+			if(temp.element == ID)
 				stackPush(stack2, temp);
-				//printf("%d\n", temp.element);
-			}
+
 			else {
 			
 				if(temp.element == LEFT)
@@ -636,23 +733,29 @@ void infix2post(tStack *stack1, tStack *stack2) {
 					if(temp.element == RIGHT) {
 
 						stackPop(stack1, &help);
+
 						while(help.element != LEFT) {
 							stackPush(stack2, help);
 							stackPop(stack1, &help);
-							//printf("%d\n", help.element);
+
 						}
 					}
 
 					else {
 
-						while(stackEmpty(stack1) != true && (priority(temp.element) <= priority(stackTop(stack1).element))) {
+						while(stackEmpty(stack1) != true && (priority(temp.element, stackTop(stack1).element) == pMORE)) {
+						//while(stackEmpty(stack1) != true && (priority(temp.element) <= priority(stackTop(stack1).element))) {
 
 							stackPop(stack1, &help);
 							stackPush(stack2, help);
-							//printf("%d\n", help.element);
 						}
 
-						stackPush(stack1, temp);
+						if(temp.element == DOLAR && stackEmpty(stack1) != true) {
+
+							stackPush(stack2, (stackTop(stack1)));
+						}
+						else 
+							stackPush(stack1, temp);
 					}	
 				}
 			}	
@@ -665,4 +768,112 @@ void infix2post(tStack *stack1, tStack *stack2) {
 		stackPop(stack2, &temp);
 		printf("%d\n", temp.element);
 	}*/
+}
+
+	/* Změnění operací na odpovídající v interpretu */
+int myOp2matousOp(int myOp, int type) {
+
+	int matusOp;
+
+	switch(myOp) {
+
+		case PLUS:
+
+			if(type == t_expr_int)
+				matusOp = I_ADDI;
+
+			else if(type == t_expr_dou) 
+				matusOp = I_ADDR;
+
+			else if(type == t_expr_str)
+				matusOp = I_CONCATE;
+
+			else
+				return -1;
+
+			break;
+
+		case MINUS:
+
+			if(type == t_expr_int)
+				matusOp = I_SUBI;
+
+			else if(type == t_expr_dou) 
+				matusOp = I_SUBR;
+
+			else
+				return -1;
+
+			break;
+		case MUL:
+
+			if(type == t_expr_int)
+				matusOp = I_MULI;
+
+			else if(type == t_expr_dou) 
+				matusOp = I_MULR;
+
+			else
+				return -1;
+
+			break;
+		case DIV:
+
+			if(type == t_expr_int)
+				matusOp = I_DIVI;
+
+			else if(type == t_expr_dou) 
+				matusOp = I_DIVR;
+
+			else
+				return -1;
+
+			break;
+		case LESS:
+			matusOp = I_LESS;
+			break;
+		case MORE:
+			matusOp = I_MORE;
+			break;
+		case MOREEQUAL:
+			matusOp = I_EMORE;
+			break;
+		case LESSEQUAL:
+			matusOp = I_ELESS;
+			break;
+		case EQUAL:
+			matusOp = I_EQUAL;
+			break;
+		case NONEQUAL:
+			matusOp = I_NEQUAL;
+			break;
+	}
+
+	return matusOp;
+}
+
+char *randstring(int length) {   
+
+    srand(getpid());
+
+    char *string = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,.-#'?!";
+    size_t stringLen = 26*2+10+7;        
+    char *randomString;
+
+    randomString = malloc(sizeof(char) * (length +1));
+
+    if (!randomString) {
+        return (char*)0;
+    }
+
+    unsigned int key = 0;
+
+    for (int n = 0;n < length;n++) {          
+        key = rand() % stringLen;          
+        randomString[n] = string[key];
+    }
+
+    randomString[length] = '\0';
+
+    return randomString;
 }
