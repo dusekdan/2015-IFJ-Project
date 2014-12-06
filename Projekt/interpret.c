@@ -22,10 +22,10 @@ int interpret(tNodePtr *TS, tInsList *IL)	//precitaj si zadanie real %g, atd
 
 	int l;
 	int r;
-
+	int cmp;
 	First(IL);
 	tInstruction *new;
-	//tData vysl;
+
 	do
 	{
 
@@ -92,82 +92,324 @@ int interpret(tNodePtr *TS, tInsList *IL)	//precitaj si zadanie real %g, atd
 				(((tData) new->result)->content.string) = (((tData) new->adr1)->content.string);
 				printf("vysledok ASGNS: %s\n", (((tData) new->result)->content.string));		
 
+			case I_ASGNB:
+				(((tData) new->result)->content.boolean) = (((tData) new->adr1)->content.boolean);
 							/*LOGICKE OPERACIE*/
 			case I_MORE:
-				if((((tData) new->adr1)->content.integer) > (((tData) new->adr2)->content.integer))
+				if(((tData) new->adr1)->type == t_expr_int)
 				{
-					(((tData) new->result)->content.boolean)= true;
-					printf("%d\n", (((tData) new->result)->content.boolean));
+					if((((tData) new->adr1)->content.integer) > (((tData) new->adr2)->content.integer))
+					{
+						(((tData) new->result)->content.boolean) = true;
+						printf("%d\n", (((tData) new->result)->content.boolean));
 				
+					} else 
+					{
+						(((tData) new->result)->content.boolean) = false;
+						printf("%d\n", (((tData) new->result)->content.boolean));
+					}
+				} else if(((tData) new->adr1)->type == t_expr_dou)
+				{
+					if((((tData) new->adr1)->content.real) > (((tData) new->adr2)->content.real))
+					{
+						(((tData) new->result)->content.boolean) = true;
+						printf("%d\n", (((tData) new->result)->content.boolean));
+				
+					} else 
+					{
+						(((tData) new->result)->content.boolean) = false;
+						printf("%d\n", (((tData) new->result)->content.boolean));
+					}
+				} else if(((tData) new->adr1)->type == t_expr_str)
+				{
+					cmp = strcmp((((tData) new->adr1)->content.string), (((tData) new->adr2)->content.string));
+					if(cmp > 0)
+					{
+						(((tData) new->result)->content.boolean) = true;
+						printf("%d\n", (((tData) new->result)->content.boolean));
+				
+					} else 
+					{
+						(((tData) new->result)->content.boolean) = false;
+						printf("%d\n", (((tData) new->result)->content.boolean));
+					}
 				} else 
 				{
-					(((tData) new->result)->content.boolean) = false;
-					printf("%d\n", (((tData) new->result)->content.boolean));
+					if((((tData) new->adr1)->content.boolean) > (((tData) new->adr2)->content.boolean))
+					{
+						(((tData) new->result)->content.boolean) = true;
+						printf("%d\n", (((tData) new->result)->content.boolean));
+				
+					} else 
+					{
+						(((tData) new->result)->content.boolean) = false;
+						printf("%d\n", (((tData) new->result)->content.boolean));
+					}
 				}
 				break;
 			
 			case I_LESS:
-				if((((tData) new->adr1)->content.integer) < (((tData) new->adr2)->content.integer))
+				if(((tData) new->adr1)->type == t_expr_int)
 				{
-					(((tData) new->result)->content.boolean) = true;
-					printf("%d\n", (((tData) new->result)->content.boolean));
+					if((((tData) new->adr1)->content.integer) < (((tData) new->adr2)->content.integer))
+					{
+						(((tData) new->result)->content.boolean) = true;
+						printf("%d\n", (((tData) new->result)->content.boolean));
 				
+					} else 
+					{
+						(((tData) new->result)->content.boolean) = false;
+						printf("%d\n", (((tData) new->result)->content.boolean));
+					}
+				} else if(((tData) new->adr1)->type == t_expr_dou)
+				{
+					if((((tData) new->adr1)->content.real) < (((tData) new->adr2)->content.real))
+					{
+						(((tData) new->result)->content.boolean) = true;
+						printf("%d\n", (((tData) new->result)->content.boolean));
+				
+					} else 
+					{
+						(((tData) new->result)->content.boolean) = false;
+						printf("%d\n", (((tData) new->result)->content.boolean));
+					}
+				} else if(((tData) new->adr1)->type == t_expr_str)
+				{
+					cmp = strcmp((((tData) new->adr1)->content.string), (((tData) new->adr2)->content.string));
+					if(cmp < 0)
+					{
+						(((tData) new->result)->content.boolean) = true;
+						printf("%d\n", (((tData) new->result)->content.boolean));
+				
+					} else 
+					{
+						(((tData) new->result)->content.boolean) = false;
+						printf("%d\n", (((tData) new->result)->content.boolean));
+					}
 				} else 
 				{
-					(((tData) new->result)->content.boolean) = false;
-					printf("%d\n", (((tData) new->result)->content.boolean));
+					if((((tData) new->adr1)->content.boolean) < (((tData) new->adr2)->content.boolean))
+					{
+						(((tData) new->result)->content.boolean) = true;
+						printf("%d\n", (((tData) new->result)->content.boolean));
+				
+					} else 
+					{
+						(((tData) new->result)->content.boolean) = false;
+						printf("%d\n", (((tData) new->result)->content.boolean));
+					}
 				}
 				break;
 
 			case I_EMORE:
-				if((((tData) new->adr1)->content.integer) >= (((tData) new->adr2)->content.integer))
+				if(((tData) new->adr1)->type == t_expr_int)
 				{
-					(((tData) new->result)->content.boolean) = true;
-					printf("%d\n", (((tData) new->result)->content.boolean));
+					if((((tData) new->adr1)->content.integer) >= (((tData) new->adr2)->content.integer))
+					{
+						(((tData) new->result)->content.boolean) = true;
+						printf("%d\n", (((tData) new->result)->content.boolean));
 				
+					} else 
+					{
+						(((tData) new->result)->content.boolean) = false;
+						printf("%d\n", (((tData) new->result)->content.boolean));
+					}
+				} else if(((tData) new->adr1)->type == t_expr_dou)
+				{
+					if((((tData) new->adr1)->content.real) >= (((tData) new->adr2)->content.real))
+					{
+						(((tData) new->result)->content.boolean) = true;
+						printf("%d\n", (((tData) new->result)->content.boolean));
+				
+					} else 
+					{
+						(((tData) new->result)->content.boolean) = false;
+						printf("%d\n", (((tData) new->result)->content.boolean));
+					}
+				} else if(((tData) new->adr1)->type == t_expr_str)
+				{
+					cmp = strcmp((((tData) new->adr1)->content.string), (((tData) new->adr2)->content.string));
+					if(cmp >= 0)
+					{
+						(((tData) new->result)->content.boolean) = true;
+						printf("%d\n", (((tData) new->result)->content.boolean));
+				
+					} else 
+					{
+						(((tData) new->result)->content.boolean) = false;
+						printf("%d\n", (((tData) new->result)->content.boolean));
+					}
 				} else 
 				{
-					(((tData) new->result)->content.boolean) = false;
-					printf("%d\n", (((tData) new->result)->content.boolean));
+					if((((tData) new->adr1)->content.boolean) >= (((tData) new->adr2)->content.boolean))
+					{
+						(((tData) new->result)->content.boolean) = true;
+						printf("%d\n", (((tData) new->result)->content.boolean));
+				
+					} else 
+					{
+						(((tData) new->result)->content.boolean) = false;
+						printf("%d\n", (((tData) new->result)->content.boolean));
+					}
 				}
 				break;
 
 			case I_ELESS:
-				if((((tData) new->adr1)->content.integer) <= (((tData) new->adr1)->content.integer))
+				if(((tData) new->adr1)->type == t_expr_int)
 				{
-					(((tData) new->result)->content.boolean)  = true;
-					printf("%d\n", (((tData) new->result)->content.boolean));
+					if((((tData) new->adr1)->content.integer) <= (((tData) new->adr2)->content.integer))
+					{
+						(((tData) new->result)->content.boolean) = true;
+						printf("%d\n", (((tData) new->result)->content.boolean));
 				
+					} else 
+					{
+						(((tData) new->result)->content.boolean) = false;
+						printf("%d\n", (((tData) new->result)->content.boolean));
+					}
+				} else if(((tData) new->adr1)->type == t_expr_dou)
+				{
+					if((((tData) new->adr1)->content.real) <= (((tData) new->adr2)->content.real))
+					{
+						(((tData) new->result)->content.boolean) = true;
+						printf("%d\n", (((tData) new->result)->content.boolean));
+				
+					} else 
+					{
+						(((tData) new->result)->content.boolean) = false;
+						printf("%d\n", (((tData) new->result)->content.boolean));
+					}
+				} else if(((tData) new->adr1)->type == t_expr_str)
+				{
+					cmp = strcmp((((tData) new->adr1)->content.string), (((tData) new->adr2)->content.string));
+					if(cmp <= 0)
+					{
+						(((tData) new->result)->content.boolean) = true;
+						printf("%d\n", (((tData) new->result)->content.boolean));
+				
+					} else 
+					{
+						(((tData) new->result)->content.boolean) = false;
+						printf("%d\n", (((tData) new->result)->content.boolean));
+					}
 				} else 
 				{
-					(((tData) new->result)->content.boolean) = false;
-					printf("%d\n", (((tData) new->result)->content.boolean));
+					if((((tData) new->adr1)->content.boolean) <= (((tData) new->adr2)->content.boolean))
+					{
+						(((tData) new->result)->content.boolean) = true;
+						printf("%d\n", (((tData) new->result)->content.boolean));
+				
+					} else 
+					{
+						(((tData) new->result)->content.boolean) = false;
+						printf("%d\n", (((tData) new->result)->content.boolean));
+					}
 				}
 				break;
-		
+
 			case I_EQUAL:
-				if((((tData) new->adr1)->content.integer) == (((tData) new->adr2)->content.integer))
+				if(((tData) new->adr1)->type == t_expr_int)
 				{
-					(((tData) new->result)->content.boolean) = true;
-					printf("%d\n", (((tData) new->result)->content.boolean));
+					if((((tData) new->adr1)->content.integer) == (((tData) new->adr2)->content.integer))
+					{
+						(((tData) new->result)->content.boolean) = true;
+						printf("%d\n", (((tData) new->result)->content.boolean));
 				
+					} else 
+					{
+						(((tData) new->result)->content.boolean) = false;
+						printf("%d\n", (((tData) new->result)->content.boolean));
+					}
+				} else if(((tData) new->adr1)->type == t_expr_dou)
+				{
+					if((((tData) new->adr1)->content.real) == (((tData) new->adr2)->content.real))
+					{
+						(((tData) new->result)->content.boolean)= true;
+						printf("%d\n", (((tData) new->result)->content.boolean));
+				
+					} else 
+					{
+						(((tData) new->result)->content.boolean) = false;
+						printf("%d\n", (((tData) new->result)->content.boolean));
+					}
+				} else if(((tData) new->adr1)->type == t_expr_str)
+				{
+					cmp = strcmp((((tData) new->adr1)->content.string), (((tData) new->adr2)->content.string));
+					if(cmp == 0)
+					{
+						(((tData) new->result)->content.boolean) = true;
+						printf("%d\n", (((tData) new->result)->content.boolean));
+				
+					} else 
+					{
+						(((tData) new->result)->content.boolean) = false;
+						printf("%d\n", (((tData) new->result)->content.boolean));
+					}
 				} else 
 				{
-					(((tData) new->result)->content.boolean) = false;
-					printf("%d\n", (((tData) new->result)->content.boolean));
+					if((((tData) new->adr1)->content.boolean) == (((tData) new->adr2)->content.boolean))
+					{
+						(((tData) new->result)->content.boolean) = true;
+						printf("%d\n", (((tData) new->result)->content.boolean));
+				
+					} else 
+					{
+						(((tData) new->result)->content.boolean) = false;
+						printf("%d\n", (((tData) new->result)->content.boolean));
+					}
 				}
 				break;
 			
 			case I_NEQUAL:
-				if((((tData) new->adr1)->content.integer) != (((tData) new->adr2)->content.integer))
+				if(((tData) new->adr1)->type == t_expr_int)
 				{
-					(((tData) new->result)->content.boolean) = true;
-					printf("%d\n", (((tData) new->result)->content.boolean));
+					if((((tData) new->adr1)->content.integer) != (((tData) new->adr2)->content.integer))
+					{
+						(((tData) new->result)->content.boolean) = true;
+						printf("%d\n", (((tData) new->result)->content.boolean));
 				
+					} else 
+					{
+						(((tData) new->result)->content.boolean) = false;
+						printf("%d\n", (((tData) new->result)->content.boolean));
+					}
+				} else if(((tData) new->adr1)->type == t_expr_dou)
+				{
+					if((((tData) new->adr1)->content.real) != (((tData) new->adr2)->content.real))
+					{
+						(((tData) new->result)->content.boolean) = true;
+						printf("%d\n", (((tData) new->result)->content.boolean));
+				
+					} else 
+					{
+						(((tData) new->result)->content.boolean) = false;
+						printf("%d\n", (((tData) new->result)->content.boolean));
+					}
+				} else if(((tData) new->adr1)->type == t_expr_str)
+				{
+					cmp = strcmp((((tData) new->adr1)->content.string), (((tData) new->adr2)->content.string));
+					if(cmp != 0)
+					{
+						(((tData) new->result)->content.boolean) = true;
+						printf("%d\n", (((tData) new->result)->content.boolean));
+				
+					} else 
+					{
+						(((tData) new->result)->content.boolean) = false;
+						printf("%d\n", (((tData) new->result)->content.boolean));
+					}
 				} else 
 				{
-					(((tData) new->result)->content.boolean) = false;
-					printf("%d\n", (((tData) new->result)->content.boolean));
+					if((((tData) new->adr1)->content.boolean) != (((tData) new->adr2)->content.boolean))
+					{
+						(((tData) new->result)->content.boolean) = true;
+						printf("%d\n", (((tData) new->result)->content.boolean));
+				
+					} else 
+					{
+						(((tData) new->result)->content.boolean) = false;
+						printf("%d\n", (((tData) new->result)->content.boolean));
+					}
 				}
 				break;
 							/*FUNKCIE*/
@@ -258,23 +500,23 @@ int main()
 
 	tData koks = malloc(sizeof(struct tData));
 
-	koks->name = "jmeno";
-	koks->type = t_expr_int;
-	koks->content.integer = 5;
-	koks->content.string = "aliba";
-	koks->content.real = 4;
+	koks->name = "yolo";
+	koks->type = t_expr_str;
+	//koks->content.integer = 500;
+	koks->content.string = "abb";
+	//koks->content.real = 4;
 
 	tData koks2 = malloc(sizeof(struct tData));
 
-	koks2->name = "prijmenie";
-	koks2->type = t_expr_int;
-	koks2->content.integer = 50;
+	koks2->name = "swag";
+	koks2->type = t_expr_str;
+	//koks2->content.integer = 50;
 	koks2->content.string = "ba";
-	koks2->content.real = 6;
+	//koks2->content.real = 6;
 
 	tData koks3 = malloc(sizeof(struct tData));
 
-	koks3->name ="kokrspaniel";
+	koks3->name ="nub";
 	koks3->type = t_expr_int;
 	koks3->content.integer = 2;
 
@@ -285,11 +527,11 @@ int main()
 
 
 	
-	insertInst(&IL, I_ADDI, (node1->data), (node2->data), (node3->data));
-	insertInst(&IL, I_ADDR, (node1->data), (node2->data), (node3->data));
-	insertInst(&IL, I_CONCATE, (node1->data), (node2->data), (node3->data));
-	insertInst(&IL, I_FIND, (node1->data), (node2->data), (node3->data));
-	insertInst(&IL, I_SORT, (node1->data), (node2->data), (node3->data));	
+	//insertInst(&IL, I_ADDI, (node1->data), (node2->data), (node3->data));
+	//insertInst(&IL, I_ADDR, (node1->data), (node2->data), (node3->data));
+	//insertInst(&IL, I_CONCATE, (node1->data), (node2->data), (node3->data));
+	//insertInst(&IL, I_FIND, (node1->data), (node2->data), (node3->data));
+	insertInst(&IL, I_MORE, (node1->data), (node2->data), (node3->data));	
 
 
 	
