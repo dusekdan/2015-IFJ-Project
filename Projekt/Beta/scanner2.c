@@ -186,6 +186,8 @@ int getNextToken(FILE* fd, token TToken)
 	bool numberIntCase = false;
 	bool numberDoubleCase = false;
 
+	bool notAllowedChar = false;
+
 	bool inString = false;
 	bool apostrof = false;
 	bool entity = false;
@@ -243,6 +245,7 @@ int getNextToken(FILE* fd, token TToken)
 			continue;
 		}
 
+
 		/*************************** SETTING UP FLOW-CONTROL VARIABLES AND STUFF ***************************/
 
 		
@@ -271,7 +274,7 @@ int getNextToken(FILE* fd, token TToken)
 		}*/
 
 		/************************** AND THE SWITCH FUN BEGINS **************************************/
-
+		
 		switch(actState)
 		{
 
@@ -295,7 +298,7 @@ int getNextToken(FILE* fd, token TToken)
 					actState = sNUMBER;
 					strBuffer[fcv] = c;
 					break;
-				} else if(c == '+' || c == '.' || c == '-' || c == '*' || c == '/' || c == '(' || c == ')' || c == ',' || c == '^' || c == '=' ||  c== ';' || /* tyto znaky mohou vést na double op*/ c == ':' || c == '<' || c == '>')
+				} else if(c == '+' || c == '.' || c == '-' || c == '*' || c == '/' || c == '(' || c == ')' || c == ',' || c == '=' ||  c== ';' || /* tyto znaky mohou vést na double op*/ c == ':' || c == '<' || c == '>')
 				{
 					actState = sSINGLEOPER;	 // je třeba provést kontrolu na doubleop
 					strBuffer[fcv] = c;
@@ -303,7 +306,10 @@ int getNextToken(FILE* fd, token TToken)
 				}
 				else
 				{
-					actState = A_JSI_V_PCI;
+
+						terminateLoop = true;
+						strBuffer[fcv] = '\0';
+						break;
 				}
 			
 			break; // this is sSTART emergency break
@@ -906,7 +912,7 @@ int getNextToken(FILE* fd, token TToken)
 			break; // same as one level up
 
 			default:
-				printf("Character not allowed!\n");
+				printf("Character not allowed! '%d' | actState=%d\n", (int) c, actState);
 				exit(1);		
 		}
 
@@ -953,6 +959,7 @@ int getNextToken(FILE* fd, token TToken)
 		/* end of switch fun */
 
 		/* TOKEN SENDING AND LOOP TERMINATION */
+
 
 		if(terminateLoop)
 		{
@@ -1098,6 +1105,8 @@ int getNextToken(FILE* fd, token TToken)
 
 			//printf("varID: %d\n", tokType);
 
+
+
 			if(TToken->type == t_var_id)
 			{
 				TToken->val_str = malloc(baseStringLength);
@@ -1107,6 +1116,7 @@ int getNextToken(FILE* fd, token TToken)
 						fclose(fd);
 						exit(99);
 					}
+				makeStringLowerCase(strBuffer);
 				strcpy(TToken->val_str,strBuffer);
 			}
 
@@ -1122,34 +1132,26 @@ int getNextToken(FILE* fd, token TToken)
 				//resetString(strBuffer);
 				//free(strBuffer);
 			}
-			else if(numberDoubleCase)
+			
+			if(numberDoubleCase)
 			{
 				TToken->val_flo = tokDouble; // we ended in integer branch, so we fill "val_flo" with data.
 				TToken->val_int = -1;
 				//resetString(strBuffer);
 				//free(strBuffer);
 			}
-			else
-			{
-				// do nothing atm
-			}
+
 			// Conclusion
 			// When called on ínteger/real, in the responding data type is stored the value, in the other one, -1 is issued, in val_str is left the original string value
 			// When called on string/identifier/whatever requires storage in strBuff, it's left in there (though memory is cleaned in the end)
 			
 
+				printf("Odesílám token: %s (%d)\n", TToken->val_str, TToken->type);
 				free(strBuffer);
 				free(entityBuffer);
 
-
-		if(c == EOF)
-		{
-			return -1;
-		}
-		else
-		{
-			return 1;
-		}
+				return 1;
+		    
 
 			break;
 		}
