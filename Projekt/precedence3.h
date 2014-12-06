@@ -10,13 +10,6 @@
 /*                  Roman Jaška  (xjaska00)						*/
 /****************************************************************/
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdbool.h>
-//#include "parser.h"
-//#include "ial.c"
-//#include "errorHandler.c"
 
 
 #define STACKSIZE 50;
@@ -70,6 +63,7 @@ typedef struct {
 
 	tData symbol;
 	tOperators element;
+	char *key;
 
 } tOpData;
 
@@ -101,4 +95,6 @@ int reduction(tStack *stack1, tStack *stack2);
 
 void infix2post(tStack *stack1, tStack *stack2);
 
-int priority(int x);
+int priority(int x, int y);
+char *randstring(int length);
+int myOp2matousOp(int myOp, int type);
