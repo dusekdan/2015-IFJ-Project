@@ -16,92 +16,12 @@
 
 
 token gibtok() {
-	getNextToken(fd, tok);
-/*
-	token tok = malloc(sizeof(struct token));
-
-	char x = ' ';
-
-	while(x == ' ') 
-		scanf("%c", &x);
-
-	switch(x) {
-
-		case ';':
-			tok->type = t_semicolon;
-			break;
-
-		case '(':
-			tok->type = t_l_parrent;
-			break;
-
-		case ')':
-			tok->type = t_r_parrent;
-			break;
-
-		case 'i':
-			tok->type = t_expr_int;
-			break;
-
-		case 'd':
-			tok->type = t_expr_dou;
-			break;
-
-		case 's':
-			tok->type = t_expr_str;
-			break;
-		
-		case 'v':
-			tok->type = t_var_id;
-			break;
-
-		case '+':
-			tok->type = t_plus;
-			break;
-
-		case '-':
-			tok->type = t_minus;
-			break;
-
-		case '*':
-			tok->type = t_mul;
-			break;
-
-		case '/':
-			tok->type = t_div;
-			break;
-
-		case '<':
-			tok->type = t_less;
-			break;
 	
-		case '>':
-			tok->type = t_more;
-			break;
-
-		case '=':
-			tok->type = t_equal;
-			break;
-
-		case 'n':
-			tok->type = t_nequal;
-			break;
-
-		case 'm':
-			tok->type = t_moreeq;
-			break;
-
-		case 'l':
-			tok->type = t_lesseq;
-			break;
-
-		default:
-			printf("kokot\n");
-			exit(1);
-	}	
-*/
+	getNextToken(fd, tok);
 	return tok;
 }
+
+
 /*
 	Blok funkcí pro prácí se zásobníkem
 */
@@ -310,12 +230,25 @@ int zpracuj(token tok, tOpData *column) {
 			}
 			break;
 
-		case 41:							// integer, bool
+		case 41:	// int, real, bool, string
+		case 42:
+		case 43:						
 		case 44:	
 
 			if((column->symbol = malloc(sizeof(struct tData))) != NULL) {
+				
 				column->element = ID;
-				column->symbol->content.integer = tok->val_int;
+				
+				if(tok->type == t_expr_int)
+					column->symbol->content.integer = tok->val_int;
+				if(tok->type == t_expr_boo)
+					column->symbol->content.boolean = tok->val_int;
+				if(tok->type == t_expr_str)
+					column->symbol->content.string = tok->val_str;
+				if(tok->type == t_expr_dou)
+					column->symbol->content.real = tok->val_flo;
+
+
 				column->symbol->type = tok->type;
 			}
 
@@ -335,59 +268,7 @@ int zpracuj(token tok, tOpData *column) {
 			column->key = key;
 
 			free(key);
-			//free(column->symbol);
-			break;
-
-		case 42: 						// string
-
-			if((column->symbol = malloc(sizeof(struct tData))) != NULL) {
-				column->element = ID;
-				column->symbol->content.string = tok->val_str;
-				column->symbol->type = tok->type;
-			}
-
-			if((key = malloc(sizeof(char)*(strlen(randstring(20))))) == NULL) {
-
-				errorHandler(errInt);
-				return -1;
-			}
-
-			if((node = malloc(sizeof(struct tNodePtr))) == NULL) {
-
-				errorHandler(errInt);
-				return -1;
-			}
-
-			node = insertSymbol(&rootTS, key, column->symbol);
-			column->key = key;
-			free(key);
-			//free(column->symbol);
-			break;
-
-		case 43:						// realna hodnota
-
-			if((column->symbol = malloc(sizeof(struct tData))) != NULL) {
-				column->element = ID;
-				column->symbol->content.real = tok->val_flo;
-				column->symbol->type = tok->type;
-			}
-
-			if((key = malloc(sizeof(char)*(strlen(randstring(20))))) == NULL) {
-
-				errorHandler(errInt);
-				return -1;
-			}
-
-			if((node = malloc(sizeof(struct tNodePtr))) == NULL) {
-
-				errorHandler(errInt);
-				return -1;
-			}
-
-			node = insertSymbol(&rootTS, key, column->symbol);
-			column->key = key;
-			free(key);
-			//free(column->symbol);
+			//free(column->symbol);	
 			break;
 
 		default:
