@@ -33,6 +33,7 @@
 
 tNodePtr localTS;
 tInsList *localIL;
+//tContent *elegeblege[100];
 
 /* Premenná rozhodujúca či mám hladať len v globálnej tabuľke */
 
@@ -794,10 +795,10 @@ void nt_stmt (token tok)
                             int intype=0;
                             switch (semControlVar)
                             {
-                                case 41:    intype=I_ASGNI;break;
-                                case 42:    intype=I_ASGNS;break;
-                                case 43:    intype=I_ASGNR;break;
-                                case 44:    intype=I_ASGNB;break;
+                                case 1:    intype=I_ASGNI;break;
+                                case 3:    intype=I_ASGNS;break;
+                                case 2:    intype=I_ASGNR;break;
+                                case 4:    intype=I_ASGNB;break;
                             }
                             if (localIL==NULL)
                                 insertInst (&IL, intype, NULL, NULL, &hledam);
@@ -896,7 +897,7 @@ void nt_stmt (token tok)
             ////////////////////////////////////////////////////////////////////////////////RULE22
             case 19:        match        (tok,t_write);
                             match        (tok,t_l_parrent);
-                            nt_term_list (tok, "Fwrite");
+                            nt_term_list (tok, "Fwrite", NULL);
 /*bolo tu povodne argc*/    pocetArg = 0;
                             match        (tok,t_r_parrent);
                             break;
@@ -910,15 +911,15 @@ void nt_stmt (token tok)
 }
 
 int j = 0;
-tContent *contentArr[256];
-tContent contentArrOld[256];
+
+//tContent contentArrOld[256];
 
 int nt_assign (token tok)
 {
-    if (tok->type == t_expr_int || tok->type == t_expr_str || tok->type == t_expr_dou ||  tok->type == t_fun_id || tok->type == t_var_id)
+    if (tok->type == t_expr_int || tok->type == t_expr_str || tok->type == t_expr_dou ||  tok->type == t_fun_id || tok->type == t_var_id || tok->type == t_l_parrent)
     {
         ///////////////////////////////////////////////////////////////////////RULE23
-        if (tok->type == t_expr_int || tok->type == t_expr_str || tok->type == t_expr_dou || tok->type == t_var_id)
+        if (tok->type == t_expr_int || tok->type == t_expr_str || tok->type == t_expr_dou || tok->type == t_var_id || tok->type == t_l_parrent)
         {
             //printf("TYPE JE %d\n",tok->type);
             //printf("--idem priradenie\n");
@@ -957,25 +958,43 @@ int nt_assign (token tok)
             
             match(tok,t_fun_id);
             match(tok,t_l_parrent);
-            nt_term_list(tok, key);
+
+            tContent **contentArr=malloc(sizeof(struct tContent*)*100);
+            contentArr[0]=&hledam->data->nextArg->data->content;
+
+
+            //elegeblege[0]=;
+            printf("KOKOOOOOOOOOOOOOOOOT %d\n",contentArr[0]->integer);
+            /*for (int i = 0; i<100; i++)
+            {
+                contentArr[i]=malloc(sizeof(struct tContent));
+            }*/
+            //struct tContent *(*contentArrPtr)[] = &contentArr;
+
+
+
+
+
+            nt_term_list(tok, key, contentArr);
             pocetArg = 0;
             //printf("factorial ma content %d\n", hledam->data->content.integer);
             //termy su overene idem ich nahradit
             printf("\nhledam->data->argCount je %d\n",hledam->data->argCount);
-            tNodePtr currentFunction = hledam->data->nextArg;
+            
+            /*tNodePtr currentFunction = hledam->data->nextArg;
                 for (int i = 0; i<hledam->data->argCount;i++)
                 {
                     
                     //printf("----som na %s\n",currentFunction->data->name );
                     //printf("Content %s je %d\n",currentFunction->data->name,currentFunction->data->content.integer );
-                    contentArrOld[i]=currentFunction->data->content;
+                contentArrOld[i]=currentFunction->data->content;
                     currentFunction->data->content=*contentArr[i];
                     //printf("Content %s je %d\n",currentFunction->data->name,currentFunction->data->content.integer );
                     //contentArr[i]=&currentFunction->data->content;
                     //printf("contentArr[%d] je %d\n",i,*&contentArr[i]->integer);
                     
                     currentFunction=currentFunction->data->nextArg;
-                }
+                }*/
             j=0;
             //povodne argsRead=0;
             match(tok,t_r_parrent);
@@ -991,17 +1010,17 @@ int nt_assign (token tok)
                                                                                                                       //treba ale este predat premenne
             if (localIL==NULL)
             {
-                insertInst (&IL, I_FCE, hledam->data, NULL, NULL);
+                insertInst (&IL, I_FCE, hledam->data, contentArr, NULL);
                 printf("GLOBAL\n");printf("Vlozil som instrukciu I_FCE s ukazatelom %u do IL %u\n", &hledam->data,&IL);
             }
             else
             {
-                insertInst (localIL, I_FCE, hledam->data, &contentArrOld, NULL);
+                insertInst (localIL, I_FCE, hledam->data, contentArr, NULL);
                 printf("GLOBAL\n");printf("Vlozil som instrukciu I_FCE s ukazatelom %u do IL %u\n", &hledam->data,localIL);
             }
 
             //nahodim spat povodne hodnoty urobi to matus
-            currentFunction = hledam->data->nextArg;
+            /*currentFunction = hledam->data->nextArg;
             for (int k = 0; k< hledam->data->argCount;k++)
                 {
                     //currentFunction=currentFunction->data->nextArg;
@@ -1011,7 +1030,7 @@ int nt_assign (token tok)
                     currentFunction->data->content=contentArrOld[k];
                     //printf("Content %s je %d\n",currentFunction->data->name,currentFunction->data->content.integer );
                     currentFunction=currentFunction->data->nextArg;
-                }
+                }*/
 
             //printf("--LOCAL IL JE %u\n",localIL );
             //localIL=revert;
@@ -1029,7 +1048,7 @@ int nt_assign (token tok)
     return -1;
 }
 
-void nt_term (token tok, char *currentFunctionKey)
+void nt_term (token tok, char *currentFunctionKey, tContent **contentArr)
 {
     if (tok->type == t_var_id || tok->type == t_expr_int || tok->type == t_expr_dou || tok->type == t_expr_str)
     {
@@ -1063,6 +1082,7 @@ void nt_term (token tok, char *currentFunctionKey)
                   comparison1 = hledam->data->type;
                   //printf("\n--overene %s ", hledam->data->name );
                   contentArr[j]=&hledam->data->content;
+                  printf("uloxzil som ukayatel na oksokork %d\n",contentArr[j]->integer);
                   j++;
             //printf("COMPARISON1 je %d\n",comparison1 );
             }
@@ -1166,15 +1186,16 @@ void nt_term (token tok, char *currentFunctionKey)
 
 }
 
-void nt_term_list (token tok, char *currentFunctionKey)
+void nt_term_list (token tok, char *currentFunctionKey, tContent **contentArr)
 {
     if (tok->type == t_var_id || tok->type == t_r_parrent || tok->type == t_expr_int || tok->type == t_expr_dou || tok->type == t_expr_str)
     {
+
         /////////////////////////////////////////////////////////////////////RULE26
         if (tok->type == t_var_id || tok->type == t_expr_int || tok->type == t_expr_dou || tok->type == t_expr_str)
         {
-            nt_term (tok, currentFunctionKey);
-            nt_term_more(tok, currentFunctionKey);
+            nt_term (tok, currentFunctionKey, contentArr);
+            nt_term_more(tok, currentFunctionKey, contentArr);
         }
         /////////////////////////////////////////////////////////////////////RULE25
         else
@@ -1190,7 +1211,7 @@ void nt_term_list (token tok, char *currentFunctionKey)
     }
 }
 
-void nt_term_more (token tok, char *currentFunctionKey)
+void nt_term_more (token tok, char *currentFunctionKey, tContent **contentArr)
 {
     if (tok->type == t_comma || tok->type == t_r_parrent)
     {
@@ -1198,7 +1219,7 @@ void nt_term_more (token tok, char *currentFunctionKey)
         if (tok->type == t_comma)
         {
             match(tok,t_comma);
-            nt_term_list(tok, currentFunctionKey);
+            nt_term_list(tok, currentFunctionKey, contentArr);
         }
         ////////////////////////////////////////////////////////////////////////RULE28
         else
