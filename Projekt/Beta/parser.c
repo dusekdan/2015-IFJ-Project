@@ -810,13 +810,13 @@ void nt_stmt (token tok)
                             printf("%s",KYEL);
                             if (localIL==NULL)
                             {   
-                                printf("Vlozil som instrukciu assign %d s result %u do IL %u\n",intype,&hledam,&IL);
+                                printf("Vlozil som instrukciu assign %d s result %u do IL %u\n",intype,&hledam->data,&IL);
                                 insertInst (&IL, intype, NULL, NULL, &hledam);
                             }
                             else
                             {
                                 insertInst (&*localIL, intype, NULL, NULL, &hledam);
-                                printf("Vlozil som instrukciu assign %d s result %u do IL %u\n",intype,&hledam,&*localIL);
+                                printf("Vlozil som instrukciu assign %d s result %u do IL %u\n",intype,&hledam->data,&*localIL);
                             }
                             break;
                             printf("%s",KNRM);
