@@ -811,11 +811,11 @@ void nt_stmt (token tok)
                             if (localIL==NULL)
                             {   
                                 printf("Vlozil som instrukciu assign %d s result %u do IL %u\n",intype,&hledam->data,&IL);
-                                insertInst (&IL, intype, NULL, NULL, &hledam);
+                                insertInst (&IL, intype, NULL, NULL, &hledam->data);
                             }
                             else
                             {
-                                insertInst (&*localIL, intype, NULL, NULL, &hledam);
+                                insertInst (&*localIL, intype, NULL, NULL, &hledam->data);
                                 printf("Vlozil som instrukciu assign %d s result %u do IL %u\n",intype,&hledam->data,&*localIL);
                             }
                             break;
