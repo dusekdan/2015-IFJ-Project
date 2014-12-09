@@ -8,6 +8,6 @@ int errorHandler (int errorType)
         default:    printf("Unspecified error occured.\n");
                     break;
     }
-    printf("chyba %d\n",errorType );
+    printf("%schyba %d%s\n",KRED,errorType,KNRM );
     exit(errorType);
 }

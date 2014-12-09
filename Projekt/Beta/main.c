@@ -1,8 +1,38 @@
+/*#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <ctype.h>
+
+#define KNRM  "\x1B[0m"
+#define KRED  "\x1B[31m"
+#define KGRN  "\x1B[32m"
+#define KYEL  "\x1B[33m"
+#define KBLU  "\x1B[34m"
+#define KMAG  "\x1B[35m"
+#define KCYN  "\x1B[36m"
+#define KWHT  "\x1B[37m"
+
+#include "errorHandler.c"
+#include "inslist.c"
+#include "ial.c"*/
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <ctype.h>
+
+
+#define KNRM  "\x1B[0m"
+#define KRED  "\x1B[31m"
+#define KGRN  "\x1B[32m"
+#define KYEL  "\x1B[33m"
+#define KBLU  "\x1B[34m"
+#define KMAG  "\x1B[35m"
+#define KCYN  "\x1B[36m"
+#define KWHT  "\x1B[37m"
+
 #include "errorHandler.c"
 #include "inslist.h"
 #include "ial.c"
@@ -16,9 +46,21 @@ tInsList IL;
 #include "scanner2.c"
 #include "interpret.c"
 
+
+/*
+FILE*fd=NULL;
+tInsList IL;
+//#include "inslist.c"
+//#include "precedence3.c"
+#include "parser.c"
+#include "scanner2.c"*/
+
 int main(int argc, char const *argv[])
 {
-    //if (argc!=1 && strcmp(argv[1],"-d")==0)debug=true;
+    if (argc!=1 && strcmp(argv[2],"-d")==0)
+        debug=true;
+    else
+        debug=false;
     InitList(&IL);
 
     fd = fopen(argv[1], "r");
@@ -43,16 +85,18 @@ int main(int argc, char const *argv[])
         errorHandler(errInt);
         return 1;
     }
+/*
+    printf("%sred\n", KRED);
+    printf("%sgreen\n", KGRN);
+    printf("%syellow\n", KYEL);
+    printf("%sblue\n", KBLU);
+    printf("%smagenta\n", KMAG);
+    printf("%scyan\n", KCYN);
+    printf("%swhite\n", KWHT);
+    printf("%snormal\n", KNRM);*/
 
-    interpret(&rootTS, &IL);
-   /* First(&IL);
-    tInstruction *new;
-    while(IL.active != NULL) {
-        new = Copy(&IL);
-        printf("%d\n", new->instype);
-        Succ(&IL);
-    }
-*/
+    //printf("ELEGEBLEGE %d\n",globalArr[0]->integer);
+
     disposeTable(&rootTS);
     if (localTS!=NULL) disposeTable(&localTS);
     fclose(fd);

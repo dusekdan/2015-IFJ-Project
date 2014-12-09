@@ -149,6 +149,7 @@ int buildemin ()
 void terminalis (int terminal, token tok)
 {
     if (debug==true)
+        printf("%s",KCYN);
     switch (terminal)
     {
         case 1:  printf ("var\n");                  break;
@@ -187,6 +188,7 @@ void terminalis (int terminal, token tok)
         case 44: printf ("BOOL ");                  break;
         default: printf ("error input=%d\n", terminal);
     }
+    printf("%s",KNRM );
 }
 
 /* Funkcia porovnávajúca spracovaný terminál so vstupom, následne žiada token */
@@ -323,7 +325,7 @@ void nt_var_def (token tok)
 
         //Sem pride instrukcia
         tData currentVar = searchSymbol(&*currTS, key)->data;
-
+        printf("%s",KYEL);
         if (localIL==NULL){
             insertInst (&IL, I_VAR, currentVar, NULL, NULL);
             printf("GLOBAL\n");printf("Vlozil som instrukciu I_VAR s ukazatelom %u do IL %u\n", &currentVar,&IL);
@@ -333,6 +335,7 @@ void nt_var_def (token tok)
             insertInst (localIL, I_VAR, currentVar, NULL, NULL);
             printf("LOCAL\n");printf("Vlozil som instrukciu I_VAR s ukazatelom %u do IL %u\n", &currentVar,localIL);
         }
+        printf("%s",KNRM);
         free (key);
 
     }
@@ -803,11 +806,19 @@ void nt_stmt (token tok)
                                 case 2:    intype=I_ASGNR;break;
                                 case 4:    intype=I_ASGNB;break;
                             }
+                            printf("%s",KYEL);
                             if (localIL==NULL)
+                            {   
+                                printf("Vlozil som instrukciu assign %d s result %u do IL %u\n",intype,&hledam,&IL);
                                 insertInst (&IL, intype, NULL, NULL, &hledam);
+                            }
                             else
-                                insertInst (&IL, intype, NULL, NULL, &hledam);
+                            {
+                                insertInst (&*localIL, intype, NULL, NULL, &hledam);
+                                printf("Vlozil som instrukciu assign %d s result %u do IL %u\n",intype,&hledam,&*localIL);
+                            }
                             break;
+                            printf("%s",KNRM);
 
                             free (key);
                             break;                
@@ -843,13 +854,21 @@ void nt_stmt (token tok)
                             printf("localIL je teraz %u\n",&*localIL );
                             nt_body (tok);  //nt body donej nahadze instrukcie z tela elsu
                             localIL=revert;  //obnovi sa povodna lokalna
-                            printf("localIL je teraz %u\n",&*localIL );
+                            printf("localIL je na konci ifu teraz %u\n",&*localIL );
 
                             //volanie instrukcie
+                            printf("%s",KYEL);
                             if (localIL==NULL)
+                            {
                                 insertInst (&IL, I_IF, &thenIL, &elseIL, NULL);
+                                printf("Vlozil som instrukciu I_IF s ukazatelom %u a %u do IL %u\n", &thenIL,&elseIL,&IL);
+                            }
                             else
+                            {
                                 insertInst (&*localIL, I_IF, &thenIL, &elseIL, NULL);
+                                printf("Vlozil som instrukciu I_FCE s ukazatelom %u a %u do IL %u\n", &thenIL,&elseIL,&*localIL);
+                            }
+                            printf("%s",KNRM);
 
                             break;
             ////////////////////////////////////////////////////////////////////////////////RULE20
@@ -968,22 +987,8 @@ int nt_assign (token tok)
             //globalArr=contentArr;
             contentArr[0]=&hledam->data->nextArg->data->content;
 
-
-            //elegeblege[0]=;
-            printf("KOKOOOOOOOOOOOOOOOOT %d\n",contentArr[0]->integer);
-            /*for (int i = 0; i<100; i++)
-            {
-                contentArr[i]=malloc(sizeof(struct tContent));
-            }*/
-            //struct tContent *(*contentArrPtr)[] = &contentArr;
-
-
-
-
-
             nt_term_list(tok, key, contentArr);
             pocetArg = 0;
-            //printf("factorial ma content %d\n", hledam->data->content.integer);
             //termy su overene idem ich nahradit
             printf("\nhledam->data->argCount je %d\n",hledam->data->argCount);
             
@@ -993,18 +998,21 @@ int nt_assign (token tok)
             match(tok,t_r_parrent);
 
 
-                                                                                                                      //treba ale este predat premenne
+            printf("%s",KYEL);                                                                                                          //treba ale este predat premenne
             if (localIL==NULL)
             {
                 insertInst (&IL, I_FCE, hledam->data, contentArr, NULL);
                 printf("GLOBAL\n");printf("Vlozil som instrukciu I_FCE s ukazatelom %u do IL %u\n", &hledam->data,&IL);
+                                   printf("____________________________________________________\n");
             }
             else
             {
                 insertInst (localIL, I_FCE, hledam->data, contentArr, NULL);
-                printf("GLOBAL\n");printf("Vlozil som instrukciu I_FCE s ukazatelom %u do IL %u\n", &hledam->data,localIL);
+                printf("LOCAL %u\n",&*localIL);printf("Vlozil som instrukciu I_FCE s ukazatelom %u do IL %u\n", &hledam->data,localIL);
+                printf("____________________________________________________\n");
             }
-
+            printf("%s",KNRM);
+            localIL=NULL;
             free(key);
             return hledam->data->type;
         }
@@ -1050,7 +1058,7 @@ void nt_term (token tok, char *currentFunctionKey, tContent **contentArr)
             {
                   comparison1 = hledam->data->type;
                   //printf("\n--overene %s ", hledam->data->name );
-                  printf("varid\n");
+                  
                   contentArr[j]=&hledam->data->content;
                   //printf("uloxzil som ukayatel s hodnotou %d\n",contentArr[j]->integer);
                   j++;
@@ -1393,7 +1401,7 @@ void nt_type (token tok, char * key)
 void startTable () ///////////////////////////////////////////////Funkcia na rozbehanie tabulky symbolov
 {
     init(&rootTS);
-    init(&localTS);
+    //init(&localTS);
     /*Vetvenie stromu na globalnu a lokalnu polovicu*/
     
     //printf("╔═══════════════════╗\n║rootTS:     %d║\n║localTS:    %d║\n╚═══════════════════╝\n",&rootTS,&localTS);
