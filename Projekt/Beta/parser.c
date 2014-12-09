@@ -757,6 +757,7 @@ void nt_stmt (token tok)
         tNodePtr *currTS = NULL;
         char * key       = NULL;
         int precedenceResult = 0;
+        tInsList *revert;
         switch (tok->type)
         {
             ////////////////////////////////////////////////////////////////////////////////RULE17
@@ -836,7 +837,7 @@ void nt_stmt (token tok)
 
                             //Tabulka inst pre then
                             tInsList thenIL;//vytvorim novu tabulku
-                            tInsList *revert=&*localIL;//odpamatam su aktualnu lokalnu
+                            revert=&*localIL;//odpamatam su aktualnu lokalnu
                             InitList (&thenIL);//inicializujem novu
                             localIL=&thenIL;//nova sa stane aktivnou lokalnou
                             printf("localIL je teraz %u\n",&*localIL );
@@ -866,7 +867,7 @@ void nt_stmt (token tok)
                             else
                             {
                                 insertInst (&*localIL, I_IF, &thenIL, &elseIL, NULL);
-                                printf("Vlozil som instrukciu I_FCE s ukazatelom %u a %u do IL %u\n", &thenIL,&elseIL,&*localIL);
+                                printf("Vlozil som instrukciu I_IF s ukazatelom %u a %u do IL %u\n", &thenIL,&elseIL,&*localIL);
                             }
                             printf("%s",KNRM);
 
@@ -878,7 +879,32 @@ void nt_stmt (token tok)
                                 errorHandler(errSyn);
                             terminalis(precedenceResult,NULL);
                             match   (tok,t_do);
-                            nt_body (tok);
+
+                            tInsList whileIL;//vytvorim novu tabulku
+                            tInsList *revert=&*localIL;//odpamatam su aktualnu lokalnu
+                            InitList (&whileIL);//inicializujem novu
+                            localIL=&whileIL;//nova sa stane aktivnou lokalnou
+                            printf("localIL je teraz %u\n",&*localIL );
+                            nt_body (tok);//nt body donej nahadze instrukcie z tela whilu
+                            localIL=revert;//obnovi sa povodna lokalna
+                            printf("localIL je teraz %u\n",&*localIL );
+
+                             //volanie instrukcie
+                            printf("%s",KYEL);
+                            if (localIL==NULL)
+                            {
+                                insertInst (&IL, I_WHILE, &whileIL, NULL, NULL);
+                                printf("Vlozil som instrukciu I_WHILE s ukazatelom %u do IL %u\n", &whileIL,&IL);
+                            }
+                            else
+                            {
+                                insertInst (&*localIL, I_WHILE, &thenIL, &elseIL, NULL);
+                                printf("Vlozil som instrukciu I_WHILE s ukazatelom %u do IL %u\n", &whileIL, &*localIL);
+                            }
+                            printf("%s",KNRM);
+
+
+                            
                             break;
             ////////////////////////////////////////////////////////////////////////////////RULE21
             case 18:        match (tok,t_readln);
