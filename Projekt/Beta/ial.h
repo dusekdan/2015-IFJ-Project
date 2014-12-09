@@ -1,19 +1,13 @@
 /***********************ial.c************************************/
-/* Soubor: ial.h - Hlavičkový soubor pro ial.c 			        */
+/* Soubor: ial.h - Hlavičkový soubor pro ial.c 			*/
 /* Předmět: Formalní jazyky a překladače (IFJ) 					*/
 /* Projekt: Implementace interpretu imperativního jazyka IFJ14  */
 /* Varianta zadání: b/1/I 										*/
 /* Datum: prosinec 2014											*/
 /* Kódování: UTF-8												*/
-/* Autoři:			Filip Kalous (xkalou03)                     */
-/*                  Roman Jaška  (xjaska00)						*/
+/* Autoři:			Filip Kalous (xkalou03)						*/
 /****************************************************************/
 
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <string.h>
 //#include "parser.h"
 
 
@@ -30,7 +24,6 @@ typedef struct {			// data promenne v symbolu
 
 } tContent;
 /*  LEX ČÁST */
-
 typedef struct tData {		// symbol
 
 	char *name;				// nazev symbolu
@@ -47,7 +40,6 @@ typedef struct tNodePtr {		// uzel tabulky symbolu
 
 	char *key;
 	tData data;
-
 	struct tNodePtr *rptr;
 	struct tNodePtr *lptr;
 } *tNodePtr;
@@ -55,7 +47,8 @@ typedef struct tNodePtr {		// uzel tabulky symbolu
 extern tNodePtr rootTS;		// ukazatel na zacatek tabulky symbolu
 
 
-void quickSort(char *text, int l, int r);		// quicksort, nejspise jen cast
+char *quickSort(char *text, int l, int r);		// quicksort, nejspise jen cast
+char *allocQuickSort(char *text, int l, int r);
 void partition(char *text, int *i, int *j);		// rozdeleni pro quickSort
 
 void init(tNodePtr *rootTS);

@@ -8,12 +8,12 @@
 /* Autoři:			Filip Kalous (xkalou03)						*/
 /****************************************************************/
 
-
 #include "ial.h"
 
 #define ASCIISIZE 256
 
 tNodePtr rootTS;
+tNodePtr localTS;
 
 
 /*
@@ -36,11 +36,14 @@ int main() {
 
 	printf("volam qucik\n");
 
-	quickSort(text, 0, delka - 1);		// volani quicksortu
-
+	quickSort(text, 0, delka - 1);		// volani quicksortu - nesmim zapomenout na malloc
 
 
 	init(&rootTS);
+	init(&localTS);
+
+	printf("%d\n", &rootTS);
+	printf("%d\n", &localTS);
 
 	tNodePtr node;
 	tNodePtr node2;
@@ -55,7 +58,7 @@ int main() {
 	if(data != NULL) {
 
 		data->name = "ahoj";
-        data->type = t_var_id;
+        //data->type = t_var_id;
 		data->content.integer = 10;
 
 		data2->name = "zetko";
@@ -95,8 +98,8 @@ int main() {
 	}
 
 	return 0;
-}*/
-
+}
+*/
 void init(tNodePtr *rootTS) {
 
 	initTable(rootTS);
@@ -224,23 +227,41 @@ void partition(char *text, int *i, int *j) { 	// rozdeleni
 }
 
 
- void quickSort(char *text, int l, int r) { // razeni
+char *quickSort(char *text, int l, int r) { // razeni
 
+		int i, j;
 
-	int i, j;
+		i = l; j = r;
 
-	i = l; j = r;
+		partition(text, &i, &j);
 
-	partition(text, &i, &j);
+		if(j > l)
+			quickSort(text, l, j);
 
-	if(j > l)
-		quickSort(text, l, j);
+		if(i < r)
+			quickSort(text, i, r);
 
-	if(i < r)
-		quickSort(text, i, r);
+		return text;
+}
 
+char *allocQuickSort(char *text, int l, int r) {
 
-	printf("%s\n", text);
+	char *textAlloc;
+
+ 	if((textAlloc = malloc(sizeof(char) * strlen(text))) != NULL) {
+
+ 		strcpy(textAlloc, text);
+
+ 		textAlloc = quickSort(textAlloc, l, r);
+ 	}
+	
+	else {
+
+		errorHandler(errInt);
+		return 0;
+	}
+
+	return textAlloc;
 }
 
 
