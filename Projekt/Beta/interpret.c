@@ -4,7 +4,9 @@
 tInsList LL;
 tInsList LR;
 bool lastbool;
-int kokot;
+bool vypocet = false;
+int kokot = 0;
+int pojebsa;
 
 
 char *concate(char *s1, char *s2)
@@ -19,87 +21,126 @@ char *concate(char *s1, char *s2)
 	return result;
 }
 
-int interpret(tNodePtr *TS, tInsList *IL)	//precitaj si zadanie real %g, atd
+int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 {
+	printf("zacal interpret a som v insliste %u\n",currIL);
+
 	tContent conOld[100];
 	tNodePtr currentTerm; 
 	int l;
 	int r;
 	int cmp;
-	First(IL);
+	First(currIL);
 	tInstruction *new;
+	tNodePtr temp;
+	tNodePtr temp2;
 
-	while(IL->active != NULL)
+	/*while(currIL->active != NULL) {
+
+		printf("%d\n", currIL->active->instruction.instype);
+		Succ(currIL);
+	}
+
+	First(currIL);
+*/
+	//if (currIL->active->instruction.instype!=0)
+	//	printf("NULLKURAV\n");else
+	
+	do
 	{
 
-		new = Copy(IL);
+		new = Copy(currIL);
 		
 		switch(new->instype)
 		{
-							/*ARITMETICKE OPERACIE*/
+							//ARITMETICKE OPERACIE//
 			case I_ADDI:
-				kokot =  (((tData) new->adr1)->content.integer + ((tData)new->adr2)->content.integer);
-				//(((tData) new->result)->content.integer) = (((tData) new->adr1)->content.integer + ((tData)new->adr2)->content.integer);
-				printf("%d\n", kokot);
-				//printf("%d\n", ((tData)new->result)->content.integer);
-				break;
+				printf("adik zacal a kokot je %d\n",kokot);
+				if(vypocet == false)
+				{
+					temp = searchSymbol(&rootTS, ((char *)new->adr1));
+					temp2 = searchSymbol(&rootTS, ((char *)new->adr2));
 
+					kokot += temp->data->content.integer + temp2->data->content.integer;
+					vypocet = true;
+				} else
+				{
+					temp2 = searchSymbol(&rootTS, ((char *)new->adr2));
+					kokot += temp2->data->content.integer;
+
+				//(((tData) new->result)->content.integer) = (((tData) new->adr1)->content.integer + ((tData)new->adr2)->content.integer);
+				}
+				printf("nn %d\n", kokot);
+				
+				//printf("%d\n", ((tData)new->result)->content.integer);
+				printf("adik skoncil\n");
+				break;
+			
 			case I_ADDR:
 				(((tData) new->result)->content.real) = (((tData) new->adr1)->content.real + ((tData)new->adr2)->content.real);
-				printf("%g\n", ((tData)new->result)->content.real);
+				printf("sdcs%g\n", ((tData)new->result)->content.real);
 				break;
 			
 			case I_CONCATE:		
 				(((tData) new->result)->content.string) =  concate(((tData) new->adr1)->content.string, ((tData) new->adr2)->content.string);			
-				printf("%s\n", ((tData)new->result)->content.string);
+				printf("sdcsdc%s\n", ((tData)new->result)->content.string);
 				break;
 
 			case I_SUBI:
+				printf("sub9k, ahoj!\n");
 				(((tData) new->result)->content.integer) = (((tData) new->adr1)->content.integer - ((tData)new->adr2)->content.integer);
-				printf("%d\n", ((tData)new->result)->content.integer);
+				printf("subikokotkurva%d\n", ((tData)new->result)->content.integer);
 				break;
 
 			case I_SUBR:
 				(((tData) new->result)->content.real) = (((tData) new->adr1)->content.real - ((tData)new->adr2)->content.real);
-				printf("%g\n", ((tData)new->result)->content.real);
+				printf("sdcsdc%g\n", ((tData)new->result)->content.real);
 				break;
 
 			case I_MULI:
 				(((tData) new->result)->content.integer) = (((tData) new->adr1)->content.integer * ((tData)new->adr2)->content.integer);
-				printf("%d\n", ((tData)new->result)->content.integer);
+				printf("htyhth%d\n", ((tData)new->result)->content.integer);
 				break;		
 
 			case I_MULR:
 				(((tData) new->result)->content.real) = (((tData) new->adr1)->content.real * ((tData)new->adr2)->content.real);
-				printf("%g\n", ((tData)new->result)->content.real);
+				printf("trfeferg%g\n", ((tData)new->result)->content.real);
 				break;
 			
 			case I_DIVI:
 				(((tData) new->result)->content.integer) = (((tData) new->adr1)->content.integer / ((tData)new->adr2)->content.integer);
-				printf("%d\n", ((tData)new->result)->content.integer);
+				printf("mtynt%d\n", ((tData)new->result)->content.integer);
 				break;
 
 			case I_DIVR:
 				(((tData) new->result)->content.real) = (((tData) new->adr1)->content.real / ((tData)new->adr2)->content.real);
-				printf("%g\n", ((tData)new->result)->content.real);
+				printf("brtbr%g\n", ((tData)new->result)->content.real);
 				break;		
 			
-			case I_ASGNI:
-				(((tData) new->result)->content.integer) = (((tData) new->adr1)->content.integer);
-				printf("vysledok ASGNI: %i\n", (((tData) new->result)->content.integer));
+			case I_ASGNI:				
+				//printf("%d\n", kokot);
+				//printf("result je %u\n",new->result );
+				printf("idem asignovat\n");
+				((tData) &new->result)->content.integer = kokot;
+				//printf("vysledok ASGNI: %d\n", (((tData) &new->result)->content.integer));	
+				kokot = 0;
+				vypocet = false;
 				break;		
 
 			case I_ASGNR:
 				(((tData) new->result)->content.real) = (((tData) new->adr1)->content.real);
 				printf("vysledok ASGNR: %g\n", (((tData) new->result)->content.real));
+				break;
 
 			case I_ASGNS:
 				(((tData) new->result)->content.string) = (((tData) new->adr1)->content.string);
 				printf("vysledok ASGNS: %s\n", (((tData) new->result)->content.string));		
+				break;
 
 			case I_ASGNB:
 				(((tData) new->result)->content.boolean) = (((tData) new->adr1)->content.boolean);
-							/*LOGICKE OPERACIE*/
+				break;		
+								//LOGICKE OPERACIE//
 			case I_MORE:
 				if(((tData) new->adr1)->type == t_expr_int)
 				{
@@ -162,9 +203,15 @@ int interpret(tNodePtr *TS, tInsList *IL)	//precitaj si zadanie real %g, atd
 				break;
 			
 			case I_LESS:
-				if(((tData) new->adr1)->type == t_expr_int)
+				printf("som v lese\n");
+
+				temp = searchSymbol(&rootTS, ((char *)new->adr1));
+				temp2 = searchSymbol(&rootTS, ((char *)new->adr2));
+
+				if(temp->data->type == t_expr_int)
 				{
-					if((((tData) new->adr1)->content.integer) < (((tData) new->adr2)->content.integer))
+					//if((((tData) new->adr1)->content.integer) < (((tData) new->adr2)->content.integer))
+					if(temp->data->content.integer < temp2->data->content.integer)
 					{
 						lastbool = true;
 						//(((tData) new->result)->content.boolean) = true;
@@ -465,33 +512,33 @@ int interpret(tNodePtr *TS, tInsList *IL)	//precitaj si zadanie real %g, atd
 					}
 				}
 				break;
-							/*FUNKCIE*/
+							//FUNKCIE//
 			
 			case I_READI:
 				scanf("%i", &(((tData) new->result)->content.integer));
-				printf("%i\n", (((tData) new->result)->content.integer));		
+				printf("rgrbvr%i\n", (((tData) new->result)->content.integer));		
 				break;
 
 			case I_READR:
 				scanf("%lg", &(((tData) new->result)->content.real));
-				printf("%lg\n", (((tData) new->result)->content.real));
+				printf("4t4t4g%lg\n", (((tData) new->result)->content.real));
 				break;	
 
 			case I_READS:
 				scanf("%s", (((tData) new->result)->content.string));
-				printf("%s\n", (((tData) new->result)->content.string));
+				printf("t4t4%s\n", (((tData) new->result)->content.string));
 				break;
 
 			case I_WRITEI:
-				printf("%i\n", (((tData) new->result)->content.integer));
+				printf("gfgfgf%i\n", (((tData) new->result)->content.integer));
 				break;
 
 			case I_WRITER:
-				printf("%g\n", (((tData) new->result)->content.real));
+				printf("sdsdsd%g\n", (((tData) new->result)->content.real));
 				break;
 
 			case I_WRITES:
-				printf("%s\n", (((tData) new->result)->content.string));
+				printf("sdsdd%s\n", (((tData) new->result)->content.string));
 				break;
 				
 			case I_LENGTH:
@@ -504,7 +551,7 @@ int interpret(tNodePtr *TS, tInsList *IL)	//precitaj si zadanie real %g, atd
 
 			case I_FIND:
 				(((tData) new->result)->content.integer) = BMASearch((((tData) new->adr1)->content.string), (((tData) new->adr2)->content.string));
-				printf("%d\n", (((tData) new->result)->content.integer));
+				printf("jythy%d\n", (((tData) new->result)->content.integer));
 				break;
 		
 			case I_SORT:
@@ -512,24 +559,27 @@ int interpret(tNodePtr *TS, tInsList *IL)	//precitaj si zadanie real %g, atd
 				r = strlen((((tData) new->adr1)->content.string));
 				r--;
 				(((tData) new->result)->content.string) = allocQuickSort((((tData) new->adr1)->content.string), l, r);
-				printf("%s\n", (((tData) new->result)->content.string));
+				printf("ergerg%s\n", (((tData) new->result)->content.string));
 				break;
 			
-			case I_IF:
+			case I_IF:printf("lastboo je %d\n",lastbool );
 				if(lastbool == true)	
 				{
-					
-					interpret(&rootTS, ((tInsList *) new->adr1));	
-					lastbool = 0;				
+
+					printf("then vetva\n");//lastbool = 0;
+
+					interpret(&rootTS, ((tInsList *) new->adr1));
+					printf("then vetva skoncila\n");	
+								
 					break;
 				} else 
 				{
-					
+					printf("volam picu z else\n");	//lastbool = 0;	
 					interpret(&rootTS, ((tInsList *) new->adr2));
-					lastbool = 0;
+					
 					break;
 				}
-			
+			case 32:break;
 			case I_WHILE:
 				while(lastbool == true)
 				{
@@ -556,19 +606,19 @@ int interpret(tNodePtr *TS, tInsList *IL)	//precitaj si zadanie real %g, atd
 				{
 					currentTerm->data->content = conOld[i]; 
 					currentTerm = currentTerm->data->nextArg;
-				}
-
-
+				}	
 			break;
+			default: printf("kokot dostal som %d\n",new->instype);
+				break;
 		}	
-		Succ(IL);
+		Succ(currIL);
 
-	} //while(IL->active != NULL);
+	} while(currIL->active != NULL);
  return 0; 
 }
 
-/*
-int main()
+
+/*int main()
 {
 	
 	

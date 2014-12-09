@@ -1,0 +1,7 @@
+var 
+vysl : boolean;
+kokot : integer;
+begin
+	kokot := 2 + 1 + 3 + 4;
+	if vysl + kokot < 5
+end.

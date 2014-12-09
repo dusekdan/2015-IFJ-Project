@@ -1,4 +1,5 @@
-#include "inslist.h"
+//#include "inslist.h"
+//#include "ial.c"
 
 void InitList(tInsList *L)
 //inicializuje zoznam
@@ -43,6 +44,7 @@ void InsertLast(tInsList *L, tInstruction I)
 		}	
 		
 		L->last = new;
+		//printf("Vlozil jsem instrukci %d\n__________________________________\n", new->instruction.instype);
 
 	} else 
 	{
@@ -83,6 +85,10 @@ void First(tInsList *L)
 void Succ(tInsList *L)
 //posune aktivitu na dalsi prvok v zozname
 {
+	/*if(L->active != NULL)
+	{
+		L->active = L->active->next;
+	}*/
 	if(L->active != NULL)
 	{
 		if(L->active->next != NULL)
@@ -106,22 +112,17 @@ tInstruction *Copy(tInsList *L)
 
 bool insertInst (tInsList *list, int operace, void*adr1, void*adr2, void*result)
 {
-    
+
 	if(list == NULL) return 0;
     bool retval = false;
     tInstruction *new = malloc(sizeof(tInstruction));
     new->instype = operace;
-    if (adr1!=NULL)
-    {
-        new->adr1=adr1;
-        if (adr2!=NULL)
-        {
-            new->adr2=adr2;
-            if (result!=NULL)
-                new->result=result;
-        }
-    }
+    new->adr1=adr1;
+    new->adr2=adr2;
+    new->result=result;
+    
     InsertLast(list, *new);
+
     retval=true;
     return retval;
 

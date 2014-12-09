@@ -63,6 +63,7 @@ typedef struct {
 
 	tData symbol;
 	tOperators element;
+	char *key;
 
 } tOpData;
 
@@ -94,4 +95,6 @@ int reduction(tStack *stack1, tStack *stack2);
 
 void infix2post(tStack *stack1, tStack *stack2);
 
-int priority(int x);
+int priority(int x, int y);
+char *randstring(int length);
+int myOp2matousOp(int myOp, int type);

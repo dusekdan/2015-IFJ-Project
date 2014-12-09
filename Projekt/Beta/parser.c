@@ -31,8 +31,8 @@
 
 /* Ukazateľ na lokálnu tabuľku */
 //tContent **globalArr;
-tNodePtr localTS;
-tInsList *localIL;
+
+
 //tContent *elegeblege[100];
 
 /* Premenná rozhodujúca či mám hladať len v globálnej tabuľke */
@@ -52,7 +52,7 @@ int pocetArg = 0;
 
 token tok;
 
-bool debug;
+bool debug=false;
 
 #include "precedence3.c"
 
@@ -324,16 +324,16 @@ void nt_var_def (token tok)
         match (tok, t_semicolon);
 
         //Sem pride instrukcia
-        tData currentVar = searchSymbol(&*currTS, key)->data;
+        tNodePtr currentVar = searchSymbol(&*currTS, key);
         printf("%s",KYEL);
         if (localIL==NULL){
-            insertInst (&IL, I_VAR, currentVar, NULL, NULL);
-            printf("GLOBAL\n");printf("Vlozil som instrukciu I_VAR s ukazatelom %u do IL %u\n", &currentVar,&IL);
+            insertInst (&IL, I_VAR, &currentVar->data, NULL, NULL);
+            printf("GLOBAL\n");printf("Vlozil som instrukciu I_VAR s ukazatelom %u do IL %u\n", &currentVar->data,&IL);
         }
 
         else{
-            insertInst (localIL, I_VAR, currentVar, NULL, NULL);
-            printf("LOCAL\n");printf("Vlozil som instrukciu I_VAR s ukazatelom %u do IL %u\n", &currentVar,localIL);
+            insertInst (localIL, I_VAR, &currentVar->data, NULL, NULL);
+            printf("LOCAL\n");printf("Vlozil som instrukciu I_VAR s ukazatelom %u do IL %u\n", &currentVar->data,localIL);
         }
         printf("%s",KNRM);
         free (key);
@@ -571,9 +571,10 @@ void nt_fun_body (token tok, bool nextMustBeBody, char * key)
         else
         {
             // Potrebujem tabulku instrukcii
-            tInsList newLocalIL;
-            tInsList *newLocalILptr=&newLocalIL;
-            InitList (&newLocalIL);
+            //tInsList newLocalIL;
+
+            tInsList *newLocalILptr=malloc (sizeof(tInsList));
+            //InitList (&newLocalIL);
 
             /* Do "hledam" si uložím symbol aktuálnej funkcie */
 
@@ -810,13 +811,13 @@ void nt_stmt (token tok)
                             printf("%s",KYEL);
                             if (localIL==NULL)
                             {   
-                                printf("Vlozil som instrukciu assign %d s result %u do IL %u\n",intype,&hledam->data,&IL);
+                                printf("GLOBAL\n"); printf("Vlozil som instrukciu assign %d s result %u do IL %u\n",intype,&hledam->data,&IL);
                                 insertInst (&IL, intype, NULL, NULL, &hledam->data);
                             }
                             else
                             {
-                                insertInst (&*localIL, intype, NULL, NULL, &hledam->data);
-                                printf("Vlozil som instrukciu assign %d s result %u do IL %u\n",intype,&hledam->data,&*localIL);
+                                insertInst (localIL, intype, NULL, NULL, &hledam->data);
+                                printf("LOCAL\n"); printf("Vlozil som instrukciu assign %d s result %u do IL %u\n",intype,&hledam->data,localIL);
                             }
                             break;
                             printf("%s",KNRM);
@@ -836,38 +837,42 @@ void nt_stmt (token tok)
             //Interpret musi tieto dve tabulky potom uvolnit
 
                             //Tabulka inst pre then
-                            tInsList thenIL;//vytvorim novu tabulku
-                            revert=&*localIL;//odpamatam su aktualnu lokalnu
-                            InitList (&thenIL);//inicializujem novu
-                            localIL=&thenIL;//nova sa stane aktivnou lokalnou
-                            printf("localIL je teraz %u\n",&*localIL );
+                            tInsList *thenIL;//=malloc(sizeof(tInsList));//vytvorim novu tabulku
+
+                            revert=localIL;//odpamatam su aktualnu lokalnu
+                            
+                            thenIL=malloc(sizeof(tInsList));
+                            InitList (thenIL);//inicializujem novu
+                            localIL=thenIL;//nova sa stane aktivnou lokalnou
+                            printf("localIL je teraz %u a revert je %u\n",localIL,revert);
                             nt_body (tok);//nt body donej nahadze instrukcie z tela thenu
                             localIL=revert;//obnovi sa povodna lokalna
-                            printf("localIL je teraz %u\n",&*localIL );
+                            printf("localIL je teraz %u\n",localIL );
 
                             match   (tok,t_else);
 
                             //Tabulka inst pre else
-                            tInsList elseIL; //vytvorim novu tabulku
-                            revert=&*localIL;//odpamatam su aktualnu lokalnu
-                            InitList (&elseIL);//inicializujem novu
-                            localIL=&elseIL;  //nova sa stane aktivnou lokalnou
-                            printf("localIL je teraz %u\n",&*localIL );
+                            tInsList *elseIL; //vytvorim novu tabulku
+                            elseIL=malloc(sizeof(tInsList));
+                            revert=localIL;//odpamatam su aktualnu lokalnu
+                            InitList (elseIL);//inicializujem novu
+                            localIL=elseIL;  //nova sa stane aktivnou lokalnou
+                            printf("localIL je teraz %u a revert je %u\n",localIL,revert);
                             nt_body (tok);  //nt body donej nahadze instrukcie z tela elsu
                             localIL=revert;  //obnovi sa povodna lokalna
-                            printf("localIL je na konci ifu teraz %u\n",&*localIL );
+                            printf("localIL je na konci ifu teraz %u\n",localIL );
 
                             //volanie instrukcie
                             printf("%s",KYEL);
                             if (localIL==NULL)
                             {
-                                insertInst (&IL, I_IF, &thenIL, &elseIL, NULL);
-                                printf("Vlozil som instrukciu I_IF s ukazatelom %u a %u do IL %u\n", &thenIL,&elseIL,&IL);
+                                insertInst (&IL, I_IF, thenIL, elseIL, NULL);
+                                printf("GLOBAL\n"); printf("Vlozil som instrukciu I_IF s ukazatelom %u a %u do IL %u\n", thenIL,elseIL,&IL);
                             }
                             else
                             {
-                                insertInst (&*localIL, I_IF, &thenIL, &elseIL, NULL);
-                                printf("Vlozil som instrukciu I_IF s ukazatelom %u a %u do IL %u\n", &thenIL,&elseIL,&*localIL);
+                                insertInst (localIL, I_IF, thenIL, elseIL, NULL);
+                                printf("lokal\n"); printf("Vlozil som instrukciu I_IF s ukazatelom %u a %u do IL %u\n", thenIL,elseIL,localIL);
                             }
                             printf("%s",KNRM);
 
@@ -880,26 +885,26 @@ void nt_stmt (token tok)
                             terminalis(precedenceResult,NULL);
                             match   (tok,t_do);
 
-                            tInsList whileIL;//vytvorim novu tabulku
-                            tInsList *revert=&*localIL;//odpamatam su aktualnu lokalnu
-                            InitList (&whileIL);//inicializujem novu
-                            localIL=&whileIL;//nova sa stane aktivnou lokalnou
-                            printf("localIL je teraz %u\n",&*localIL );
+                            tInsList *whileIL;//vytvorim novu tabulku
+                            revert=localIL;//odpamatam su aktualnu lokalnu
+                            InitList (whileIL);//inicializujem novu
+                            localIL=whileIL;//nova sa stane aktivnou lokalnou
+                            printf("localIL je teraz %u\n",localIL );
                             nt_body (tok);//nt body donej nahadze instrukcie z tela whilu
                             localIL=revert;//obnovi sa povodna lokalna
-                            printf("localIL je teraz %u\n",&*localIL );
+                            printf("localIL je teraz %u\n",localIL );
 
                              //volanie instrukcie
                             printf("%s",KYEL);
                             if (localIL==NULL)
                             {
-                                insertInst (&IL, I_WHILE, &whileIL, NULL, NULL);
-                                printf("Vlozil som instrukciu I_WHILE s ukazatelom %u do IL %u\n", &whileIL,&IL);
+                                insertInst (&IL, I_WHILE, whileIL, NULL, NULL);
+                                printf("Vlozil som instrukciu I_WHILE s ukazatelom %u do IL %u\n", whileIL,&IL);
                             }
                             else
                             {
-                                insertInst (&*localIL, I_WHILE, &thenIL, &elseIL, NULL);
-                                printf("Vlozil som instrukciu I_WHILE s ukazatelom %u do IL %u\n", &whileIL, &*localIL);
+                                insertInst (localIL, I_WHILE, thenIL, &elseIL, NULL);
+                                printf("Vlozil som instrukciu I_WHILE s ukazatelom %u do IL %u\n", whileIL, &*localIL);
                             }
                             printf("%s",KNRM);
 

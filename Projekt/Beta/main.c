@@ -35,11 +35,13 @@
 
 #include "errorHandler.c"
 #include "inslist.h"
+tInsList *localIL;
 #include "ial.c"
 #include "inslist.c"
 
 FILE*fd=NULL;
 tInsList IL;
+
 //#include "inslist.c"
 //#include "precedence3.c"
 #include "parser.c"
@@ -57,10 +59,11 @@ tInsList IL;
 
 int main(int argc, char const *argv[])
 {
-    if (argc!=1 && strcmp(argv[2],"-d")==0)
+    //printf("%d\n",argc );
+    if (argc==3)
+    if (strcmp(argv[2],"-d")==0)
         debug=true;
-    else
-        debug=false;
+
     InitList(&IL);
 
     fd = fopen(argv[1], "r");
@@ -96,7 +99,7 @@ int main(int argc, char const *argv[])
     printf("%snormal\n", KNRM);*/
 
     //printf("ELEGEBLEGE %d\n",globalArr[0]->integer);
-
+    interpret(&rootTS, &IL);
     disposeTable(&rootTS);
     if (localTS!=NULL) disposeTable(&localTS);
     fclose(fd);
