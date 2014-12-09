@@ -30,9 +30,10 @@
 #include "parser.h"
 
 /* Ukazateľ na lokálnu tabuľku */
-
+//tContent **globalArr;
 tNodePtr localTS;
 tInsList *localIL;
+//tContent *elegeblege[100];
 
 /* Premenná rozhodujúca či mám hladať len v globálnej tabuľke */
 
@@ -50,6 +51,8 @@ int pocetArg = 0;
 /* Token pre lexikálny analyzátor */
 
 token tok;
+
+bool debug;
 
 #include "precedence3.c"
 
@@ -105,7 +108,7 @@ bool saveSymbol (tNodePtr * currTS, char * key, char * name, int type, int argCo
         newsymbol -> argCount = argCount;
         newsymbol -> localTSadr = NULL;
         newsymbol -> localILadr = NULL;
-        newsymbol -> content.integer = rand() % 100;
+        //newsymbol -> content.integer = rand() % 100;
 
         /*Uložím do aktuálnej tabulky nový symbol ktorý som si práve pripravil*/
         /*Ak vloženie zlyhá, vraciam internú chybu errInt(99)                 */
@@ -145,6 +148,8 @@ int buildemin ()
 
 void terminalis (int terminal, token tok)
 {
+    if (debug==true)
+        printf("%s",KCYN);
     switch (terminal)
     {
         case 1:  printf ("var\n");                  break;
@@ -183,6 +188,7 @@ void terminalis (int terminal, token tok)
         case 44: printf ("BOOL ");                  break;
         default: printf ("error input=%d\n", terminal);
     }
+    printf("%s",KNRM );
 }
 
 /* Funkcia porovnávajúca spracovaný terminál so vstupom, následne žiada token */
@@ -319,7 +325,7 @@ void nt_var_def (token tok)
 
         //Sem pride instrukcia
         tData currentVar = searchSymbol(&*currTS, key)->data;
-
+        printf("%s",KYEL);
         if (localIL==NULL){
             insertInst (&IL, I_VAR, currentVar, NULL, NULL);
             printf("GLOBAL\n");printf("Vlozil som instrukciu I_VAR s ukazatelom %u do IL %u\n", &currentVar,&IL);
@@ -329,6 +335,7 @@ void nt_var_def (token tok)
             insertInst (localIL, I_VAR, currentVar, NULL, NULL);
             printf("LOCAL\n");printf("Vlozil som instrukciu I_VAR s ukazatelom %u do IL %u\n", &currentVar,localIL);
         }
+        printf("%s",KNRM);
         free (key);
 
     }
@@ -750,6 +757,7 @@ void nt_stmt (token tok)
         tNodePtr *currTS = NULL;
         char * key       = NULL;
         int precedenceResult = 0;
+        tInsList *revert;
         switch (tok->type)
         {
             ////////////////////////////////////////////////////////////////////////////////RULE17
@@ -794,16 +802,24 @@ void nt_stmt (token tok)
                             int intype=0;
                             switch (semControlVar)
                             {
-                                case 41:    intype=I_ASGNI;break;
-                                case 42:    intype=I_ASGNS;break;
-                                case 43:    intype=I_ASGNR;break;
-                                case 44:    intype=I_ASGNB;break;
+                                case 1:    intype=I_ASGNI;break;
+                                case 3:    intype=I_ASGNS;break;
+                                case 2:    intype=I_ASGNR;break;
+                                case 4:    intype=I_ASGNB;break;
                             }
+                            printf("%s",KYEL);
                             if (localIL==NULL)
-                                insertInst (&IL, intype, NULL, NULL, &hledam);
+                            {   
+                                printf("Vlozil som instrukciu assign %d s result %u do IL %u\n",intype,&hledam->data,&IL);
+                                insertInst (&IL, intype, NULL, NULL, &hledam->data);
+                            }
                             else
-                                insertInst (&IL, intype, NULL, NULL, &hledam);
+                            {
+                                insertInst (&*localIL, intype, NULL, NULL, &hledam->data);
+                                printf("Vlozil som instrukciu assign %d s result %u do IL %u\n",intype,&hledam->data,&*localIL);
+                            }
                             break;
+                            printf("%s",KNRM);
 
                             free (key);
                             break;                
@@ -821,7 +837,7 @@ void nt_stmt (token tok)
 
                             //Tabulka inst pre then
                             tInsList thenIL;//vytvorim novu tabulku
-                            tInsList *revert=&*localIL;//odpamatam su aktualnu lokalnu
+                            revert=&*localIL;//odpamatam su aktualnu lokalnu
                             InitList (&thenIL);//inicializujem novu
                             localIL=&thenIL;//nova sa stane aktivnou lokalnou
                             printf("localIL je teraz %u\n",&*localIL );
@@ -839,13 +855,21 @@ void nt_stmt (token tok)
                             printf("localIL je teraz %u\n",&*localIL );
                             nt_body (tok);  //nt body donej nahadze instrukcie z tela elsu
                             localIL=revert;  //obnovi sa povodna lokalna
-                            printf("localIL je teraz %u\n",&*localIL );
+                            printf("localIL je na konci ifu teraz %u\n",&*localIL );
 
                             //volanie instrukcie
+                            printf("%s",KYEL);
                             if (localIL==NULL)
+                            {
                                 insertInst (&IL, I_IF, &thenIL, &elseIL, NULL);
+                                printf("Vlozil som instrukciu I_IF s ukazatelom %u a %u do IL %u\n", &thenIL,&elseIL,&IL);
+                            }
                             else
+                            {
                                 insertInst (&*localIL, I_IF, &thenIL, &elseIL, NULL);
+                                printf("Vlozil som instrukciu I_IF s ukazatelom %u a %u do IL %u\n", &thenIL,&elseIL,&*localIL);
+                            }
+                            printf("%s",KNRM);
 
                             break;
             ////////////////////////////////////////////////////////////////////////////////RULE20
@@ -855,7 +879,32 @@ void nt_stmt (token tok)
                                 errorHandler(errSyn);
                             terminalis(precedenceResult,NULL);
                             match   (tok,t_do);
-                            nt_body (tok);
+
+                            tInsList whileIL;//vytvorim novu tabulku
+                            tInsList *revert=&*localIL;//odpamatam su aktualnu lokalnu
+                            InitList (&whileIL);//inicializujem novu
+                            localIL=&whileIL;//nova sa stane aktivnou lokalnou
+                            printf("localIL je teraz %u\n",&*localIL );
+                            nt_body (tok);//nt body donej nahadze instrukcie z tela whilu
+                            localIL=revert;//obnovi sa povodna lokalna
+                            printf("localIL je teraz %u\n",&*localIL );
+
+                             //volanie instrukcie
+                            printf("%s",KYEL);
+                            if (localIL==NULL)
+                            {
+                                insertInst (&IL, I_WHILE, &whileIL, NULL, NULL);
+                                printf("Vlozil som instrukciu I_WHILE s ukazatelom %u do IL %u\n", &whileIL,&IL);
+                            }
+                            else
+                            {
+                                insertInst (&*localIL, I_WHILE, &thenIL, &elseIL, NULL);
+                                printf("Vlozil som instrukciu I_WHILE s ukazatelom %u do IL %u\n", &whileIL, &*localIL);
+                            }
+                            printf("%s",KNRM);
+
+
+                            
                             break;
             ////////////////////////////////////////////////////////////////////////////////RULE21
             case 18:        match (tok,t_readln);
@@ -896,7 +945,8 @@ void nt_stmt (token tok)
             ////////////////////////////////////////////////////////////////////////////////RULE22
             case 19:        match        (tok,t_write);
                             match        (tok,t_l_parrent);
-                            nt_term_list (tok, "Fwrite");
+                            tContent **doublePointer=malloc(sizeof(struct tContent*)*100);
+                            nt_term_list (tok, "Fwrite", doublePointer);
 /*bolo tu povodne argc*/    pocetArg = 0;
                             match        (tok,t_r_parrent);
                             break;
@@ -910,15 +960,15 @@ void nt_stmt (token tok)
 }
 
 int j = 0;
-tContent *contentArr[256];
-tContent contentArrOld[256];
+
+//tContent contentArrOld[256];
 
 int nt_assign (token tok)
 {
-    if (tok->type == t_expr_int || tok->type == t_expr_str || tok->type == t_expr_dou ||  tok->type == t_fun_id || tok->type == t_var_id)
+    if (tok->type == t_expr_int || tok->type == t_expr_str || tok->type == t_expr_dou ||  tok->type == t_fun_id || tok->type == t_var_id || tok->type == t_l_parrent)
     {
         ///////////////////////////////////////////////////////////////////////RULE23
-        if (tok->type == t_expr_int || tok->type == t_expr_str || tok->type == t_expr_dou || tok->type == t_var_id)
+        if (tok->type == t_expr_int || tok->type == t_expr_str || tok->type == t_expr_dou || tok->type == t_var_id || tok->type == t_l_parrent)
         {
             //printf("TYPE JE %d\n",tok->type);
             //printf("--idem priradenie\n");
@@ -957,66 +1007,38 @@ int nt_assign (token tok)
             
             match(tok,t_fun_id);
             match(tok,t_l_parrent);
-            nt_term_list(tok, key);
+            //printf("idem vytvorit pole\n");
+            tContent **contentArr=malloc(sizeof(struct tContent*)*100);
+            printf("vytvoril som doublepole %u\n____________________\n",&contentArr);
+            //globalArr=contentArr;
+            contentArr[0]=&hledam->data->nextArg->data->content;
+
+            nt_term_list(tok, key, contentArr);
             pocetArg = 0;
-            //printf("factorial ma content %d\n", hledam->data->content.integer);
             //termy su overene idem ich nahradit
             printf("\nhledam->data->argCount je %d\n",hledam->data->argCount);
-            tNodePtr currentFunction = hledam->data->nextArg;
-                for (int i = 0; i<hledam->data->argCount;i++)
-                {
-                    
-                    //printf("----som na %s\n",currentFunction->data->name );
-                    //printf("Content %s je %d\n",currentFunction->data->name,currentFunction->data->content.integer );
-                    contentArrOld[i]=currentFunction->data->content;
-                    currentFunction->data->content=*contentArr[i];
-                    //printf("Content %s je %d\n",currentFunction->data->name,currentFunction->data->content.integer );
-                    //contentArr[i]=&currentFunction->data->content;
-                    //printf("contentArr[%d] je %d\n",i,*&contentArr[i]->integer);
-                    
-                    currentFunction=currentFunction->data->nextArg;
-                }
+            
+
             j=0;
             //povodne argsRead=0;
             match(tok,t_r_parrent);
-            //treba zavolat instrukciu
 
-            //tData currentVar = searchSymbol(&*currTS, key)->data;
 
-            //Lokalna tabulka instrukcii je nacitana
-            //tInsList *revert = localIL;
-            //printf("--LOCAL IL JE %u\n",localIL );
-            //localIL=hledam->data->localILadr;
-
-                                                                                                                      //treba ale este predat premenne
+            printf("%s",KYEL);                                                                                                          //treba ale este predat premenne
             if (localIL==NULL)
             {
-                insertInst (&IL, I_FCE, hledam->data, NULL, NULL);
+                insertInst (&IL, I_FCE, hledam->data, contentArr, NULL);
                 printf("GLOBAL\n");printf("Vlozil som instrukciu I_FCE s ukazatelom %u do IL %u\n", &hledam->data,&IL);
+                                   printf("____________________________________________________\n");
             }
             else
             {
-                insertInst (localIL, I_FCE, hledam->data, &contentArrOld, NULL);
-                printf("GLOBAL\n");printf("Vlozil som instrukciu I_FCE s ukazatelom %u do IL %u\n", &hledam->data,localIL);
+                insertInst (localIL, I_FCE, hledam->data, contentArr, NULL);
+                printf("LOCAL %u\n",&*localIL);printf("Vlozil som instrukciu I_FCE s ukazatelom %u do IL %u\n", &hledam->data,localIL);
+                printf("____________________________________________________\n");
             }
-
-            //nahodim spat povodne hodnoty urobi to matus
-            currentFunction = hledam->data->nextArg;
-            for (int k = 0; k< hledam->data->argCount;k++)
-                {
-                    //currentFunction=currentFunction->data->nextArg;
-                    printf("----som na %s\n",currentFunction->data->name );
-                    //contentArrOld[i]=&currentFunction->data->content;
-                    //printf("Content %s je %d\n",currentFunction->data->name,currentFunction->data->content.integer );
-                    currentFunction->data->content=contentArrOld[k];
-                    //printf("Content %s je %d\n",currentFunction->data->name,currentFunction->data->content.integer );
-                    currentFunction=currentFunction->data->nextArg;
-                }
-
-            //printf("--LOCAL IL JE %u\n",localIL );
-            //localIL=revert;
-            //printf("--LOCAL IL JE %u\n",localIL );
-
+            printf("%s",KNRM);
+            localIL=NULL;
             free(key);
             return hledam->data->type;
         }
@@ -1029,7 +1051,7 @@ int nt_assign (token tok)
     return -1;
 }
 
-void nt_term (token tok, char *currentFunctionKey)
+void nt_term (token tok, char *currentFunctionKey, tContent **contentArr)
 {
     if (tok->type == t_var_id || tok->type == t_expr_int || tok->type == t_expr_dou || tok->type == t_expr_str)
     {
@@ -1037,7 +1059,7 @@ void nt_term (token tok, char *currentFunctionKey)
         int comparison2;
         if (tok->type == t_var_id)
         {
-            
+            //printf("prislo varid\n____________________\n");
             pocetArg++;
             //povodne argsRead++;
             //printf("\n---IDEM KONTROLOVAT %d. PARAMETER vo funkcii %s\n",argsRead, currentFunctionKey);
@@ -1062,10 +1084,13 @@ void nt_term (token tok, char *currentFunctionKey)
             {
                   comparison1 = hledam->data->type;
                   //printf("\n--overene %s ", hledam->data->name );
+                  
                   contentArr[j]=&hledam->data->content;
+                  //printf("uloxzil som ukayatel s hodnotou %d\n",contentArr[j]->integer);
                   j++;
             //printf("COMPARISON1 je %d\n",comparison1 );
-            }
+            }else
+            errorHandler(99);
             
 
             if (strcmp(currentFunctionKey, "Fwrite") !=0 &&
@@ -1126,6 +1151,7 @@ void nt_term (token tok, char *currentFunctionKey)
                 strcmp(currentFunctionKey, "Ffind")  !=0)
             {
                 //teraz potrebujem najst argument s cicslom argsread
+                
                 tNodePtr hledam2=searchSymbol(&rootTS, currentFunctionKey);
                 if (hledam2 == 0)
                         errorHandler(errSemTypArg);
@@ -1153,9 +1179,15 @@ void nt_term (token tok, char *currentFunctionKey)
             else
                 //printf("---Write kontrola preskocena\n");
                 if (comparison1<41 || comparison1>44)
+                {
+                    printf("zly typ\n");
                     errorHandler(errSemTypArg);
+                }
+                    //printf("ELSE\n");
             //printf("\nTYP JE TU %d a currentFunctionKey je %s\n",tok->type,currentFunctionKey );
+            //printf("tu som\n");
             match (tok, tok->type);
+            //printf("couldnt may=tch\n");
         }
     }
     else
@@ -1166,15 +1198,17 @@ void nt_term (token tok, char *currentFunctionKey)
 
 }
 
-void nt_term_list (token tok, char *currentFunctionKey)
+void nt_term_list (token tok, char *currentFunctionKey, tContent **contentArr)
 {
     if (tok->type == t_var_id || tok->type == t_r_parrent || tok->type == t_expr_int || tok->type == t_expr_dou || tok->type == t_expr_str)
     {
+
         /////////////////////////////////////////////////////////////////////RULE26
         if (tok->type == t_var_id || tok->type == t_expr_int || tok->type == t_expr_dou || tok->type == t_expr_str)
         {
-            nt_term (tok, currentFunctionKey);
-            nt_term_more(tok, currentFunctionKey);
+            nt_term (tok, currentFunctionKey, contentArr);
+            //printf("TERM BOL SPRACOVANY\n________________________\n");
+            nt_term_more(tok, currentFunctionKey, contentArr);
         }
         /////////////////////////////////////////////////////////////////////RULE25
         else
@@ -1190,7 +1224,7 @@ void nt_term_list (token tok, char *currentFunctionKey)
     }
 }
 
-void nt_term_more (token tok, char *currentFunctionKey)
+void nt_term_more (token tok, char *currentFunctionKey, tContent **contentArr)
 {
     if (tok->type == t_comma || tok->type == t_r_parrent)
     {
@@ -1198,7 +1232,7 @@ void nt_term_more (token tok, char *currentFunctionKey)
         if (tok->type == t_comma)
         {
             match(tok,t_comma);
-            nt_term_list(tok, currentFunctionKey);
+            nt_term_list(tok, currentFunctionKey, contentArr);
         }
         ////////////////////////////////////////////////////////////////////////RULE28
         else
@@ -1393,7 +1427,7 @@ void nt_type (token tok, char * key)
 void startTable () ///////////////////////////////////////////////Funkcia na rozbehanie tabulky symbolov
 {
     init(&rootTS);
-    init(&localTS);
+    //init(&localTS);
     /*Vetvenie stromu na globalnu a lokalnu polovicu*/
     
     //printf("╔═══════════════════╗\n║rootTS:     %d║\n║localTS:    %d║\n╚═══════════════════╝\n",&rootTS,&localTS);

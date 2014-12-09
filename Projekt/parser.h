@@ -1,8 +1,3 @@
-#include "ial.c"
-
-
-
-
 static const int t_var       =  1;
 static const int t_colon     =  2;
 static const int t_semicolon =  3;
@@ -88,7 +83,7 @@ typedef struct token
     //////////Bool netreba naten pouzijeme val_int
 }*token;
 
-void gib_tok (token tok);
+int getNextToken (FILE*fd, token TToken);
 void terminalis (int terminal, token tok); //na debug
 void nt_var_def_block (token tok);
 void nt_var_def (token tok);
@@ -101,9 +96,9 @@ void nt_stmt_list (token tok);
 void nt_stmt_more (token tok);
 void nt_stmt (token tok);
 int nt_assign (token tok);
-void nt_term (token tok, char * currentFunctionKey);
-void nt_term_list (token tok, char * currentFunctionKey);
-void nt_term_more (token tok, char * currentFunctionKey);
+void nt_term (token tok, char * currentFunctionKey, tContent **contentArr);
+void nt_term_list (token tok, char * currentFunctionKey, tContent **contentArr);
+void nt_term_more (token tok, char * currentFunctionKey, tContent **contentArr);
 void nt_type (token tok, char * key);
 void nt_param_list (token tok, bool testOnly, char * currentFunctionKey);
 void nt_param_more (token tok, bool testOnly, char * currentFunctionKey);

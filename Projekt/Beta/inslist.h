@@ -32,18 +32,16 @@
 #define I_SORT 		28  //result =  allocQuickSort(adr1)
 #define I_IF		29  //result == true spravi cast instrukcii od then, inak robi else
 #define I_WHILE		30	//result == true podmienky
-#define I_FOR		31  //result == true podmienky
-#define I_FCE		32  //
-#define I_VAR		33	//adr1
-
-#include <malloc.h>
-/*#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <ctype.h>
-#include <string.h>
-#include "errorHandler.c"
-#include "ial.c"*/
+#define I_FCE		31  //
+#define I_VAR       32
+//#include <malloc.h>
+//#include <stdio.h>
+//#include <stdlib.h>
+//#include <stdbool.h>
+//#include <ctype.h>
+//#include <string.h>
+//#include "errorHandler.c"
+//#include "ial.c"
 
 typedef struct 
 {
