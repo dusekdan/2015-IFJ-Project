@@ -838,10 +838,10 @@ void nt_stmt (token tok)
 
                             //Tabulka inst pre then
                             tInsList *thenIL;//=malloc(sizeof(tInsList));//vytvorim novu tabulku
-
+                            thenIL=malloc(sizeof(tInsList));
                             revert=localIL;//odpamatam su aktualnu lokalnu
                             
-                            thenIL=malloc(sizeof(tInsList));
+                            
                             InitList (thenIL);//inicializujem novu
                             localIL=thenIL;//nova sa stane aktivnou lokalnou
                             printf("localIL je teraz %u a revert je %u\n",localIL,revert);
@@ -885,9 +885,10 @@ void nt_stmt (token tok)
                             terminalis(precedenceResult,NULL);
                             match   (tok,t_do);
 
-                            tInsList *whileIL;//vytvorim novu tabulku
-                            revert=localIL;//odpamatam su aktualnu lokalnu
+                            tInsList *whileIL=malloc(sizeof(tInsList));//vytvorim novu tabulku
                             InitList (whileIL);//inicializujem novu
+                            revert=localIL;//odpamatam su aktualnu lokalnu
+                            
                             localIL=whileIL;//nova sa stane aktivnou lokalnou
                             printf("localIL je teraz %u\n",localIL );
                             nt_body (tok);//nt body donej nahadze instrukcie z tela whilu
@@ -903,7 +904,7 @@ void nt_stmt (token tok)
                             }
                             else
                             {
-                                insertInst (localIL, I_WHILE, thenIL, &elseIL, NULL);
+                                insertInst (localIL, I_WHILE, whileIL, NULL, NULL);
                                 printf("Vlozil som instrukciu I_WHILE s ukazatelom %u do IL %u\n", whileIL, &*localIL);
                             }
                             printf("%s",KNRM);
