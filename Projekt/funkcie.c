@@ -5,7 +5,7 @@
 /* Varianta zadání: b/1/I 										*/
 /* Datum: prosinec 2014											*/
 /* Kódování: UTF-8												*/
-/* Autoři:			Filip Kalous (xkalou03)						*/
+/* Autoři:			Filip Kalous (xkalou03) xdusek21 Daniel Dušek						*/
 /****************************************************************/
 
 #include "funkcie.h"
@@ -15,23 +15,24 @@ int length(char *string)
 	return strlen(string);
 }
 
-void copy(char *s, int beginStr, int count) {		// filipova prace
-
-	char c;
-	int i = beginStr;
-
-	while(count != 0) {
-
-		c = s[i];
-
-		// printf("%c", c);
-
-		count--;
-		i++;
-
+void copy(char *string, int i, int n) {		// filipova prace
+	
+	int strLength = length(string);
+	int newStringLength = strLength-i;
+	
+	char *tmpString = malloc(newStringLength);	// char is 1 by default so...
+		if(tmpString == NULL)
+		{
+			printf("Failed to malloc!\n");
+			exit(99);
+		}
+	
+	int j;
+	for(j = i-1; j <= newStringLength; ++j)
+	{
+		
 	}
-
-	printf("\n");
+	// DOPÍČE POSRATÉ TO JE KURVA UŽ!
 
 }
 
