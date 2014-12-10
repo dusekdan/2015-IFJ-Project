@@ -1,51 +1,49 @@
-static const int t_var       =  1;
-static const int t_colon     =  2;
-static const int t_semicolon =  3;
-static const int t_l_parrent =  4;
-static const int t_r_parrent =  5;
-static const int t_function  =  6;
-static const int t_forward   =  7;
-static const int t_begin     =  8;
-static const int t_end       =  9;
-static const int t_period    = 10;
-static const int t_comma     = 11;
-static const int t_assign    = 12;
-static const int t_if        = 13;
-static const int t_then      = 14;
-static const int t_else      = 15;
-static const int t_while     = 16;
-static const int t_do        = 17;
-static const int t_readln    = 18;
-static const int t_write     = 19;
-static const int t_var_id    = 20;
-//static const int t_expr      = 21;
-static const int t_fun_id    = 22;
-//static const int t_term      = 23;
-//static const int t_param     = 24;
-//static const int t_read_id   = 25;  //////////////////////////////read id nakoniec nebude treba
-static const int t_integer   = 26;
-static const int t_real      = 27;
-static const int t_string    = 28;
-static const int t_boolean   = 29;
-static const int t_dollar    = 30;
+#define t_var       1
+#define t_colon     2
+#define t_semicolon 3
+#define t_l_parrent 4
+#define t_r_parrent 5
+#define t_function  6
+#define t_forward   7
+#define t_begin     8
+#define t_end       9
+#define t_period   10
+#define t_comma    11
+#define t_assign   12
+#define t_if       13
+#define t_then     14
+#define t_else     15
+#define t_while    16
+#define t_do       17
+#define t_readln   18
+#define t_write    19
+#define t_var_id   20
+//#define t_expr   21
+#define t_fun_id   22
+//#define t_term   23
+//#define t_param  24
+//#define t_read_id25
+#define t_integer  26
+#define t_real     27
+#define t_string   28
+#define t_boolean  29
+#define t_dollar   30
 
-static const int t_plus      = 31;// +
-static const int t_minus     = 32;// -
-static const int t_mul       = 33;// *
-static const int t_div       = 34;// /
-/// zatvorky su t_l_parrent a rparrent cize 4 a 5
-static const int t_less      = 35;//<
-static const int t_more      = 36;//>
-static const int t_lesseq    = 37;//<=
-static const int t_moreeq    = 38;//>=
-static const int t_equal     = 39;//=
-static const int t_nequal    = 40;//<>
-static const int t_expr_int  = 41;
-static const int t_expr_str  = 42;
-static const int t_expr_dou  = 43;                                    // tento terminal ak prislo nieco konecne ako cislo alebo string, vtomto pripade bude v odpovedajucej casti struktury token obsah
-static const int t_expr_boo  = 44; 
-                                  // ale moze sa tam vyskytnut aj premenna cize, var_id a v tom pripade je v *val_str bude obsahovat nazov premennej a po vyhladani
-                                  // v tabulke symbolov zistis typ, (hledam->data->type), tam su typy int 1 real 2 string 3 bool 4, iny typ nieje platna premenna
+#define t_plus     31// +
+#define t_minus    32// -
+#define t_mul      33// *
+#define t_div      34// /
+/// zatvorky su t_l_prrent a rparrent cize 4 a 5
+#define t_less     35//<
+#define t_more     36//>
+#define t_lesseq   37//<=
+#define t_moreeq   38//>=
+#define t_equal    39//=
+#define t_nequal   40//<>
+#define t_expr_int 41
+#define t_expr_str 42
+#define t_expr_dou 43
+#define t_expr_boo 44
 
 enum tableIDs
 {

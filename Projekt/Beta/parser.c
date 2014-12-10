@@ -152,40 +152,40 @@ void terminalis (int terminal, token tok)
         printf("%s",KCYN);
     switch (terminal)
     {
-        case 1:  printf ("var\n");                  break;
-        case 2:  printf (": ");                     break;
-        case 3:  printf (";\n");                    break;
-        case 4:  printf ("( ");                     break;
-        case 5:  printf (") ");                     break;
-        case 6:  printf ("function ");              break;
-        case 7:  printf ("forward ");               break;
-        case 8:  printf ("begin\n");                break;
-        case 9:  printf ("end\n");                  break;
-        case 10: printf (".\n");                    break;
-        case 11: printf (", ");                     break;
-        case 12: printf (":= ");                    break;
-        case 13: printf ("if ");                    break;
-        case 14: printf ("then\n");                 break;
-        case 15: printf ("else\n");                 break;
-        case 16: printf ("while ");                 break;
-        case 17: printf ("do ");                    break;
-        case 18: printf ("readln ");                break;
-        case 19: printf ("write ");                 break;
-        case 20: printf ("%s ", tok -> val_str);    break;
-        case 21: printf ("expr ");                  break;
-        case 22: printf ("%s ", tok -> val_str);    break;
-      //case 23: printf ("term ");                  break;
-      //case 24: printf ("param ");                 break;
-      //case 25: printf ("read_id ");               break;
-        case 26: printf ("integer ");               break;
-        case 27: printf ("real ");                  break;
-        case 28: printf ("string ");                break;
-        case 29: printf ("boolean ");               break;
-        case 30: printf ("$\n");                    break;
-        case 41: printf ("INTEGER " );              break;
-        case 42: printf ("STRING " );               break;
-        case 43: printf ("DOUBLE ");                break;
-        case 44: printf ("BOOL ");                  break;
+        case t_var:       printf ("var\n");                  break;
+        case t_colon:     printf (": ");                     break;
+        case t_semicolon: printf (";\n");                    break;
+        case t_l_parrent: printf ("( ");                     break;
+        case t_r_parrent: printf (") ");                     break;
+        case t_function:  printf ("function ");              break;
+        case t_forward:   printf ("forward ");               break;
+        case t_begin:     printf ("begin\n");                break;
+        case t_end:       printf ("end\n");                  break;
+        case t_period:    printf (".\n");                    break;
+        case t_comma:     printf (", ");                     break;
+        case t_assign:    printf (":= ");                    break;
+        case t_if:        printf ("if ");                    break;
+        case t_then:      printf ("then\n");                 break;
+        case t_else:      printf ("else\n");                 break;
+        case t_while:     printf ("while ");                 break;
+        case t_do:        printf ("do ");                    break;
+        case t_readln:    printf ("readln ");                break;
+        case t_write:     printf ("write ");                 break;
+        case t_var_id:    printf ("%s ", tok -> val_str);    break;
+      //case 21: printf ("expr ");                           break;
+        case t_fun_id:    printf ("%s ", tok -> val_str);    break;
+      //case 23: printf ("term ");                           break;
+      //case 24: printf ("param ");                          break;
+      //case 25: printf ("read_id ");                        break;
+        case t_integer:   printf ("integer ");               break;
+        case t_real:      printf ("real ");                  break;
+        case t_string:    printf ("string ");                break;
+        case t_boolean:   printf ("boolean ");               break;
+        case t_dollar:    printf ("$\n");                    break;
+        case t_expr_int:  printf ("INTEGER " );              break;
+        case t_expr_str:  printf ("STRING " );               break;
+        case t_expr_dou:  printf ("DOUBLE ");                break;
+        case t_expr_boo:  printf ("BOOL ");                  break;
         default: printf ("error input=%d\n", terminal);
     }
     printf("%s",KNRM );
@@ -756,28 +756,26 @@ void nt_stmt (token tok)
     {
         tNodePtr hledam  = NULL;
         tNodePtr *currTS = NULL;
+        tInsList *currIL = NULL;
         char * key       = NULL;
         int precedenceResult = 0;
         tInsList *revert;
         switch (tok->type)
         {
-            ////////////////////////////////////////////////////////////////////////////////RULE17
-            case 8:         nt_body (tok);
+            //////////////////////////////////////////////////////////////RULE17
+            case t_begin:   nt_body (tok);
                             break;
-            ////////////////////////////////////////////////////////////////////////////////RULE18
-            case 20:        key = createKey ("V", tok->val_str);            
-                            currTS = (searchGlobalOnly == true) ? &rootTS : &localTS;
-                            hledam = searchSymbol (&*currTS, key);
+            //////////////////////////////////////////////////////////////RULE18
+            case t_var_id:  key = createKey ("V", tok -> val_str);            
+                            currTS = (searchGlobalOnly) ? &rootTS : &localTS;
+                            hledam = searchSymbol (currTS, key);
 
                             if (hledam == 0 && searchGlobalOnly == false)
                                 hledam = searchSymbol(&rootTS, key);
 
                             if (hledam!=0)
-                                if (hledam->data->type==t_var_id || (hledam->data->type >= 1 && hledam->data->type <= 4))
+                                if (hledam -> data -> type == t_var_id || (hledam->data->type >= 1 && hledam->data->type <= 4))
                                 {
-                                    //printf("\n\nSnazim sa priradit do premennej typu %d\n\n",hledam->data->type);
-
-
                                     match (tok,t_var_id);
                                 }
                                 else
@@ -800,13 +798,13 @@ void nt_stmt (token tok)
                             //else printf("ok\n");
 
                             //Tu je rozhodovanie ktoru instrukciu mam zavolat podla typu precedencie
-                            int intype=0;
+                            int intype = 0;
                             switch (semControlVar)
                             {
-                                case 1:    intype=I_ASGNI;break;
-                                case 3:    intype=I_ASGNS;break;
-                                case 2:    intype=I_ASGNR;break;
-                                case 4:    intype=I_ASGNB;break;
+                                case 1:    intype = I_ASGNI; break;
+                                case 3:    intype = I_ASGNS; break;
+                                case 2:    intype = I_ASGNR; break;
+                                case 4:    intype = I_ASGNB; break;
                             }
                             printf("%s",KYEL);
                             if (localIL==NULL)
@@ -824,96 +822,95 @@ void nt_stmt (token tok)
 
                             free (key);
                             break;                
-            ////////////////////////////////////////////////////////////////////////////////RULE19               
-            case 13:        match   (tok,t_if);
-                            //printf("local ts je %d\n",&localTS );
+            //////////////////////////////////////////////////////////////RULE19               
+            case t_if:      match   (tok,t_if);
                             precedenceResult = precedenceParser();
-                            if (precedenceResult!=t_expr_boo)//docasne sem dam integer lebo bool este neni hotovy v precedenci ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+                            if (precedenceResult != t_expr_boo)
                                 errorHandler(errSemTypArg);
-                            //Volanie instrukcie na bool spravil filip
-                            terminalis(precedenceResult,NULL);
-                            match   (tok,t_then);
 
-            //Interpret musi tieto dve tabulky potom uvolnit
+                            terminalis (precedenceResult, NULL); //Debug výpis
 
-                            //Tabulka inst pre then
-                            tInsList *thenIL;//=malloc(sizeof(tInsList));//vytvorim novu tabulku
-                            thenIL=malloc(sizeof(tInsList));
-                            revert=localIL;//odpamatam su aktualnu lokalnu
+                            /* Vytvorím nový instruction list pre then vetvu, **
+                            ** odpamätám si aktuálny lokálny instruction list **
+                            ** do ukazateľa revert a novo-vytvorený thenIL na-**
+                            ** stavím ako aktuálny lokálny instruction list.  **
+                            ** V nt_body sa všetky inštrukcie budú teda dávať **
+                            ** do aktuálneho lokálneho instruction listu, čo  **
+                            ** je práve teraz thenIL. Na záver sa obnoví pô-  **
+                            ** vodný localIL, čím sa zaistí správna funkčnosť **
+                            ** pri zanorení. Obdobne funguje else vetva.      */
+
+                            match (tok, t_then);
+
+                            tInsList  * thenIL = malloc (sizeof (tInsList));
+                            InitList   (thenIL);
+                            revert    = localIL;
+                            localIL   =  thenIL;
+                            nt_body       (tok);
+                            localIL   =  revert;
+
+                            match (tok, t_else);
+
+                            tInsList  * elseIL = malloc (sizeof (tInsList)); 
+                            InitList   (elseIL);
+                            revert    = localIL;
+                            localIL   =  elseIL;
+                            nt_body       (tok);
+                            localIL   =  revert;
+
+                            /* Ak je aktuálny localIL NULL, znamená že idem   **
+                            ** vkladať globálnu inštrukciu takže currIL si    **
+                            ** nastavím na IL a v opačnom prípade ideme do    **
+                            ** aktuálneho lokálneho listu na ktorý ukazuje    **
+                            ** localIL.                                       */
+
+                            currIL =   (localIL == NULL) ? &IL : localIL;
+                            insertInst (currIL, I_IF, thenIL, elseIL, NULL);
+
+                            /* Vypísanie práve vloženej inštrukcie pre debug  */
+
+                            if (debug == true)
+                                printf ("%sNew Instruction | %u | I_IF | %u | %u | NULL |%s\n", KYEL, currIL, thenIL, elseIL, KNRM);
                             
-                            
-                            InitList (thenIL);//inicializujem novu
-                            localIL=thenIL;//nova sa stane aktivnou lokalnou
-                            printf("localIL je teraz %u a revert je %u\n",localIL,revert);
-                            nt_body (tok);//nt body donej nahadze instrukcie z tela thenu
-                            localIL=revert;//obnovi sa povodna lokalna
-                            printf("localIL je teraz %u\n",localIL );
-
-                            match   (tok,t_else);
-
-                            //Tabulka inst pre else
-                            tInsList *elseIL; //vytvorim novu tabulku
-                            elseIL=malloc(sizeof(tInsList));
-                            revert=localIL;//odpamatam su aktualnu lokalnu
-                            InitList (elseIL);//inicializujem novu
-                            localIL=elseIL;  //nova sa stane aktivnou lokalnou
-                            printf("localIL je teraz %u a revert je %u\n",localIL,revert);
-                            nt_body (tok);  //nt body donej nahadze instrukcie z tela elsu
-                            localIL=revert;  //obnovi sa povodna lokalna
-                            printf("localIL je na konci ifu teraz %u\n",localIL );
-
-                            //volanie instrukcie
-                            printf("%s",KYEL);
-                            if (localIL==NULL)
-                            {
-                                insertInst (&IL, I_IF, thenIL, elseIL, NULL);
-                                printf("GLOBAL\n"); printf("Vlozil som instrukciu I_IF s ukazatelom %u a %u do IL %u\n", thenIL,elseIL,&IL);
-                            }
-                            else
-                            {
-                                insertInst (localIL, I_IF, thenIL, elseIL, NULL);
-                                printf("lokal\n"); printf("Vlozil som instrukciu I_IF s ukazatelom %u a %u do IL %u\n", thenIL,elseIL,localIL);
-                            }
-                            printf("%s",KNRM);
-
                             break;
-            ////////////////////////////////////////////////////////////////////////////////RULE20
-            case 16:        match   (tok,t_while);
+            //////////////////////////////////////////////////////////////RULE20
+            case t_while:   match (tok,t_while);
                             precedenceResult = precedenceParser();
-                            if (precedenceResult!=t_expr_boo)//docasne sem dam integer lebo bool este neni hotovy v precedenci ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+                            if (precedenceResult != t_expr_boo)
                                 errorHandler(errSyn);
-                            terminalis(precedenceResult,NULL);
-                            match   (tok,t_do);
 
-                            tInsList *whileIL=malloc(sizeof(tInsList));//vytvorim novu tabulku
-                            InitList (whileIL);//inicializujem novu
-                            revert=localIL;//odpamatam su aktualnu lokalnu
+                            terminalis (precedenceResult, NULL); //Debug výpis
                             
-                            localIL=whileIL;//nova sa stane aktivnou lokalnou
-                            printf("localIL je teraz %u\n",localIL );
-                            nt_body (tok);//nt body donej nahadze instrukcie z tela whilu
-                            localIL=revert;//obnovi sa povodna lokalna
-                            printf("localIL je teraz %u\n",localIL );
+                            /* Vytvorenie novej tabuľky pre inštrukcie tela   **
+                            ** while funguje rovnako ako pri then, či else.   */
 
-                             //volanie instrukcie
-                            printf("%s",KYEL);
-                            if (localIL==NULL)
-                            {
-                                insertInst (&IL, I_WHILE, whileIL, NULL, NULL);
-                                printf("Vlozil som instrukciu I_WHILE s ukazatelom %u do IL %u\n", whileIL,&IL);
-                            }
-                            else
-                            {
-                                insertInst (localIL, I_WHILE, whileIL, NULL, NULL);
-                                printf("Vlozil som instrukciu I_WHILE s ukazatelom %u do IL %u\n", whileIL, &*localIL);
-                            }
-                            printf("%s",KNRM);
+                            match (tok,t_do);
 
+                            tInsList * whileIL = malloc (sizeof (tInsList));
+                            InitList  (whileIL);
+                            revert   =  localIL;
+                            localIL  =  whileIL;
+                            nt_body       (tok);
+                            localIL  =   revert;
 
-                            
+                            /* Ak je aktuálny localIL NULL, znamená že idem   **
+                            ** vkladať globálnu inštrukciu takže currIL si    **
+                            ** nastavím na IL a v opačnom prípade ideme do    **
+                            ** aktuálneho lokálneho listu na ktorý ukazuje    **
+                            ** localIL.                                       */
+
+                            currIL =   (localIL == NULL) ? &IL : localIL;
+                            insertInst (currIL, I_WHILE, whileIL, NULL, NULL);
+
+                            /* Vypísanie práve vloženej inštrukcie pre debug  */
+
+                            if (debug == true)
+                                printf ("%sNew Instruction | %u | I_WHILE | %u | NULL | NULL |%s\n", KYEL, currIL, whileIL, KNRM);
                             break;
             ////////////////////////////////////////////////////////////////////////////////RULE21
-            case 18:        match (tok,t_readln);
+            case t_readln:  match (tok,t_readln);
                             match (tok,t_l_parrent);
                             //Kontrola či premenná už je v tabulke
                             key = createKey ("V", tok->val_str);
@@ -948,13 +945,16 @@ void nt_stmt (token tok)
                             match (tok,t_r_parrent);
                             free (key);
                             break;
-            ////////////////////////////////////////////////////////////////////////////////RULE22
-            case 19:        match        (tok,t_write);
-                            match        (tok,t_l_parrent);
-                            tContent **doublePointer=malloc(sizeof(struct tContent*)*100);
-                            nt_term_list (tok, "Fwrite", doublePointer);
-/*bolo tu povodne argc*/    pocetArg = 0;
-                            match        (tok,t_r_parrent);
+            //////////////////////////////////////////////////////////////RULE22
+            case t_write:   match (tok, t_write);
+                            match (tok, t_l_parrent);
+                            tContent * * ptrArr;
+                            ptrArr = malloc (sizeof (struct tContent * ) * 100);
+
+                            nt_term_list (tok, "Fwrite", ptrArr);
+
+                            pocetArg = 0;
+                            match (tok,t_r_parrent);
                             break;
         }
     }    
@@ -971,48 +971,46 @@ int j = 0;
 
 int nt_assign (token tok)
 {
-    if (tok->type == t_expr_int || tok->type == t_expr_str || tok->type == t_expr_dou ||  tok->type == t_fun_id || tok->type == t_var_id || tok->type == t_l_parrent)
+    if (tok -> type == t_l_parrent ||
+        tok -> type == t_expr_int  ||
+        tok -> type == t_expr_str  ||
+        tok -> type == t_expr_dou  ||
+        tok -> type == t_fun_id    ||
+        tok -> type == t_var_id     )
     {
-        ///////////////////////////////////////////////////////////////////////RULE23
-        if (tok->type == t_expr_int || tok->type == t_expr_str || tok->type == t_expr_dou || tok->type == t_var_id || tok->type == t_l_parrent)
+        //////////////////////////////////////////////////////////////////RULE23
+        if (tok -> type == t_l_parrent ||
+            tok -> type == t_expr_int  ||
+            tok -> type == t_expr_str  ||
+            tok -> type == t_expr_dou  ||
+            tok -> type == t_var_id     )
         {
-            //printf("TYPE JE %d\n",tok->type);
-            //printf("--idem priradenie\n");
-            //printf("--idem skusit precedenceParser s tokentom %d \n",tok->type);
-            //printf("localTS je momentalne %d\n",&*localTS );
-            int kokot = precedenceParser(NULL);
-            //printf("--precedenceParser presiel a vratil: %d\n",kokot );
-            //printf("--stav tok je %d\n",tok->type );
-            
-            //int typ=tok->type;
-            //match(tok,tok->type);
-            terminalis(kokot,NULL);
-            switch (kokot)
+
+            int precedenceResult = precedenceParser();
+            terminalis (precedenceResult, NULL);
+            switch (precedenceResult)
             {
-                case 41: return sym_var_int;break;
-                case 42: return sym_var_str;break;
-                case 43: return sym_var_rea;break;
-                case 44: return sym_var_boo;break;
+                case t_expr_int: return sym_var_int;break;
+                case t_expr_str: return sym_var_str;break;
+                case t_expr_dou: return sym_var_rea;break;
+                case t_expr_boo: return sym_var_boo;break;
                 default: errorHandler(errSemDef);return 0;
             }
-
-            
         }
-        ////////////////////////////////////////////////////////////////////////RULE24
+        //////////////////////////////////////////////////////////////////RULE24
         else
         {
-            char * key = createKey ("F",tok->val_str);
-            tNodePtr hledam = searchSymbol(&rootTS, key);
-            //printf("IDEM HLADAT %s\n",key );
+            char * key = createKey ("F", tok -> val_str);
+            tNodePtr hledam = searchSymbol (&rootTS, key);
+            
             if (hledam==0)
             {
-                printf("Hladal som key %s\n",key );
+                printf("Hladal som key %s\n", key);
                 errorHandler(errSemDef);
             }
-            //printf("\n funkcia %s ma %d argumentu \n",key,hledam->data->argCount );
-            
-            match(tok,t_fun_id);
-            match(tok,t_l_parrent);
+
+            match (tok, t_fun_id);
+            match (tok, t_l_parrent);
             //printf("idem vytvorit pole\n");
             tContent **contentArr=malloc(sizeof(struct tContent*)*100);
             printf("vytvoril som doublepole %u\n____________________\n",&contentArr);
