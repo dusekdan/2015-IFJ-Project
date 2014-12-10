@@ -15,7 +15,7 @@ int length(char *string)
 	return strlen(string);
 }
 
-void copy(char *string, int i, int n) {		// filipova prace
+void copy(char *string, int i, int n) {		// danova prace
 	
 	int strLength = length(string);
 	int newStringLength = strLength-i;
