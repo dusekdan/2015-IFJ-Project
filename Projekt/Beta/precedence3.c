@@ -328,7 +328,6 @@ int reduction(tStack *stack1, tStack *stack2) {
 	int boolean = 0;
 	int matusOp;
 
-
 	while(stackEmpty(stack1) != true) {
 
 		temp = stackTop(stack1);
@@ -340,8 +339,26 @@ int reduction(tStack *stack1, tStack *stack2) {
 			stackPush(stack2, temp);
 			temp = stackTop(stack1);
 
-			if(stackTop(stack1).element == DOLAR)
-				return stackTop(stack1).symbol->type;
+			if(stackTop(stack1).element == DOLAR) {
+
+				checkRule = PLUS;
+				if((matusOp = myOp2matousOp(checkRule, change.symbol->type)) != -1) {
+
+					numberOfExprInsts++;
+					if(localIL == NULL) {
+							
+						insertInst(&IL, matusOp, searchData(change.key), NULL, NULL);
+						printf("Vlozil jsem instrukci %d s ukazatelem %u do listu %u\n", matusOp, &change.symbol, &IL);
+					}
+					else {
+
+						insertInst(localIL, matusOp, searchData(change.key), NULL, NULL);
+						printf("Vlozil jsem instrukci %d s ukazatelem %u do listu %u\n", matusOp, &change.symbol, localIL);
+					}
+					
+					return stackTop(stack1).symbol->type;
+				}
+			}
 		}
 
 		else {
@@ -382,27 +399,6 @@ int reduction(tStack *stack1, tStack *stack2) {
 
 						stackPop(stack1, &temp);
 						stackPush(stack2, temp);		// pushneme prvni E na druhy zasobnik
-					}
-				}
-				else if(stackTop(stack1).element == DOLAR) {
-
-					checkRule = PLUS;
-					if((matusOp = myOp2matousOp(checkRule, change.symbol->type)) != -1) {
-
-						numberOfExprInsts++;
-						if(localIL == NULL) {
-								
-							insertInst(&IL, matusOp, searchData(change.key), NULL, NULL);
-							printf("Vlozil jsem instrukci %d s ukazatelem %u do listu %u\n", matusOp, &change.symbol, &IL);
-						}
-						else {
-
-							insertInst(localIL, matusOp, searchData(change.key), NULL, NULL);
-							printf("Vlozil jsem instrukci %d s ukazatelem %u do listu %u\n", matusOp, &change.symbol, localIL);
-						}
-					
-						returnType = change.symbol->type;
-						return returnType;
 					}
 				}
 
