@@ -60,24 +60,31 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 							//ARITMETICKE OPERACIE//
 			case I_ADDI:
 				//printf("adik zacal a kokot je %d\n",kokot);
-				if(vypocet == false)
+				if(((tNodePtr)new->adr2) == NULL)
 				{
 					temp = ((tNodePtr) new->adr1);
-					temp2 = ((tNodePtr)new->adr2);
-					printf("%d\n", temp->data->content.integer);
-
-					lastint += temp->data->content.integer + temp2->data->content.integer;
-					vypocet = true;
-				} else
+					lastint += temp->data->content.integer;
+				}
+				else
 				{
-					temp2 = ((tNodePtr) new->adr2);
-					lastint += temp2->data->content.integer;
+					if(vypocet == false)
+					{
+						temp = ((tNodePtr) new->adr1);
+						temp2 = ((tNodePtr)new->adr2);
+						printf("%d\n", temp->data->content.integer);
+
+						lastint += temp->data->content.integer + temp2->data->content.integer;
+						vypocet = true;
+					} else
+					{
+						temp2 = ((tNodePtr) new->adr2);
+						lastint += temp2->data->content.integer;
 
 				//(((tData) new->result)->content.integer) = (((tData) new->adr1)->content.integer + ((tData)new->adr2)->content.integer);
+					}
+				
 				}
 				printf("ADDI: %d\n", lastint);
-
-				
 				//printf("%d\n", ((tData)new->result)->content.integer);
 				//printf("adik skoncil\n");
 				break;
