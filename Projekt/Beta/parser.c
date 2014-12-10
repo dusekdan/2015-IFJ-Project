@@ -802,10 +802,19 @@ void nt_stmt (token tok)
                             //Tu je rozhodovanie ktoru instrukciu mam zavolat podla typu precedencie
                             switch (semControlVar)
                             {
+                                case sym_fun_int:
+                                case sym_fok_int:
                                 case sym_var_int:   intype = I_ASGNI; break;
+                                case sym_fun_str:
+                                case sym_fok_str:
                                 case sym_var_str:   intype = I_ASGNS; break;
+                                case sym_fun_rea:
+                                case sym_fok_rea:
                                 case sym_var_rea:   intype = I_ASGNR; break;
+                                case sym_fun_boo:
+                                case sym_fok_boo:
                                 case sym_var_boo:   intype = I_ASGNB; break;
+
                                 default: errorHandler(69);
                             }
 
@@ -1079,7 +1088,7 @@ int nt_assign (token tok)
             else
             {
                 insertInst (localIL, I_FCE, hledam->data, contentArr, NULL);
-                printf("LOCAL %u\n",&*localIL);printf("Vlozil som instrukciu I_FCE s ukazatelom %u do IL %u\n", &hledam->data,localIL);
+                printf("LOCAL %u\n",localIL);printf("Vlozil som instrukciu I_FCE s ukazatelom %u do IL %u\n", &hledam->data,localIL);
                 printf("____________________________________________________\n");
             }
             printf("%s",KNRM);
