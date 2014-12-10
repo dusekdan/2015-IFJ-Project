@@ -82,6 +82,22 @@ void First(tInsList *L)
 	L->active = L->first;
 }
 
+void Replicator(tInsList *IN, tInsList *OUT, tListItem *start, int howMuch)
+{
+
+	tListItem * revert = IN->active;
+
+	Select(IN, start);
+
+	for (int i = 0; i < howMuch; i++)
+	{
+		insertInst(OUT, IN->active->instruction.instype, IN->active->instruction.adr1, IN->active->instruction.adr2, IN->active->instruction.result);
+		Succ(IN);
+	}
+
+	Select(IN, revert);
+
+}
 
 void Select(tInsList *L, tListItem *destination)
 {

@@ -71,6 +71,7 @@ void InsertLast(tInsList *L, tInstruction I);	//vlozi polozku na koniec zoznamu
 void InsertFirst(tInsList *L, tInstruction I);  //vlozi polozku na zaciatok zoznamu
 tInstruction *Copy(tInsList *L);				//vrati hodnotu aktivneho prvku v zozname
 void Succ(tInsList *L);							//posune aktivitu na dalsi prvok v zozname
+void Replicator(tInsList *IN, tInsList *OUT, tListItem *start, int howMuch); //kopiruje instukcie z listu do listu
 void Select(tInsList *L, tListItem *destination); //skoci na instrukciu
 void First(tInsList *L); 						//nastavi aktivitu na prvy prvok
 bool insertInst (tInsList *list, int operace, void*adr1, void*adr2, void*result); //vlozi instrukciu do listu
