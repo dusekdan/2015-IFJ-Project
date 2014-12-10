@@ -64,6 +64,7 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 				{
 					temp = ((tNodePtr) new->adr1);
 					temp2 = ((tNodePtr)new->adr2);
+					printf("%d\n", temp->data->content.integer);
 
 					lastint += temp->data->content.integer + temp2->data->content.integer;
 					vypocet = true;
@@ -204,14 +205,14 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 				break;		
 			
 			case I_ASGNI:						
-				((tData) &new->result)->content.integer = lastint;
-				printf("vysledok ASGNI: %d\n", (((tData) &new->result)->content.integer));	
+				((tData) new->result)->content.integer = lastint;
+				printf("vysledok ASGNI: %d\n", (((tData) new->result)->content.integer));	
 				lastint = 0;
 				vypocet = false;
 				break;		
 
 			case I_ASGNR:
-				((tData) &new->result)->content.real = lastdouble;
+				((tData) new->result)->content.real = lastdouble;
 				printf("vysledok ASGNR: %g\n", (((tData) new->result)->content.real));
 				lastdouble = 0;
 				vypocet = false;
