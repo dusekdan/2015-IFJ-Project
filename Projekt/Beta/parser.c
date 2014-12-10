@@ -1003,10 +1003,10 @@ void nt_stmt (token tok)
             //////////////////////////////////////////////////////////////RULE22
             case t_write:   match (tok, t_write);
                             match (tok, t_l_parrent);
-                            tContent * * ptrArr;
-                            ptrArr = malloc (sizeof (struct tContent * ) * 100);
+                            /*tContent * * ptrArr;
+                            ptrArr = malloc (sizeof (struct tContent * ) * 100);*/
 
-                            nt_term_list (tok, "Fwrite", ptrArr);
+                            nt_term_list (tok, "Fwrite", NULL/*ptrArr*/);
 
                             pocetArg = 0;
                             match (tok,t_r_parrent);
@@ -1067,10 +1067,12 @@ int nt_assign (token tok)
             match (tok, t_fun_id);
             match (tok, t_l_parrent);
             //printf("idem vytvorit pole\n");
-            tContent **contentArr=malloc(sizeof(struct tContent*)*100);
+            //tContent **contentArr=malloc(sizeof(struct tContent*)*100);
+            tContent *contentArr=malloc(sizeof(tContent)*100);
+
             printf("vytvoril som doublepole %u\n____________________\n",&contentArr);
             //globalArr=contentArr;
-            contentArr[0]=&hledam->data->nextArg->data->content;
+            //contentArr[0]=&hledam->data->nextArg->data->content;
 
             nt_term_list(tok, key, contentArr);
             pocetArg = 0;
@@ -1110,7 +1112,7 @@ int nt_assign (token tok)
     return -1;
 }
 
-void nt_term (token tok, char *currentFunctionKey, tContent **contentArr)
+void nt_term (token tok, char *currentFunctionKey, tContent *contentArr)
 {
     if (tok->type == t_var_id || tok->type == t_expr_int || tok->type == t_expr_dou || tok->type == t_expr_str)
     {
@@ -1144,7 +1146,7 @@ void nt_term (token tok, char *currentFunctionKey, tContent **contentArr)
                   comparison1 = hledam->data->type;
                   //printf("\n--overene %s ", hledam->data->name );
                   
-                  contentArr[j]=&hledam->data->content;
+                  contentArr[j]=hledam->data->content;
                   //printf("uloxzil som ukayatel s hodnotou %d\n",contentArr[j]->integer);
                   j++;
             //printf("COMPARISON1 je %d\n",comparison1 );
@@ -1257,7 +1259,7 @@ void nt_term (token tok, char *currentFunctionKey, tContent **contentArr)
 
 }
 
-void nt_term_list (token tok, char *currentFunctionKey, tContent **contentArr)
+void nt_term_list (token tok, char *currentFunctionKey, tContent *contentArr)
 {
     if (tok->type == t_var_id || tok->type == t_r_parrent || tok->type == t_expr_int || tok->type == t_expr_dou || tok->type == t_expr_str)
     {
@@ -1283,7 +1285,7 @@ void nt_term_list (token tok, char *currentFunctionKey, tContent **contentArr)
     }
 }
 
-void nt_term_more (token tok, char *currentFunctionKey, tContent **contentArr)
+void nt_term_more (token tok, char *currentFunctionKey, tContent *contentArr)
 {
     if (tok->type == t_comma || tok->type == t_r_parrent)
     {
