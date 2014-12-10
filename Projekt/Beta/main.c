@@ -1,22 +1,3 @@
-/*#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <ctype.h>
-
-#define KNRM  "\x1B[0m"
-#define KRED  "\x1B[31m"
-#define KGRN  "\x1B[32m"
-#define KYEL  "\x1B[33m"
-#define KBLU  "\x1B[34m"
-#define KMAG  "\x1B[35m"
-#define KCYN  "\x1B[36m"
-#define KWHT  "\x1B[37m"
-
-#include "errorHandler.c"
-#include "inslist.c"
-#include "ial.c"*/
-
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -41,7 +22,7 @@ tInsList *localIL;
 
 FILE*fd=NULL;
 tInsList IL;
-
+int numberOfExprInsts=0;
 //#include "inslist.c"
 //#include "precedence3.c"
 #include "parser.c"
@@ -97,8 +78,6 @@ int main(int argc, char const *argv[])
     printf("%scyan\n", KCYN);
     printf("%swhite\n", KWHT);
     printf("%snormal\n", KNRM);*/
-
-    //printf("ELEGEBLEGE %d\n",globalArr[0]->integer);
     interpret(&rootTS, &IL);
     disposeTable(&rootTS);
     if (localTS!=NULL) disposeTable(&localTS);
