@@ -717,33 +717,39 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 				while(lastbool == true)
 				{
 					interpret(&rootTS, ((tInsList *) new->adr1));
-				//	getchar();
+					getchar();
 				}
 				break;
 
 			case I_FCE:
 				//tContent *conPtrs[100];
 				
-
+				printf("FUNKCIA ZACINA DRZTE SI KLOBUKY\n");
 				currentTerm = (((tData) new->adr1)->nextArg);
 
 				for(int i = 0; i < ((tData) new->adr1)->argCount; i++)
 				{
-					conOld[i] = currentTerm->data->content; 
+					printf("1 FORIK zaciatok\n");
+					conOld[i] = currentTerm->data->content;printf("integer conoldu je %d\n",conOld[i].integer );
 					currentTerm->data->content = ((tContent*) new->adr1)[i];
+					printf("integer currentu je %d\n",((tContent*) new->adr1)[i].integer);
 					currentTerm = currentTerm->data->nextArg;
+					printf("1 FORIK koniec\n");
 				}
 
-				interpret(&(((tData) new->adr1)->localTSadr), &*(((tData) new->adr1)->localILadr));
+				interpret(/*&(((tData) new->adr1)->localTSadr)*/&rootTS, (((tData) new->adr1)->localILadr));
 
 				for(int i = 0; i < ((tData) new->adr1)->argCount; i++)
 				{
+					printf("2 FORIK zaciatok\n");
 					currentTerm->data->content = conOld[i]; 
 					currentTerm = currentTerm->data->nextArg;
+					printf("2 FORIK konieck\n");
 				}	
 			break;
+			
 			default: printf("kokot dostal som %d\n",new->instype);
-				break;
+			break;
 		}	
 		Succ(currIL);
 
