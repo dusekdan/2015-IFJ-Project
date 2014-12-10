@@ -11,7 +11,6 @@
 /****************************************************************/
 
 #include "precedence3.h"
-#include <unistd.h>
 
 
 token gib_tok() {
@@ -382,6 +381,21 @@ int reduction(tStack *stack1, tStack *stack2) {
 						stackPush(stack2, temp);		// pushneme prvni E na druhy zasobnik
 					}
 				}
+				else if(stackTop(stack1).element == DOLAR) {
+
+					if(localIL == NULL) {
+								
+						insertInst(&IL, matusOp, change.key, NULL, NULL);
+						printf("Vlozil jsem instrukci %d s ukazatelem %u do listu %u\n", matusOp, &change.symbol, &IL);
+					}
+					else {
+
+						insertInst(localIL, matusOp, change.key, help.key, NULL);
+						printf("Vlozil jsem instrukci %d s ukazatelem %u do listu %u\n", matusOp, &change.symbol, localIL);
+					}
+					returnType = change.symbol->type;
+					return returnType;
+				}
 
 				stackPop(stack1, &temp);	// nacteme 3. znak
 
@@ -748,7 +762,9 @@ int myOp2matousOp(int myOp, int type) {
 
 char *randstring(int length) {   
 
-    srand(getpid());
+    static int mySeed = 25011984;
+
+    srand(time(NULL) * length * ++mySeed);
 
     char *string = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,.-#'?!";
     size_t stringLen = 26*2+10+7;        
