@@ -212,7 +212,7 @@ int zpracuj(token tok, tOpData *column) {
 
 			column->key = key;
 
-			free(key);
+			//free(key);
 
 			if((column->symbol = malloc(sizeof(struct tData))) != NULL) {
 
@@ -221,7 +221,7 @@ int zpracuj(token tok, tOpData *column) {
 			
 				if(node->data->type == sym_var_int)
 					column->symbol->type = t_expr_int;
-			
+
 				if(node->data->type == sym_var_str)
 					column->symbol->type = t_expr_str;
 			
@@ -252,11 +252,14 @@ int zpracuj(token tok, tOpData *column) {
 				column->symbol->type = tok->type;
 			}
 
-			if((key = malloc(sizeof(char)*(strlen(randstring(20))))) == NULL) {
+			char *tempKey = randstring(20);
+
+			if((key = malloc(sizeof(char)*(strlen(tempKey)))) == NULL) {
 
 				errorHandler(errInt);
 				return -1;
 			}
+			strcpy(key, tempKey);
 
 			if((node = malloc(sizeof(struct tNodePtr))) == NULL) {
 
@@ -267,7 +270,7 @@ int zpracuj(token tok, tOpData *column) {
 			node = insertSymbol(&rootTS, key, column->symbol);
 			column->key = key;
 
-			free(key);
+			//free(key);
 			//free(column->symbol);	
 			break;
 
@@ -383,18 +386,24 @@ int reduction(tStack *stack1, tStack *stack2) {
 				}
 				else if(stackTop(stack1).element == DOLAR) {
 
-					if(localIL == NULL) {
-								
-						insertInst(&IL, matusOp, change.key, NULL, NULL);
-						printf("Vlozil jsem instrukci %d s ukazatelem %u do listu %u\n", matusOp, &change.symbol, &IL);
-					}
-					else {
+					checkRule = PLUS;
+					if((matusOp = myOp2matousOp(checkRule, change.symbol->type)) != -1) {
 
-						insertInst(localIL, matusOp, change.key, help.key, NULL);
-						printf("Vlozil jsem instrukci %d s ukazatelem %u do listu %u\n", matusOp, &change.symbol, localIL);
+						numberOfExprInsts++;
+						if(localIL == NULL) {
+								
+							insertInst(&IL, matusOp, searchData(change.key), NULL, NULL);
+							printf("Vlozil jsem instrukci %d s ukazatelem %u do listu %u\n", matusOp, &change.symbol, &IL);
+						}
+						else {
+
+							insertInst(localIL, matusOp, searchData(change.key), NULL, NULL);
+							printf("Vlozil jsem instrukci %d s ukazatelem %u do listu %u\n", matusOp, &change.symbol, localIL);
+						}
+					
+						returnType = change.symbol->type;
+						return returnType;
 					}
-					returnType = change.symbol->type;
-					return returnType;
 				}
 
 				stackPop(stack1, &temp);	// nacteme 3. znak
@@ -482,16 +491,18 @@ int reduction(tStack *stack1, tStack *stack2) {
 
 						numberOfExprInsts++;
 
-						if(localIL == NULL) {
+						if((matusOp = myOp2matousOp(checkRule, change.symbol->type)) != -1) {
+							
+							if(localIL == NULL) {
 
-								
-							insertInst(&IL, matusOp, change.key, help.key, NULL);
-							printf("Vlozil jsem instrukci %d s ukazateli %u a %u do listu %u\n", matusOp, &change.symbol, &help.symbol, &IL);
-						}
-						else {
+								insertInst(&IL, matusOp, searchData(change.key), searchData(help.key), NULL);
+								printf("Vlozil jsem instrukci %d s ukazateli %u a %u do listu %u\n", matusOp, &change.symbol, &help.symbol, &IL);
+							}
+							else {
 
-							insertInst(localIL, matusOp, change.key, help.key, NULL);
-							printf("Vlozil jsem instrukci %d s ukazateli %u a %u do listu %u\n", matusOp, &change.symbol, &help.symbol, localIL);
+								insertInst(localIL, matusOp, searchData(change.key), searchData(help.key), NULL);
+								printf("Vlozil jsem instrukci %d s ukazateli %u a %u do listu %u\n", matusOp, &change.symbol, &help.symbol, localIL);
+							}
 						}
 					}
 					/* Pokud je jeden z neterminálů typu integer a druhý je reálného typu */
@@ -516,16 +527,19 @@ int reduction(tStack *stack1, tStack *stack2) {
 							returnType = change.symbol->type;
 
 						numberOfExprInsts++;
-						
-						if(localIL == NULL) {
-								
-							insertInst(&IL, matusOp, change.key, help.key, NULL);
-							printf("Vlozil jsem instrukci %d s ukazateli %u a %u do listu %u\n", matusOp, &change.symbol, &help.symbol, &IL);
-						}
-						else {
 
-							insertInst(localIL, matusOp, change.key, help.key, NULL);
-							printf("Vlozil jsem instrukci %d s ukazateli %u a %u do listu %u\n", matusOp, &change.symbol, &help.symbol, localIL);
+						if((matusOp = myOp2matousOp(checkRule, change.symbol->type)) != -1) {
+						
+							if(localIL == NULL) {
+								
+								insertInst(&IL, matusOp, searchData(change.key), searchData(help.key), NULL);
+								printf("Vlozil jsem instrukci %d s ukazateli %u a %u do listu %u\n", matusOp, &change.symbol, &help.symbol, &IL);
+							}
+							else {
+
+								insertInst(localIL, matusOp, searchData(change.key), searchData(help.key), NULL);
+								printf("Vlozil jsem instrukci %d s ukazateli %u a %u do listu %u\n", matusOp, &change.symbol, &help.symbol, localIL);
+							}
 						}
 					}
 					/* Chybné výrazy */
@@ -621,7 +635,7 @@ void infix2post(tStack *stack1, tStack *stack2) {
 		
 		//Doplnene osetrenie prveho tokenu
 		if (skipGib==false)
-			tok=gibtok();
+			tok=gib_tok();
 		skipGib=false;
 
 		if((zpracuj(tok, &temp)) == 0) {
@@ -786,4 +800,25 @@ char *randstring(int length) {
     //randomString[length] = '\0';
 
     return randomString;
+}
+
+tNodePtr searchData(char *key) {
+
+	tNodePtr node;
+
+	if((node = searchSymbol(&localTS, key)) != 0);
+				//printf("Nasel jsem %s v lokalni tabulce symbolu.\n",key);
+	else {
+
+		if((node = searchSymbol(&rootTS, key)) != 0);
+					//printf("Nasel jsem %s v globalni tabulce symbolu.\n",key);
+		else {
+			free(key);
+			free(node);
+			printf("Promenna nebyla nalezena.\n");
+			return NULL;
+		}
+	}
+
+	return node;
 }

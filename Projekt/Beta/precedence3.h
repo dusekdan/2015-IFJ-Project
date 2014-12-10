@@ -43,7 +43,7 @@ typedef enum {
 	SHIFT		//15
 
 } tOperators;
-
+/*
 static const int rule_1[3] = {NETERM, PLUS, NETERM};
 static const int rule_2[3] = {NETERM, MINUS, NETERM};
 static const int rule_3[3] = {NETERM, MUL, NETERM};
@@ -56,13 +56,14 @@ static const int rule_9[3] = {NETERM, EQUAL, NETERM};
 static const int rule_10[3] = {NETERM, NONEQUAL, NETERM};
 static const int rule_11[3] = {RIGHT, NETERM, LEFT};
 static const int rule_12[3] = {0, 0, ID};
-
+*/
 
 
 typedef struct {
 
 	tData symbol;
 	tOperators element;
+	char *key;
 
 } tOpData;
 
@@ -87,7 +88,7 @@ tOpData stackTop(tStack *stack);
 void stackPop(tStack *stack, tOpData *data);
 bool stackPush(tStack *stack, tOpData element);
 void stackDispose(tStack *stack);
-
+tNodePtr searchData(char *key);
 int precedenceParser();
 int zpracuj(token tok, tOpData *column);
 int reduction(tStack *stack1, tStack *stack2);
@@ -95,3 +96,5 @@ int reduction(tStack *stack1, tStack *stack2);
 void infix2post(tStack *stack1, tStack *stack2);
 
 int priority(int x);
+char *randstring(int length);
+int myOp2matousOp(int myOp, int type);
