@@ -62,14 +62,14 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 				//printf("adik zacal a kokot je %d\n",kokot);
 				if(vypocet == false)
 				{
-					temp = searchSymbol(&rootTS, ((char *)new->adr1));
-					temp2 = searchSymbol(&rootTS, ((char *)new->adr2));
+					temp = ((tNodePtr) new->adr1);
+					temp2 = ((tNodePtr)new->adr2);
 
 					lastint += temp->data->content.integer + temp2->data->content.integer;
 					vypocet = true;
 				} else
 				{
-					temp2 = searchSymbol(&rootTS, ((char *)new->adr2));
+					temp2 = ((tNodePtr) new->adr2);
 					lastint += temp2->data->content.integer;
 
 				//(((tData) new->result)->content.integer) = (((tData) new->adr1)->content.integer + ((tData)new->adr2)->content.integer);
@@ -84,24 +84,24 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 			case I_ADDR:
 				if(vypocet == false)
 				{
-					temp = searchSymbol(&rootTS, ((char *)new->adr1));
-					temp2 = searchSymbol(&rootTS, ((char *)new->adr2));
+					temp = ((tNodePtr) new->adr1);
+					temp2 = ((tNodePtr) new->adr2);
 
 					lastdouble += temp->data->content.real + temp2->data->content.real;
 					vypocet = true;
 				} else
 				{
-					temp2 = searchSymbol(&rootTS, ((char *)new->adr2));
+					temp2 = ((tNodePtr) new->adr2);
 					lastdouble += temp2->data->content.real;
 				}
 				printf("ADDR: %g\n", lastdouble);
 				break;
 			
 			case I_CONCATE:		
-				temp = searchSymbol(&rootTS, ((char *)new->adr1));
+				temp = ((tNodePtr) new->adr1);
 				printf("%u %u\n", new->adr1,new->adr2);
-				temp2 = searchSymbol(&rootTS, ((char *)new->adr2));
-				printf("temp2 %s\n",temp2->data->content.string );
+				temp2 = ((tNodePtr) new->adr2);
+				printf("temp2 %s\n",temp2->data->content.string);
 
 				laststring =  concate(temp->data->content.string, temp2->data->content.string);			
 				printf("CONCATE: %s\n", laststring);
@@ -110,14 +110,14 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 			case I_SUBI:
 				if(vypocet == false)
 				{
-					temp = searchSymbol(&rootTS, ((char *)new->adr1));
-					temp2 = searchSymbol(&rootTS, ((char *)new->adr2));
+					temp = ((tNodePtr) new->adr1);
+					temp2 = ((tNodePtr) new->adr2);
 
 					lastint = temp->data->content.integer - temp2->data->content.integer;
 					vypocet = true;
 				} else
 				{
-					temp2 = searchSymbol(&rootTS, ((char *)new->adr2));
+					temp2 = ((tNodePtr)new->adr2);
 					lastint -= temp2->data->content.integer;
 				}
 				printf("SUBI: %d\n", lastint);
@@ -126,14 +126,14 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 			case I_SUBR:
 				if(vypocet == false)
 				{
-					temp = searchSymbol(&rootTS, ((char *)new->adr1));
-					temp2 = searchSymbol(&rootTS, ((char *)new->adr2));
+					temp = ((tNodePtr) new->adr1);
+					temp2 = ((tNodePtr) new->adr2);
 
 					lastdouble = temp->data->content.real - temp2->data->content.real;
 					vypocet = true;
 				} else
 				{
-					temp2 = searchSymbol(&rootTS, ((char *)new->adr2));
+					temp2 = ((tNodePtr) new->adr2);
 					lastdouble -= temp2->data->content.real;
 				}
 				printf("SUBR: %g\n", lastdouble);
@@ -142,14 +142,14 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 			case I_MULI:
 				if(vypocet == false)
 				{
-					temp = searchSymbol(&rootTS, ((char *)new->adr1));
-					temp2 = searchSymbol(&rootTS, ((char *)new->adr2));
+					temp = ((tNodePtr) new->adr1);
+					temp2 = ((tNodePtr) new->adr2);
 
 					lastint = temp->data->content.integer * temp2->data->content.integer;
 					vypocet = true;
 				} else
 				{
-					temp2 = searchSymbol(&rootTS, ((char *)new->adr2));
+					temp2 = ((tNodePtr) new->adr2);
 					lastint *= temp2->data->content.integer;
 				}
 				printf("MULI: %d\n", lastint);
@@ -158,14 +158,14 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 			case I_MULR:
 				if(vypocet == false)
 				{
-					temp = searchSymbol(&rootTS, ((char *)new->adr1));
-					temp2 = searchSymbol(&rootTS, ((char *)new->adr2));
+					temp = ((tNodePtr) new->adr1);
+					temp2 = ((tNodePtr) new->adr2);
 
 					lastdouble = temp->data->content.real * temp2->data->content.real;
 					vypocet = true;
 				} else
 				{
-					temp2 = searchSymbol(&rootTS, ((char *)new->adr2));
+					temp2 = ((tNodePtr) new->adr2);
 					lastdouble *= temp2->data->content.real;
 				}
 				printf("MULR: %g\n", lastint);
@@ -174,14 +174,14 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 			case I_DIVI:
 				if(vypocet == false)
 				{
-					temp = searchSymbol(&rootTS, ((char *)new->adr1));
-					temp2 = searchSymbol(&rootTS, ((char *)new->adr2));
+					temp = ((tNodePtr) new->adr1);
+					temp2 = ((tNodePtr) new->adr2);
 
 					lastint = temp->data->content.integer / temp2->data->content.integer;
 					vypocet = true;
 				} else
 				{
-					temp2 = searchSymbol(&rootTS, ((char *)new->adr2));
+					temp2 = ((tNodePtr) new->adr2);
 					lastint = lastint / temp2->data->content.integer;
 				}
 				printf("DIVI: %d\n", lastint);
@@ -190,14 +190,14 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 			case I_DIVR:
 				if(vypocet == false)
 				{
-					temp = searchSymbol(&rootTS, ((char *)new->adr1));
-					temp2 = searchSymbol(&rootTS, ((char *)new->adr2));
+					temp = ((tNodePtr) new->adr1);
+					temp2 = ((tNodePtr) new->adr2);
 
 					lastdouble = temp->data->content.real / temp2->data->content.real;
 					vypocet = true;
 				} else
 				{
-					temp2 = searchSymbol (&rootTS, ((char *)new->adr2));
+					temp2 = ((tNodePtr) new->adr2);
 					lastdouble = lastdouble / temp2->data->content.real;
 				}
 				printf("DIVR: %g\n", lastdouble);
@@ -235,8 +235,8 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 								//LOGICKE OPERACIE//
 			case I_MORE:
 				
-				temp = searchSymbol(&rootTS, ((char *)new->adr1));
-				temp2 = searchSymbol(&rootTS, ((char *)new->adr2));
+				temp = ((tNodePtr) new->adr1);
+				temp2 = ((tNodePtr) new->adr2);
 
 				if(temp->data->type == t_expr_int)
 				{
@@ -301,9 +301,9 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 			case I_LESS:
 				//printf("som v lese\n");
 
-				temp = searchSymbol(&rootTS, ((char *)new->adr1));
+				temp = ((tNodePtr) new->adr1);
 				//printf("prva kokotina ok\n");
-				temp2 = searchSymbol(&rootTS, ((char *)new->adr2));
+				temp2 = ((tNodePtr) new->adr2);
 
 				//printf("dataypz je %d\n",temp->data->type );
 				if(temp->data->type == t_expr_int)
@@ -369,8 +369,8 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 
 			case I_EMORE:
 				
-				temp = searchSymbol(&rootTS, ((char *)new->adr1));
-				temp2 = searchSymbol(&rootTS, ((char *)new->adr2));
+				temp = ((tNodePtr) new->adr1);
+				temp2 = ((tNodePtr) new->adr2);
 
 				if(temp->data->type == t_expr_int)
 				{
@@ -434,8 +434,8 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 
 			case I_ELESS:
 				
-				temp = searchSymbol(&rootTS, ((char *)new->adr1));
-				temp2 = searchSymbol(&rootTS, ((char *)new->adr2));
+				temp = ((tNodePtr) new->adr1);
+				temp2 = ((tNodePtr) new->adr2);
 				
 				if(temp->data->type == t_expr_int)
 				{
@@ -499,8 +499,8 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 
 			case I_EQUAL:
 				
-				temp = searchSymbol(&rootTS, ((char *)new->adr1));
-				temp2 = searchSymbol(&rootTS, ((char *)new->adr2));
+				temp = ((tNodePtr) new->adr1);
+				temp2 = ((tNodePtr) new->adr2);
 
 				if(temp->data->type == t_expr_int)
 				{
@@ -564,8 +564,8 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 			
 			case I_NEQUAL:
 				
-				temp = searchSymbol(&rootTS, ((char *)new->adr1));
-				temp2 = searchSymbol(&rootTS, ((char *)new->adr2));
+				temp = ((tNodePtr) new->adr1);
+				temp2 = ((tNodePtr) new->adr2);
 
 				if(temp->data->type == t_expr_int)
 				{
@@ -707,11 +707,11 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 			case I_WHILE:
 				printf("som vo vhwiweled\n");
 
-				/*while(lastbool == true)
+				while(lastbool == true)
 				{
 					interpret(&rootTS, ((tInsList *) new->adr1));
 					getchar();
-				}*/
+				}
 				break;
 
 			case I_FCE:
