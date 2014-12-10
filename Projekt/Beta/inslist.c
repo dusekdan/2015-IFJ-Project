@@ -84,18 +84,18 @@ void First(tInsList *L)
 
 void Replicator(tInsList *IN, tInsList *OUT, tListItem *start, int howMuch)
 {
-
-	tListItem * revert = IN->active;
-
-	Select(IN, start);
-
+	//printf("%d INLAST\n",IN->last);
+	//tListItem * revert = IN->last;
+	//printf("inactive\n");
+	Select(IN, start->next);
 	for (int i = 0; i < howMuch; i++)
 	{
+		printf("replikujem ty kokot\n");
 		insertInst(OUT, IN->active->instruction.instype, IN->active->instruction.adr1, IN->active->instruction.adr2, IN->active->instruction.result);
 		Succ(IN);
 	}
 
-	Select(IN, revert);
+	IN->active=NULL;
 
 }
 

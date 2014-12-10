@@ -816,7 +816,7 @@ void nt_stmt (token tok)
                             ** localIL.                                       */
 
                             currIL =   (localIL == NULL) ? &IL : localIL;
-                            insertInst (currIL, intype, NULL, NULL, &hledam -> data);
+                            insertInst (currIL, intype, NULL, NULL, hledam -> data);
 
                             /* Vypísanie práve vloženej inštrukcie pre debug  */
 
@@ -879,8 +879,13 @@ void nt_stmt (token tok)
                             break;
             //////////////////////////////////////////////////////////////RULE20
             case t_while:   match (tok,t_while);
-                            precedenceResult = precedenceParser();
+                            
+                            //odpamatam aktualnu insytrukciu
+                            //fifi pocitadlo na 0
+                            tListItem * remember = (localIL==NULL) ? (&IL)->last : localIL->last;
 
+                            precedenceResult = precedenceParser();
+                            // ???? fifi pocitadlo 
                             if (precedenceResult != t_expr_boo)
                                 errorHandler(errSyn);
 
@@ -895,7 +900,16 @@ void nt_stmt (token tok)
                             InitList  (whileIL);
                             revert   =  localIL;
                             localIL  =  whileIL;
+                            
                             nt_body       (tok);
+
+                            //idem dat podmienku este
+                            if (revert!=NULL)
+                                Replicator (revert,localIL,remember,numberOfExprInsts);
+                            else
+                                Replicator (&IL,localIL,remember,numberOfExprInsts);
+
+
                             localIL  =   revert;
 
                             /* Ak je aktuálny localIL NULL, znamená že idem   **
