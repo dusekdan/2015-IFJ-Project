@@ -948,9 +948,9 @@ void nt_stmt (token tok)
 
                             switch (hledam -> data -> type)
                             {
-                                case 1: intype = I_READI;
-                                case 2: intype = I_READR;
-                                case 3: intype = I_READS;
+                                case 1: intype = I_READI; break;
+                                case 2: intype = I_READR; break;
+                                case 3: intype = I_READS; break;
                             }
 
                             /* Ak je aktuálny localIL NULL, znamená že idem   **
