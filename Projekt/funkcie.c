@@ -15,25 +15,24 @@ int length(char *string)
 	return strlen(string);
 }
 
-void copy(char *string, int i, int n) {		// danova prace
+char*  copy(char *string, int i, int n) {		// danova prace
 	
-	int strLength = length(string);
-	int newStringLength = strLength-i;
+	// vzdálenost mezi i a n je n
 	
-	char *tmpString = malloc(newStringLength);	// char is 1 by default so...
+	char *tmpString = malloc(n);	// char is one by its definition 
+	
 		if(tmpString == NULL)
 		{
-			printf("Failed to malloc!\n");
+			printf("Allocation error!\n");
 			exit(99);
 		}
 	
-	int j;
-	for(j = i-1; j <= newStringLength; ++j)
+	for(int c = 0; c < 7; c++)
 	{
-		
+		tmpString[c] = string[(i+c)];
 	}
-	// DOPÍČE POSRATÉ TO JE KURVA UŽ!
 
+	return tmpString;
 }
 
 
