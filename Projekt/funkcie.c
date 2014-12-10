@@ -10,6 +10,10 @@
 
 #include "funkcie.h"
 
+int length(char *string)
+{
+	return strlen(string);
+}
 
 void copy(char *s, int beginStr, int count) {		// filipova prace
 
