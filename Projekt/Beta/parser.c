@@ -759,6 +759,7 @@ void nt_stmt (token tok)
         tInsList *currIL = NULL;
         char * key       = NULL;
         int precedenceResult = 0;
+        int intype;
         tInsList *revert;
         switch (tok->type)
         {
@@ -798,27 +799,29 @@ void nt_stmt (token tok)
                             //else printf("ok\n");
 
                             //Tu je rozhodovanie ktoru instrukciu mam zavolat podla typu precedencie
-                            int intype = 0;
                             switch (semControlVar)
                             {
-                                case 1:    intype = I_ASGNI; break;
-                                case 3:    intype = I_ASGNS; break;
-                                case 2:    intype = I_ASGNR; break;
-                                case 4:    intype = I_ASGNB; break;
+                                case sym_var_int:   intype = I_ASGNI; break;
+                                case sym_var_str:   intype = I_ASGNS; break;
+                                case sym_var_rea:   intype = I_ASGNR; break;
+                                case sym_var_boo:   intype = I_ASGNB; break;
+                                default: errorHandler(69);
                             }
-                            printf("%s",KYEL);
-                            if (localIL==NULL)
-                            {   
-                                printf("GLOBAL\n"); printf("Vlozil som instrukciu assign %d s result %u do IL %u\n",intype,&hledam->data,&IL);
-                                insertInst (&IL, intype, NULL, NULL, &hledam->data);
-                            }
-                            else
-                            {
-                                insertInst (localIL, intype, NULL, NULL, &hledam->data);
-                                printf("LOCAL\n"); printf("Vlozil som instrukciu assign %d s result %u do IL %u\n",intype,&hledam->data,localIL);
-                            }
-                            break;
-                            printf("%s",KNRM);
+
+
+                            /* Ak je aktuálny localIL NULL, znamená že idem   **
+                            ** vkladať globálnu inštrukciu takže currIL si    **
+                            ** nastavím na IL a v opačnom prípade ideme do    **
+                            ** aktuálneho lokálneho listu na ktorý ukazuje    **
+                            ** localIL.                                       */
+
+                            currIL =   (localIL == NULL) ? &IL : localIL;
+                            insertInst (currIL, intype, NULL, NULL, &hledam -> data);
+
+                            /* Vypísanie práve vloženej inštrukcie pre debug  */
+
+                            if (debug == true)
+                                printf ("\n%sNew Instruction | %u | I_%d | NULL | NULL | %d |%s\n", KYEL, currIL, intype, &hledam -> data, KNRM);
 
                             free (key);
                             break;                
@@ -871,7 +874,7 @@ void nt_stmt (token tok)
                             /* Vypísanie práve vloženej inštrukcie pre debug  */
 
                             if (debug == true)
-                                printf ("%sNew Instruction | %u | I_IF | %u | %u | NULL |%s\n", KYEL, currIL, thenIL, elseIL, KNRM);
+                                printf ("\n%sNew Instruction | %u | I_IF | %u | %u | NULL |%s\n", KYEL, currIL, thenIL, elseIL, KNRM);
                             
                             break;
             //////////////////////////////////////////////////////////////RULE20
@@ -907,7 +910,7 @@ void nt_stmt (token tok)
                             /* Vypísanie práve vloženej inštrukcie pre debug  */
 
                             if (debug == true)
-                                printf ("%sNew Instruction | %u | I_WHILE | %u | NULL | NULL |%s\n", KYEL, currIL, whileIL, KNRM);
+                                printf ("\n%sNew Instruction | %u | I_WHILE | %u | NULL | NULL |%s\n", KYEL, currIL, whileIL, KNRM);
                             break;
             ////////////////////////////////////////////////////////////////////////////////RULE21
             case t_readln:  match (tok,t_readln);
@@ -916,13 +919,13 @@ void nt_stmt (token tok)
                             key = createKey ("V", tok->val_str);
 
                             currTS = (searchGlobalOnly == true) ? &rootTS : &localTS;
-                            hledam = searchSymbol (&*currTS, key);
+                            hledam = searchSymbol (currTS, key);
                             if (hledam == 0 && searchGlobalOnly == false)
                                 hledam = searchSymbol(&rootTS, key);
 
-                            if (hledam!=0)
+                            if (hledam != 0)
                                 
-                                if (hledam->data->type==t_var_id || (hledam->data->type >= 1 && hledam->data->type <= 4))//toto reaguje len na typove premenne 
+                                if (hledam->data->type==t_var_id || (hledam->data->type >= 1 && hledam->data->type <= 3))//toto reaguje len na typove premenne 
                                 {
                                     match (tok,t_var_id);
                                 }
@@ -932,6 +935,8 @@ void nt_stmt (token tok)
                                     errorHandler (errSemDef);
                                     return;
                                 }
+                            else
+                                errorHandler(errSemTypArg);
 
                             //SEMANTICKA KONTROLA
                             if (hledam->data->type < 1 || hledam->data->type > 3)
@@ -939,10 +944,29 @@ void nt_stmt (token tok)
                                 printf("tuna nemoze byt bool\n");
                                 errorHandler (errSemTypArg);
                             }
-
-
-
                             match (tok,t_r_parrent);
+
+                            switch (hledam -> data -> type)
+                            {
+                                case 1: intype = I_READI;
+                                case 2: intype = I_READR;
+                                case 3: intype = I_READS;
+                            }
+
+                            /* Ak je aktuálny localIL NULL, znamená že idem   **
+                            ** vkladať globálnu inštrukciu takže currIL si    **
+                            ** nastavím na IL a v opačnom prípade ideme do    **
+                            ** aktuálneho lokálneho listu na ktorý ukazuje    **
+                            ** localIL.                                       */
+
+                            currIL =   (localIL == NULL) ? &IL : localIL;
+                            insertInst (currIL, intype, NULL, NULL, &hledam -> data);
+
+                            /* Vypísanie práve vloženej inštrukcie pre debug  */
+
+                            if (debug == true)
+                                printf ("\n%sNew Instruction | %u | I_READ_%d | NULL | NULL | %u |%s\n", KYEL, currIL, intype, &hledam -> data, KNRM);
+
                             free (key);
                             break;
             //////////////////////////////////////////////////////////////RULE22
