@@ -1,4 +1,4 @@
-	/***********************precedence3.c****************************/
+/***********************precedence3.c****************************/
 /* Soubor: precedenc3e.c - Syntaktická analýza výrazů 			*/
 /* Předmět: Formalní jazyky a překladače (IFJ) 					*/
 /* Projekt: Implementace interpretu imperativního jazyka IFJ14  */
@@ -11,97 +11,16 @@
 /****************************************************************/
 
 #include "precedence3.h"
-#include <time.h>
-//#include "scanner2.c"
+#include <unistd.h>
 
 
-token gibtok() {
-	getNextToken(fd, tok);
-/*
-	token tok = malloc(sizeof(struct token));
-
-	char x = ' ';
-
-	while(x == ' ') 
-		scanf("%c", &x);
-
-	switch(x) {
-
-		case ';':
-			tok->type = t_semicolon;
-			break;
-
-		case '(':
-			tok->type = t_l_parrent;
-			break;
-
-		case ')':
-			tok->type = t_r_parrent;
-			break;
-
-		case 'i':
-			tok->type = t_expr_int;
-			break;
-
-		case 'd':
-			tok->type = t_expr_dou;
-			break;
-
-		case 's':
-			tok->type = t_expr_str;
-			break;
-		
-		case 'v':
-			tok->type = t_var_id;
-			break;
-
-		case '+':
-			tok->type = t_plus;
-			break;
-
-		case '-':
-			tok->type = t_minus;
-			break;
-
-		case '*':
-			tok->type = t_mul;
-			break;
-
-		case '/':
-			tok->type = t_div;
-			break;
-
-		case '<':
-			tok->type = t_less;
-			break;
+token gib_tok() {
 	
-		case '>':
-			tok->type = t_more;
-			break;
-
-		case '=':
-			tok->type = t_equal;
-			break;
-
-		case 'n':
-			tok->type = t_nequal;
-			break;
-
-		case 'm':
-			tok->type = t_moreeq;
-			break;
-
-		case 'l':
-			tok->type = t_lesseq;
-			break;
-
-		default:
-			printf("kokot\n");
-			exit(1);
-	}	
-*/
+	getNextToken(fd, tok);
 	return tok;
 }
+
+
 /*
 	Blok funkcí pro prácí se zásobníkem
 */
@@ -292,6 +211,8 @@ int zpracuj(token tok, tOpData *column) {
 				}
 			}
 
+			column->key = key;
+
 			free(key);
 
 			if((column->symbol = malloc(sizeof(struct tData))) != NULL) {
@@ -310,42 +231,25 @@ int zpracuj(token tok, tOpData *column) {
 			}
 			break;
 
-		case 41:							// integer, bool
+		case 41:	// int, real, bool, string
+		case 42:
+		case 43:						
 		case 44:	
 
 			if((column->symbol = malloc(sizeof(struct tData))) != NULL) {
+				
 				column->element = ID;
-				column->symbol->content.integer = tok->val_int;
-				column->symbol->type = tok->type;
-			}
+				
+				if(tok->type == t_expr_int)
+					column->symbol->content.integer = tok->val_int;
+				if(tok->type == t_expr_boo)
+					column->symbol->content.boolean = tok->val_int;
+				if(tok->type == t_expr_str)
+					column->symbol->content.string = tok->val_str;
+				if(tok->type == t_expr_dou)
+					column->symbol->content.real = tok->val_flo;
 
-			char *tempKey = randstring(20);
 
-			if((key = malloc(sizeof(char)*(strlen(tempKey)))) == NULL) {
-
-				errorHandler(errInt);
-				return -1;
-			}
-			strcpy(key, tempKey);
-
-			if((node = malloc(sizeof(struct tNodePtr))) == NULL) {
-
-				errorHandler(errInt);
-				return -1;
-			}
-
-			node = insertSymbol(&rootTS, key, column->symbol);
-			column->key = key;
-
-			//free(key);
-			//free(column->symbol);
-			break;
-
-		case 42: 						// string
-
-			if((column->symbol = malloc(sizeof(struct tData))) != NULL) {
-				column->element = ID;
-				column->symbol->content.string = tok->val_str;
 				column->symbol->type = tok->type;
 			}
 
@@ -363,34 +267,9 @@ int zpracuj(token tok, tOpData *column) {
 
 			node = insertSymbol(&rootTS, key, column->symbol);
 			column->key = key;
-			//free(key);
-			//free(column->symbol);
-			break;
 
-		case 43:						// realna hodnota
-
-			if((column->symbol = malloc(sizeof(struct tData))) != NULL) {
-				column->element = ID;
-				column->symbol->content.real = tok->val_flo;
-				column->symbol->type = tok->type;
-			}
-
-			if((key = malloc(sizeof(char)*(strlen(randstring(20))))) == NULL) {
-
-				errorHandler(errInt);
-				return -1;
-			}
-
-			if((node = malloc(sizeof(struct tNodePtr))) == NULL) {
-
-				errorHandler(errInt);
-				return -1;
-			}
-
-			node = insertSymbol(&rootTS, key, column->symbol);
-			column->key = key;
-			//free(key);
-			//free(column->symbol);
+			free(key);
+			//free(column->symbol);	
 			break;
 
 		default:
@@ -405,7 +284,7 @@ int zpracuj(token tok, tOpData *column) {
 /* Řídící funkce precedenční syntaktické analýzy. Při správném průchodu celou analýzou výrazu vrací datový typ výsledku. 
  * Celý výraz je před zpracováním převeden z infixové reprezentace výrazu na postfixovou. */
 int precedenceParser() {
-	printf(" som v precedenci a localIL je %u\n",localIL);
+
 	tStack stack1;
 	stackInit(&stack1);
 
@@ -413,6 +292,7 @@ int precedenceParser() {
 	stackInit(&stack2);							// inicializace zásobníků
 
 	tOpData temp;
+	numberOfExprInsts = 0;
 
 	infix2post(&stack1, &stack2);				// prevedeni vyrazu na postfixovou notaci
 
@@ -429,16 +309,15 @@ int precedenceParser() {
 	stackDispose(&stack2);
 
 
-	return x;
+	return x;									// návratová hodnota se rovná datovému typu výsledného výrazu
 }
 
-/* Funkce zajišťující zkontrolování výrazu podle pravidel a precedenční tabulky. */
+/* Funkce zajišťující zkontrolování výrazu podle pravidel precedenční tabulky. */
 int reduction(tStack *stack1, tStack *stack2) {
 
 	tOpData temp;
 	tOpData change;
 	tOpData help;				// pomocné proměnné se strukturou tOpData pro práci se zásobníkem
-	change.symbol = malloc(sizeof(struct tData));
 	int checkRule;
 	int control;
 	int endCheck = 0;
@@ -587,20 +466,18 @@ int reduction(tStack *stack1, tStack *stack2) {
 						else
 							returnType = change.symbol->type;
 
-						if((matusOp = myOp2matousOp(checkRule, change.symbol->type)) != -1) {		// zapsani instrukce do instrukcniho listu
+						numberOfExprInsts++;
 
-							if(localIL == NULL) {
+						if(localIL == NULL) {
+
 								
-								insertInst(&IL, matusOp, (change.key), (help.key), NULL);
-								if (debug==true)
-									printf("Vlozil jsem instrukci %d s ukazateli %u a %u do listu %u\n", matusOp, &change.symbol, &help.symbol, &IL);
-							}
-							else {
+							insertInst(&IL, matusOp, change.key, help.key, NULL);
+							printf("Vlozil jsem instrukci %d s ukazateli %u a %u do listu %u\n", matusOp, &change.symbol, &help.symbol, &IL);
+						}
+						else {
 
-								insertInst(localIL, matusOp, change.key, help.key, NULL);
-								if (debug==true)
-									printf("Vlozil jsem instrukci %d s ukazateli %u a %u do listu %u\n", matusOp, &change.symbol, &help.symbol, localIL);
-							}
+							insertInst(localIL, matusOp, change.key, help.key, NULL);
+							printf("Vlozil jsem instrukci %d s ukazateli %u a %u do listu %u\n", matusOp, &change.symbol, &help.symbol, localIL);
 						}
 					}
 					/* Pokud je jeden z neterminálů typu integer a druhý je reálného typu */
@@ -624,18 +501,17 @@ int reduction(tStack *stack1, tStack *stack2) {
 						else
 							returnType = change.symbol->type;
 
-						if((matusOp = myOp2matousOp(checkRule, change.symbol->type)) != -1) {		// zapsani instrukce do instrukcniho listu
-
-							if(localIL == NULL) {
+						numberOfExprInsts++;
+						
+						if(localIL == NULL) {
 								
-								insertInst(&IL, matusOp, change.key, help.key, NULL);
-								printf("Vlozil jsem instrukci %d s ukazateli %u a %u do listu %u\n", matusOp, &change.symbol, &help.symbol, &IL);
-							}
-							else {
+							insertInst(&IL, matusOp, change.key, help.key, NULL);
+							printf("Vlozil jsem instrukci %d s ukazateli %u a %u do listu %u\n", matusOp, &change.symbol, &help.symbol, &IL);
+						}
+						else {
 
-								insertInst(localIL, matusOp, change.key, help.key, NULL);
-								printf("Vlozil jsem instrukci %d s ukazateli %u a %u do listu %u\n", matusOp, &change.symbol, &help.symbol, localIL);
-							}
+							insertInst(localIL, matusOp, change.key, help.key, NULL);
+							printf("Vlozil jsem instrukci %d s ukazateli %u a %u do listu %u\n", matusOp, &change.symbol, &help.symbol, localIL);
 						}
 					}
 					/* Chybné výrazy */
@@ -667,21 +543,15 @@ int reduction(tStack *stack1, tStack *stack2) {
 			errorHandler(errSyn);
 		}
 	}
-	
-	/*printf("------VYSTUP------\n");		//vypis vystupu
-	while(stackEmpty(stack1) != true) {
-
-		stackPop(stack1, &temp);
-		printf("%d\n", temp.element);
-	}*/
 
 	return returnType;
 }
 
 
 	/* Pomocná funkce pro převod z infixu na postfix, určuje prioritu mezi operátory pomocí precedenční tabulky */
-int priority(int x, int y) {
-
+int priority(int x) {
+//int priority(int x, int y) {
+/*
 	switch(precedenceTable[x][y]) {
 
 		case pEQUAL:
@@ -709,7 +579,7 @@ int priority(int x, int y) {
 			return -1;
 			break;
 	}
-/*
+*/
 	if(x == LEFT)
 		return 0;
 
@@ -723,7 +593,7 @@ int priority(int x, int y) {
 		return 3;
 
 	return -1;
-	*/
+	
 }
 
 	/* Funkce zajišťující převod z infixové reprezentace na postfixovou reprezentaci výrazu */
@@ -765,19 +635,21 @@ void infix2post(tStack *stack1, tStack *stack2) {
 
 					else {
 
-						while(stackEmpty(stack1) != true && (priority(temp.element, stackTop(stack1).element) == pMORE)) {
-						//while(stackEmpty(stack1) != true && (priority(temp.element) <= priority(stackTop(stack1).element))) {
+						//while(stackEmpty(stack1) != true && (priority(temp.element, stackTop(stack1).element) == pMORE)) {
+						while(stackEmpty(stack1) != true && (priority(temp.element) <= priority(stackTop(stack1).element))) {
 
 							stackPop(stack1, &help);
 							stackPush(stack2, help);
 						}
 
-						if(temp.element == DOLAR && stackEmpty(stack1) != true) {
+						/*if(temp.element == DOLAR && stackEmpty(stack1) != true) {
 
 							stackPush(stack2, (stackTop(stack1)));
 						}
 						else 
 							stackPush(stack1, temp);
+							*/
+						stackPush(stack1, temp);
 					}	
 				}
 			}	
@@ -876,9 +748,7 @@ int myOp2matousOp(int myOp, int type) {
 
 char *randstring(int length) {   
 
-	static int mySeed = 25011984;
-
-    srand(time(NULL) * length * ++mySeed);
+    srand(getpid());
 
     char *string = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,.-#'?!";
     size_t stringLen = 26*2+10+7;        
