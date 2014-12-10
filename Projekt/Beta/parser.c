@@ -760,6 +760,7 @@ void nt_stmt (token tok)
         char * key       = NULL;
         int precedenceResult = 0;
         int intype;
+        int fificounter=0;
         tInsList *revert;
         switch (tok->type)
         {
@@ -886,8 +887,10 @@ void nt_stmt (token tok)
 
                             precedenceResult = precedenceParser();
                             // ???? fifi pocitadlo 
+                            fificounter = numberOfExprInsts;
                             if (precedenceResult != t_expr_boo)
                                 errorHandler(errSyn);
+                            printf("FIFIIIIk je %d\n",numberOfExprInsts );
 
                             terminalis (precedenceResult, NULL); //Debug výpis
                             
@@ -905,9 +908,9 @@ void nt_stmt (token tok)
 
                             //idem dat podmienku este
                             if (revert!=NULL)
-                                Replicator (revert,localIL,remember,numberOfExprInsts);
+                                Replicator (revert,localIL,remember,fificounter);
                             else
-                                Replicator (&IL,localIL,remember,numberOfExprInsts);
+                                Replicator (&IL,localIL,remember,fificounter);
 
 
                             localIL  =   revert;
