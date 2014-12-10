@@ -82,6 +82,14 @@ void First(tInsList *L)
 	L->active = L->first;
 }
 
+
+void Select(tInsList *L, tListItem *destination)
+{
+	//printf("aktivny bol %u\n",L->active );
+	L->active = destination;
+	//printf("aktivny je teraz %u\n",L->active );
+}
+
 void Succ(tInsList *L)
 //posune aktivitu na dalsi prvok v zozname
 {

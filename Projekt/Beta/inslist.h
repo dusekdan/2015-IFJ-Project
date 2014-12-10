@@ -1,24 +1,24 @@
 /*ARITEMETICKE OPERACIE*/
-#define I_ADDI 		0	//adr1 + adr2 = result
-#define I_ADDR 		1   //adr1 + adr2 = result
-#define I_CONCATE	2   //adr1 + adr2 = result
-#define I_SUBI 		3   //adr1 - adr2 = result
-#define I_SUBR 		4   //adr1 - adr2 = result 
-#define I_MULI 		5   //adr1 * adr2 = result
-#define I_MULR 		6   //adr1 * adr2 = result
-#define I_DIVI 		7   //adr1 / adr2 = result
-#define I_DIVR 		8   //adr1 / adr2 = result
-#define I_ASGNI 	9	//result = adr1
+#define I_ADDI 		0	//adr1 + adr2 = result  p
+#define I_ADDR 		1   //adr1 + adr2 = result  p
+#define I_CONCATE	2   //adr1 + adr2 = result  p
+#define I_SUBI 		3   //adr1 - adr2 = result  p
+#define I_SUBR 		4   //adr1 - adr2 = result 	p
+#define I_MULI 		5   //adr1 * adr2 = result  p
+#define I_MULR 		6   //adr1 * adr2 = result  p
+#define I_DIVI 		7   //adr1 / adr2 = result  p
+#define I_DIVR 		8   //adr1 / adr2 = result  p
+#define I_ASGNI 	9	//result = adr1         
 #define I_ASGNR		10  //result = adr1 
 #define I_ASGNS		11  //result = adr1
 #define I_ASGNB		12  //result = adr1
 /***LOGICKE OPERACIE***/
-#define	I_MORE 		13  //adr1 > adr2   result = true
-#define I_LESS 		14  //adr1 < adr2   result = true
-#define I_EMORE 	15  //adr1 >= adr2  result = true
-#define I_ELESS 	16  //adr1 <= adr2  result = true
-#define I_EQUAL 	17  //adr1 == adr2  result = true
-#define I_NEQUAL 	18  //adr1 != adr2  result = true
+#define	I_MORE 		13  //adr1 > adr2   result = true   p
+#define I_LESS 		14  //adr1 < adr2   result = true   je mozno p
+#define I_EMORE 	15  //adr1 >= adr2  result = true   p
+#define I_ELESS 	16  //adr1 <= adr2  result = true   p
+#define I_EQUAL 	17  //adr1 == adr2  result = true   p
+#define I_NEQUAL 	18  //adr1 != adr2  result = true   p
 /********FUNKCIE********/
 #define I_READI 	19  //scanf result
 #define I_READR		20  //scanf result
@@ -71,6 +71,7 @@ void InsertLast(tInsList *L, tInstruction I);	//vlozi polozku na koniec zoznamu
 void InsertFirst(tInsList *L, tInstruction I);  //vlozi polozku na zaciatok zoznamu
 tInstruction *Copy(tInsList *L);				//vrati hodnotu aktivneho prvku v zozname
 void Succ(tInsList *L);							//posune aktivitu na dalsi prvok v zozname
+void Select(tInsList *L, tListItem *destination); //skoci na instrukciu
 void First(tInsList *L); 						//nastavi aktivitu na prvy prvok
 bool insertInst (tInsList *list, int operace, void*adr1, void*adr2, void*result); //vlozi instrukciu do listu
 
