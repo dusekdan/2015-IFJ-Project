@@ -573,17 +573,17 @@ void nt_fun_body (token tok, bool nextMustBeBody, char * key)
             // Potrebujem tabulku instrukcii
             //tInsList newLocalIL;
 
-            tInsList *newLocalILptr=malloc (sizeof(tInsList));
-            //InitList (&newLocalIL);
+            tInsList * newLocalIL = malloc (sizeof(tInsList));
+            InitList (newLocalIL);
 
             /* Do "hledam" si uložím symbol aktuálnej funkcie */
 
             tNodePtr hledam = searchSymbol(&rootTS, key);
 
-            hledam->data->localILadr=newLocalILptr;
+            hledam->data->localILadr = newLocalIL;
 
-            localIL=newLocalILptr;
-            printf("localIL je teraz %u\n",&*localIL );
+            //localIL=newLocalILptr;
+            //printf("localIL je teraz %u\n",&*localIL );
 
             /* Ak už teraz musí prísť telo, čiže ak aktuálna funkcia už mala  **
             ** forward deklaráciu, tak to znamená že tým že mi sem neprišlo   **
@@ -606,8 +606,13 @@ void nt_fun_body (token tok, bool nextMustBeBody, char * key)
             /* Pravidlo pre deklarácie lokálnych premenných a samotné telo */
 
             nt_var_def_block (tok);
+
+            tInsList * revert = localIL;
+            localIL = hledam -> data -> localILadr;
+
             nt_body (tok);
 
+            localIL = revert;
             /* Akonáhle sa dostanem von z tela funkcie, opäť ma zaujímajú len **
             ** globálne premenné a funkcie                                    */
 
@@ -618,7 +623,7 @@ void nt_fun_body (token tok, bool nextMustBeBody, char * key)
             ** bolov a vynuluje globálny ukazateľ                             */
 
              //(hledam -> data -> localTSadr) = localTS;
-            localIL = NULL;
+            //localIL = NULL;
 
             //disposeTable(&localTS);
         }
