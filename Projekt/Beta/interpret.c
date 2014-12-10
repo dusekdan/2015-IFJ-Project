@@ -307,14 +307,13 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 				break;
 			
 			case I_LESS:
-				//printf("som v lese\n");
-
+				printf("som v lese\n");
 				temp = ((tNodePtr) new->adr1);
-				//printf("prva kokotina ok\n");
+				printf("prva kokotina ok %d\n", temp->data->content.integer);
 				temp2 = ((tNodePtr) new->adr2);
-
+				printf("druha kokotina ok %d\n", temp2->data->content.integer);
 				//printf("dataypz je %d\n",temp->data->type );
-				if(temp->data->type == t_expr_int)
+				if(temp->data->type == t_expr_int || temp->data->type == sym_var_int)
 				{//printf("je to int\n");
 					//if((((tData) new->adr1)->content.integer) < (((tData) new->adr2)->content.integer))
 					if(temp->data->content.integer < temp2->data->content.integer)
@@ -329,7 +328,7 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 						//(((tData) new->result)->content.boolean) = false;
 						//printf("%d\n", (((tData) new->result)->content.boolean));
 					}
-				} else if(temp->data->type == t_expr_dou)
+				} else if(temp->data->type == t_expr_dou || temp->data->type == sym_var_rea)
 				{
 					if(temp->data->content.real < temp2->data->content.real)
 					{
@@ -343,7 +342,7 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 						//(((tData) new->result)->content.boolean) = false;
 						//printf("%d\n", (((tData) new->result)->content.boolean));
 					}
-				} else if(temp->data->type == t_expr_str)
+				} else if(temp->data->type == t_expr_str || temp->data->type == sym_var_str)
 				{
 					cmp = strcmp(temp->data->content.string, temp2->data->content.string);
 					if(cmp < 0)
@@ -372,7 +371,7 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 						//(((tData) new->result)->content.boolean) = false;
 						//printf("%d\n", (((tData) new->result)->content.boolean));
 					}
-				}printf("koniec lesa\n");
+				}printf("koniec lesa a lastgul je %d\n",lastbool);
 				break;
 
 			case I_EMORE:
@@ -718,7 +717,7 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 				while(lastbool == true)
 				{
 					interpret(&rootTS, ((tInsList *) new->adr1));
-					getchar();
+				//	getchar();
 				}
 				break;
 
