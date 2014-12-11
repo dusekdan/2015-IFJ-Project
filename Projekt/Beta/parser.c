@@ -613,7 +613,7 @@ void nt_fun_body (token tok, bool nextMustBeBody, char * key)
             nt_var_def_block (tok);
 
             tInsList * revert = localIL;
-            localIL = hledam -> data -> localILadr;
+            localIL = newLocalIL;
 
             nt_body (tok);
 
@@ -1115,6 +1115,7 @@ int nt_assign (token tok)
             ** localIL.                                       */
 
             tInsList * currIL =   (localIL == NULL) ? &IL : localIL;
+            printf("idem mu dat %u\n",selfVarCon );
             insertInst (currIL, I_FCE, hledam -> data, contentArr, selfVarCon);
 
             /* Vypísanie práve vloženej inštrukcie pre debug  */

@@ -1,34 +1,27 @@
 var 
     a:integer;
-    aa: integer;
-    aaa: integer;
     result: integer;
 
-function kokotko (hevno:integer,picus:integer):integer;
+function kokotko ():integer;
 begin
-    aaa:=aaa+1;
-    kokotko:= hevno + picus;
-    if aaa < 5 then
-        begin
-            kokotko:=kokotko(aaa,aa)
-        end
-        else
-        begin
-        end
-    
+    kokotko:=123;
+    a:=a+1;
+    if a < 3 then
+            begin
+                kokotko:=kokotko()
+            end
+            else
+
+            begin
+            end;
+   kokotko:=kokotko+a
 end;
 
 
 begin
-	a:=2;
-    aa:=5;
-    aaa:=0;
-    result:=kokotko(a,aa)
-
-
-{while a < 5
-    do
-    begin
-    a:=a+1
-    end}
+	a:=0;
+    result:=kokotko()
 end.
+
+
+{132 bre}

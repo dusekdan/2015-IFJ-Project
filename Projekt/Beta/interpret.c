@@ -1,8 +1,6 @@
 //#include "inslist.c"
 
-
-tInsList LL;
-tInsList LR;
+int kanter=0;
 bool lastbool;
 bool vypocet = false;
 int lastint = 0;
@@ -41,7 +39,7 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 
 	while(currIL->active != NULL) {
 
-		printf("INSTUKCIE: %d\n", currIL->active->instruction.instype);
+		printf("INSTUKCIE LISTU %d: %d\n", currIL, currIL->active->instruction.instype);
 		Succ(currIL);
 
 	}
@@ -55,7 +53,7 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 	{
 
 		new = Copy(currIL);
-		
+		printf("%sAKTUALNA INSTRUKCIA LISTU %d: %d%s\n",KYEL,currIL,new->instype,KNRM);
 		switch(new->instype)
 		{
             case I_NOP: break;
@@ -237,9 +235,11 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 			
 			case I_ASGNI:						
 				((tData) new->result)->content.integer = lastint;
-				printf("vysledok ASGNI: %d\n", (((tData) new->result)->content.integer));	
+				printf("%d\n", lastint);
+				printf("%svysledok ASGNI: %d%s\n", KGRN, (((tData) new->result)->content.integer),KNRM);	
 				lastint = 0;
 				vypocet = false;
+				printf("vynuloval som lastint\n");
 				break;		
 
 			case I_ASGNR:
@@ -721,16 +721,23 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 				{
 
 					printf("then vetva\n");//lastbool = 0;
-
+					tListItem * revert = currIL->active;
+					//printf("pamatam si %d\n",((tInsList *) new->adr1)->active->instruction.instype);
 					interpret(&rootTS, ((tInsList *) new->adr1));
+
+					currIL->active = revert;
+					//((tInsList *) new->adr1)->active=revert->next;
 					printf("then vetva skoncila\n");	
 								
 					break;
 				} else 
 				{
-					printf("volam picu z else\n");	//lastbool = 0;	
+					printf("volam picu z else\n");	//lastbool = 0;
+					tListItem * revert = currIL->active;
+					//tListItem * revert = ((tInsList *) new->adr1)->active;
 					interpret(&rootTS, ((tInsList *) new->adr2));
-					
+					//((tInsList *) new->adr1)->active=revert->next;
+					currIL->active = revert;
 					break;
 				}
 			case I_VAR:break;
@@ -758,36 +765,81 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 				for(int i = 0; i < ((tData) new->adr1)->argCount; i++)
 				{
 					//printf("1 FORIK zaciatok\n");
-					conOld[i] = currentTerm->data->content;printf("integer conoldu je %d\n",conOld[i].integer );
-					//printf("integer currentu je %d\n",(*((tContent **)new->adr2)[i]).integer );
+					conOld[i] = currentTerm->data->content;
+					//printf("integer conoldu je %d\n",conOld[i].integer );
+					printf("integer currentu je %d\n",(*((tContent **)new->adr2)[i]).integer );
                     currentTerm->data->content = (*((tContent**) new->adr2)[i]);
 					//printf("po ulozeni je v currentTerme %d\n",currentTerm->data->content.integer );
 					currentTerm = currentTerm->data->nextArg;
 					//printf("1 FORIK koniec\n");
 				}
 
-				interpret(/*&(((tData) new->adr1)->localTSadr)*/&rootTS, (((tData) new->adr1)->localILadr));
+
+				tListItem * revert = currIL->active;
+				
+				printf("%srevert si pamata %u v %u %s\n",KCYN,revert->instruction.instype, revert,KNRM );
+				kanter++;
+				printf("__________________________________LEVEL_VNORENI_%d\n",kanter);
+				
+				interpret(/*&(((tData) new->adr1)->localTSadr)*/NULL, (((tData) new->adr1)->localILadr));
+				
+				printf("__________________________________END_%d\n",kanter);kanter--;
+				
+				
+				currIL->active = revert;
+
+
+				
+                
+            	
+                switch((((tData) new->adr1)->type))
+				{
+					case sym_fun_int:
+					case sym_fok_int:	
+						lastint = (*((tContent *) new->result)).integer;
+						break;
+
+					case sym_fun_rea:
+					case sym_fok_rea:
+						lastdouble = (*((tContent *) new->result)).real;
+						break;	
+
+					case sym_fun_str:
+					case sym_fok_str:
+						laststring = (*((tContent *) new->result)).string;
+						break;
+
+					case sym_fun_boo:
+					case sym_fok_boo:
+						lastbool =(*((tContent *) new->result)).boolean;
+						break;
+					default: printf("KORVOOOOOOOOOOOOOOOOOOOOO\n");exit(563415616);
+				}
+				//printf("vratil som %d\n", (*((tContent *) new->result)).integer);
+				//printf("lastint je %d\n",lastint );
+
+                *((tContent *) new->result) = conVarOld;
+                //printf("obnovil som si kokotka %d\n",(*((tContent *) new->result)).integer);
 
                 currentTerm = (((tData) new->adr1)->nextArg);
 
-                *((tContent *) new->result) = conVarOld;
-                printf("obnovil som si kokotka %d\n",(*((tContent *) new->result)).integer);
-
 				for(int i = 0; i < ((tData) new->adr1)->argCount; i++)
 				{
-					printf("2 FORIK zaciatok\n");
-					currentTerm->data->content = conOld[i]; 
+					currentTerm->data->content = conOld[i];
+					(((tContent**) new->adr2)[i])=NULL;
 					currentTerm = currentTerm->data->nextArg;
-					printf("2 FORIK konieck\n");
 				}
-                printf("FUNKCIA SKONCILA ODLOZTE SI KLOBUKY\n");	
+
+                printf("%sFUNKCIA SKONCILA ODLOZTE SI KLOBUCIKY%s\n",KRED,KNRM);	
 			break;
 			
 			default: printf("kokot dostal som %d\n",new->instype);
 			break;
 		}	
 		Succ(currIL);
-
+		/*if (currIL->active != NULL)
+		printf("Aktiv instu listu::: %d\n", currIL->active->instruction.instype);
+*/
 	} while(currIL->active != NULL);
  return 0; 
 }
