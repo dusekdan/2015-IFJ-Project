@@ -27,6 +27,7 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 	printf("zacal interpret a som v insliste %u\n",currIL);
 
 	tContent conOld[100];
+	tContent conVarOld;
 	tNodePtr currentTerm; 
 	int l;
 	int r;
@@ -749,6 +750,10 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 				
 				printf("FUNKCIA ZACINA DRZTE SI KLOBUKY\n");
 				currentTerm = (((tData) new->adr1)->nextArg);
+				
+				//odpamatanie kokotka
+				conVarOld = *((tContent *) new->result);
+				printf("odpamatal som si kokotka %d\n",conVarOld.integer);
 
 				for(int i = 0; i < ((tData) new->adr1)->argCount; i++)
 				{
@@ -764,6 +769,10 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 				interpret(/*&(((tData) new->adr1)->localTSadr)*/&rootTS, (((tData) new->adr1)->localILadr));
 
                 currentTerm = (((tData) new->adr1)->nextArg);
+
+                *((tContent *) new->result) = conVarOld;
+                printf("obnovil som si kokotka %d\n",(*((tContent *) new->result)).integer);
+
 				for(int i = 0; i < ((tData) new->adr1)->argCount; i++)
 				{
 					printf("2 FORIK zaciatok\n");

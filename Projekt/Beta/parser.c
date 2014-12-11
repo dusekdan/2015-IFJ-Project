@@ -1073,6 +1073,7 @@ int nt_assign (token tok)
         else
         {
             char * key = createKey ("F", tok -> val_str);
+            char * key2 = createKey ("V", tok -> val_str);
             tNodePtr hledam = searchSymbol (&rootTS, key);
             
             if (hledam==0)
@@ -1083,7 +1084,10 @@ int nt_assign (token tok)
 
             match (tok, t_fun_id);
             match (tok, t_l_parrent);
-            
+
+
+            tContent * selfVarCon = &(searchSymbol(&hledam->data->localTSadr, key2)->data->content);
+
             tContent ** contentArr = (tContent**) malloc (sizeof (tContent*) * 100);       printf("vytvoril som doublepole %u\n____________________\n",&contentArr);
 
             nt_term_list(tok, key, contentArr);
@@ -1105,12 +1109,12 @@ int nt_assign (token tok)
             ** localIL.                                       */
 
             tInsList * currIL =   (localIL == NULL) ? &IL : localIL;
-            insertInst (currIL, I_FCE, hledam -> data, contentArr, NULL);
+            insertInst (currIL, I_FCE, hledam -> data, contentArr, selfVarCon);
 
             /* Vypísanie práve vloženej inštrukcie pre debug  */
 
             if (debug == true)
-                printf ("\n%sNew Instruction | %u | I_FCE | %u | %u | NULL |%s\n", KYEL, currIL, &hledam -> data, &contentArr, KNRM);
+                printf ("\n%sNew Instruction | %u | I_FCE | %u | %u | %u |%s\n", KYEL, currIL, &hledam -> data, contentArr, selfVarCon, KNRM);
             
 
 
