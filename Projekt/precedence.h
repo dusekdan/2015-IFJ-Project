@@ -8,13 +8,16 @@
 /* Autoři:			Filip Kalous (xkalou03)						*/
 /*					Matúš Bútora (xbutor01)						*/
 /****************************************************************/
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include "parser.h"
-#include "ial.c"
-#include "errorHandler.c"
+//#include <stdio.h>
+//#include <string.h>
+//#include <stdlib.h>
+//#include <stdbool.h>
+//#include "errorHandler.c"
+//#include "parser.h"
+//#include "inslist.h"
+//#include "ial.c"
+#include <time.h>
+
 
 
 #define STACKSIZE 50;
@@ -69,6 +72,7 @@ typedef struct {
 
 	tData symbol;
 	tOperators element;
+	char *key;
 
 } tOpData;
 
@@ -97,7 +101,6 @@ void stackDispose(tStack *stack);
 int precedenceParser();
 int zpracuj(token tok, tOpData *column);
 int reduction(tStack *stack1, tStack *stack2);
-
-void infix2post(tStack *stack1, tStack *stack2);
-
-int priority(int x);
+char *randstring(int length);
+int myOp2matousOp(int myOp, int type);
+tNodePtr searchData(char *key);

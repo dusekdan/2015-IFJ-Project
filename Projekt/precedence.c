@@ -11,48 +11,9 @@
 
 #include "precedence.h"
 
-int main() {
-
-	precedenceParser();
-
-	return 0;
-
-}
-
-token gibTok(int count) {
-
-	token tok = malloc(sizeof(struct token));
-
-	if(count == 0) {
-
-		tok->type = t_expr_int;
-		tok->val_int = 10;
-	}
-	if(count == 1) {
-		
-		tok->type = t_mul;
-	}
-	if(count == 2) {
-
-		tok->type = t_expr_int;
-		tok->val_int = 20;
-	}
-	if(count == 3) {
+token gib_tok() {
 	
-		tok->type = t_plus;
-	}
-
-	if(count == 4) {
-	
-		tok->type = t_expr_int;
-		tok->val_int = 30;
-	}
-	if(count == 5) {
-
-		tok->type = t_semicolon;
-	}
-
-	count++;
+	getNextToken(fd, tok);
 	return tok;
 }
 
@@ -106,6 +67,18 @@ tOpData stackTop(tStack *stack) {
 	return (stack->top->data);
 }
 
+void stackDispose(tStack *stack) {
+
+	tOpData temp;
+
+	while(stackEmpty(stack) != true) {
+
+		stackPop(stack, &temp);
+	}
+
+	stack->top = NULL;
+}
+
 
 tPriority precedenceTable [14][14] = {
 
@@ -125,10 +98,10 @@ tPriority precedenceTable [14][14] = {
 	{pLESS, pLESS, pLESS, pLESS, pLESS, pEMPTY, pLESS, pLESS, pLESS, pLESS, pLESS, pLESS, pLESS, pEMPTY},
 };
 
-int zpracuj(token tok, tOpData *column) {		// zjisteni typu tokenu, nastaveni inxdexu
+int zpracuj(token tok, tOpData *column) {
 
-	printf("zpracovavam\n");
 	char *key;
+	tNodePtr node;
 
 	switch(tok->type) {
 
@@ -183,11 +156,20 @@ int zpracuj(token tok, tOpData *column) {		// zjisteni typu tokenu, nastaveni in
 		case 3:								// strednik
 		case 14:							// then
 		case 17:							// do
+		case 9:								// end
 
 			column->element = DOLAR;
 			break;
 
 		case 20:
+
+			column->element = ID;
+
+			if((node = malloc(sizeof(struct tNodePtr))) == NULL) {
+
+				errorHandler(errInt);
+				return -1;
+			}
 
 			if((key = malloc(sizeof(char)*(strlen(tok->val_str) + 1))) == NULL) {
 
@@ -195,25 +177,89 @@ int zpracuj(token tok, tOpData *column) {		// zjisteni typu tokenu, nastaveni in
 				return -1;
 			}
 
+			memset (key, 0, strlen(key)); //Treba key pred prvým strcatom vynulovať, inak ak je tam bordel, pripája sa až zaň.
 			strcat(key, "V");
 			strcat(key, tok->val_str);
+		
+			if((node = searchSymbol(&localTS, key)) != 0);
+				//printf("Nasel jsem %s v lokalni tabulce symbolu.\n",key);
 
+			else {
 
-			if((searchSymbol(&rootTS, key)) == 0)
-				return -1;
-			if((searchSymbol(&localTS, key)) == 0)
-				return -1;
+				if((node = searchSymbol(&rootTS, key)) != 0);
+					//printf("Nasel jsem %s v globalni tabulce symbolu.\n",key);
 
+				else {
+					free(key);
+					free(node);
+					printf("Promenna nebyla nalezena.\n");
+					return -1;
+				}
+			}
 
-		case 41:							// integer, bool
+			column->key = key;
+
+			//free(key);
+
+			if((column->symbol = malloc(sizeof(struct tData))) != NULL) {
+
+				if(node->data->type == sym_var_rea)
+					column->symbol->type = t_expr_dou;
+			
+				if(node->data->type == sym_var_int)
+					column->symbol->type = t_expr_int;
+			
+				if(node->data->type == sym_var_str)
+					column->symbol->type = t_expr_str;
+			
+				if(node->data->type == sym_var_boo)
+					column->symbol->type = t_expr_boo;
+			}
+			break;
+
+		case 41:	// int, real, bool, string
 		case 42:
-		case 43:
+		case 43:						
+		case 44:	
 
-			column->element = ID;
+			if((column->symbol = malloc(sizeof(struct tData))) != NULL) {
+				
+				column->element = ID;
+				
+				if(tok->type == t_expr_int)
+					column->symbol->content.integer = tok->val_int;
+				if(tok->type == t_expr_boo)
+					column->symbol->content.boolean = tok->val_int;
+				if(tok->type == t_expr_str)
+					column->symbol->content.string = tok->val_str;
+				if(tok->type == t_expr_dou)
+					column->symbol->content.real = tok->val_flo;
 
+
+				column->symbol->type = tok->type;
+			}
+
+			if((key = malloc(sizeof(char)*(strlen(randstring(20))))) == NULL) {
+
+				errorHandler(errInt);
+				return -1;
+			}
+
+			if((node = malloc(sizeof(struct tNodePtr))) == NULL) {
+
+				errorHandler(errInt);
+				return -1;
+			}
+
+			node = insertSymbol(&rootTS, key, column->symbol);
+			column->key = key;
+
+			//free(key);
+			//free(column->symbol);	
 			break;
 
 		default:
+
 			errorHandler(errSyn);
 			return -1;	
 	}
@@ -230,12 +276,18 @@ int precedenceParser() {				// hlavni funkce precedencni analyzy
 	tStack stack2;
 	stackInit(&stack2);
 
-	tOpData temp;		// pro ulozeni dolaru na zasobnik
 	tOpData column;	// indexy do precedencni tabulky 
 	tOpData row;
+	tOpData temp;
 	tOpData change;
+	tOpData theEnd;
+
+	numberOfExprInsts = 0;
 	int error;
 	int count = 0;
+	int conStep = 1;
+	int returnType = -1;
+	bool skipGib=true;
 
 
 	temp.element = DOLAR;
@@ -243,16 +295,22 @@ int precedenceParser() {				// hlavni funkce precedencni analyzy
 
 	do {
 
-		token tok = gibTok(count);
-		count++;
+		if(conStep == 1) {
 		
-		if((error = zpracuj(tok, &column)) != 0)		// pokud skoncime s chybou, breakujeme
-			break;
+				if (skipGib==false)
+					tok = gib_tok();
+			
+				skipGib=false;
+				printf("TOKEN: %d\n", tok->type);
 		
+				if((error = zpracuj(tok, &column)) != 0)		// pokud skoncime s chybou, breakujeme
+					break;
+
+		}
+
 		row = stackTop(&stack1);		// precteni tokenu na vrcholu zasobniku
 
-		
-		while((row.element == NETERM || row.element == SHIFT) && row.element != DOLAR) { // preskakujeme na zasobniku neterminaly
+		while(row.element == NETERM || row.element == SHIFT) { // preskakujeme na zasobniku neterminaly
 			
 			stackPop(&stack1, &change);
 			stackPush(&stack2, change);
@@ -265,24 +323,23 @@ int precedenceParser() {				// hlavni funkce precedencni analyzy
 			stackPush(&stack1, change);
 		}
 
-		printf("row = %d  column = %d\n", row.element, column.element);
+		printf("ROW: %d COLUMN: %d\n", row.element, column.element);
 
 		switch(precedenceTable[row.element][column.element]) {
 
 			case pEQUAL:				// equal
-
-				printf("equal\n");
+				
+				conStep = 1;
 				stackPush(&stack1, column);
 				break;
 
 			case pLESS:					// shift
-				printf("shift\n");
 
-				while(row.element == NETERM || row.element == SHIFT) {	// preskakujeme na zasobniku neterminaly
+				conStep = 1;
+				while(stackTop(&stack1).element == NETERM || stackTop(&stack1).element == SHIFT) {	// preskakujeme na zasobniku neterminaly
 			
 					stackPop(&stack1, &change);
 					stackPush(&stack2, change);
-					row = stackTop(&stack1);
 				}
 
 				temp.element = SHIFT;						// pushnuti SHIFTu pred neterminal
@@ -300,46 +357,43 @@ int precedenceParser() {				// hlavni funkce precedencni analyzy
 
 			case pMORE:					// redukce
 
-				printf("redukce\n");
+				conStep = 0;
 
-				if(reduction(&stack1, &stack2) < 0)
-					return -1;
-
-				if(column.element < DOLAR) {		// pokud mame jeste neco na vstupu potrebujeme pred E pushnout SHIFT
-					
-					stackPop(&stack1, &change);
-					temp.element = SHIFT;
-					stackPush(&stack1, temp);
-					stackPush(&stack1, change);
-				}
-				
-				stackPush(&stack1, column);			// pushujeme az po redukci, zbytecne by se nam tam operator pletl
+				if((returnType = reduction(&stack1, &stack2)) < 0)
+					return -1;	
 
 				break;
 
 			case pEMPTY:							// empty, syntax error
 
-				printf("empty\n");
-				printf("Syntaktická chyba.\n");
+				stackDispose(&stack1);
+				stackDispose(&stack2);
 				errorHandler(errSyn);
 				return -1;
 				break;
 		}
-	}
 
-	while(stack1.top->data.element != DOLAR);
+		while(stackTop(&stack1).element == NETERM || stackTop(&stack1).element == SHIFT) {
 
-	stackPop(&stack1, &temp);			// odstraneni dolaru
+			stackPop(&stack1, &change);
+			stackPush(&stack2, change);
+		}
 
-	while(stackEmpty(&stack1) != true) {		// vypis zbytku na zasobniku
+		theEnd = stackTop(&stack1);
 
-		stackPop(&stack1, &temp);
-		printf("%d\n", temp.element);
+		while(stackEmpty(&stack2) != true) {
 
-	}
+			stackPop(&stack2, &change);
+			stackPush(&stack1, change);
+		}
+
+	} while((column.element != DOLAR) || (theEnd.element != DOLAR));
+	
+	stackDispose(&stack1);
+	stackDispose(&stack2);
 
 
-	return 0;	// jeste nedokonceno, zatim mi to funguje jen pro pravidlo E -> i, protoze se nedokazu vickrat zacyklit v te redukci
+	return returnType;	// jeste nedokonceno, zatim mi to funguje jen pro pravidlo E -> i, protoze se nedokazu vickrat zacyklit v te redukci
 }
 
 
@@ -347,49 +401,75 @@ int reduction(tStack *stack1, tStack *stack2) {
 
 	tOpData help = stackTop(stack1);
 	tOpData change;
-	tOpData temp;
+	tOpData temp1;
+	tOpData temp2;
+	tOpData temp3;
+	int concat = 0;
+	bool boolean = false;
+	int returnType = -1;
+	int matusOp;
+	int control = 0;
+	int checkRule;
+	printf("reduction\n");
 
-	printf("jsem v redukci\n");
+	//printf("HELP: %d\n", help.element);
 
-	while(help.element != SHIFT && stackEmpty(stack1) != true) {			//	dostaneme se az na SHIFT, vse na druhem zasobniku pouzijeme pro jedno z pravidel
-		
+	while(help.element != SHIFT/* && stackEmpty(stack1) != true*/) {			//	dostaneme se az na SHIFT, vse na druhem zasobniku pouzijeme pro jedno z pravidel
+
 		stackPop(stack1, &change);
 		stackPush(stack2, change);
 		help = stackTop(stack1);
 	}
 
+
+	//help = stackTop(stack1);
 	if(help.element == SHIFT) {
 
-		stackPop(stack2, &temp);	// nacteme si dalsi oper z druheho zasobniku
+		stackPop(stack2, &temp1);	// nacteme si dalsi oper z druheho zasobniku
+		printf("%d\n", temp1.element);
+		
+		if(temp1.element == ID && stackEmpty(stack2) == true) {		// zacneme od nejjednodusiho - E->ID
+			
 
-		if(temp.element == ID) {		// zacneme od nejjednodusiho - E->ID
+			/*checkRule = PLUS;
+			if((matusOp = myOp2matousOp(checkRule, temp1.symbol->type)) != -1) {
 
-			stackPop(stack2, &temp);
+				numberOfExprInsts++;
+				if(localIL == NULL) {
+							
+					insertInst(&IL, matusOp, searchData(temp1.key), NULL, NULL);
+					printf("Vlozil jsem instrukci %d s ukazatelem %u do listu %u\n", matusOp, &temp1.symbol, &IL);
+				}
+				else {
 
-			if(stackEmpty(stack2) == true) {	// prvni pravidlo splneno
+					insertInst(localIL, matusOp, searchData(temp1.key), NULL, NULL);
+					printf("Vlozil jsem instrukci %d s ukazatelem %u do listu %u\n", matusOp, &temp1.symbol, localIL);
+				}
+					
+				returnType = temp1.symbol->type;
+			}*/
 
-				stackPop(stack1, &temp);		// popneme SHIFT, ze zasobniku, uz neni potreba
-				temp.element = NETERM;
-				stackPush(stack1, temp);		// pushneme dle pravidla - E (neterminal)
-				
-				printf("Bylo provedeno 12. pravidlo.\n");
-			}
+			returnType = temp1.symbol->type;
+			stackPop(stack1, &change);		// popneme SHIFT, ze zasobniku, uz neni potreba
+			change = temp1;
+			change.element = NETERM;
+			stackPush(stack1, change);		// pushneme dle pravidla - E (neterminal)
 		}
 
-		else if(temp.element == NETERM) {	// nyni vsechna pravidla pro neterminaly
+		else if(temp1.element == NETERM) {	// nyni vsechna pravidla pro neterminaly
 
-			int control = 0;
-			int checkRule;
+			stackPop(stack2, &temp2);
+			printf("%d\n", temp2.element);
 
-			stackPop(stack2, &temp);
-
-			switch(temp.element) {
+			switch(temp2.element) {
+				//printf("%d\n", temp2.symbol->type);
 
 				case PLUS:
 					checkRule = PLUS;
 					control = 1;
 					break;
 				case MINUS:
+				
 					checkRule = MINUS;
 					control = 1;
 					break;
@@ -404,30 +484,35 @@ int reduction(tStack *stack1, tStack *stack2) {
 				case LESS:
 					checkRule = LESS;
 					control = 1;
+					boolean = true;
 					break;
 				case MORE:
 					checkRule = MORE;
+					boolean = true;
 					control = 1;
 					break;
 				case MOREEQUAL:
 					checkRule = MOREEQUAL;
+					boolean = true;
 					control = 1;
 					break;
 				case LESSEQUAL:
 					checkRule = LESSEQUAL;
+					boolean = true;
 					control = 1;
 					break;
 				case EQUAL:
 					checkRule = EQUAL;
+					boolean = true;
 					control = 1;
 					break;
 				case NONEQUAL:
 					checkRule = NONEQUAL;
+					boolean = true;
 					control = 1;
 					break;
 
 				default:
-					fprintf(stderr, "Nevyhovuje pravidlum1.\n");
 					control = 0;
 					errorHandler(errSyn);
 					break;
@@ -438,57 +523,262 @@ int reduction(tStack *stack1, tStack *stack2) {
 
 			else {
 
-				stackPop(stack2, &temp);
+				stackPop(stack2, &temp3);
+				printf("%d\n", temp3.element);
 
-				if(temp.element == NETERM) {
+				if(temp3.element == NETERM) {
+
+					if(temp1.symbol->type == temp3.symbol->type) {
+
+						if(temp1.symbol->type == t_expr_str) {
+
+							if(checkRule == PLUS)
+								concat = 1;
+
+							else if(checkRule == LESS || checkRule == MORE || checkRule == MOREEQUAL || checkRule == LESSEQUAL || checkRule == EQUAL || checkRule == NONEQUAL)
+								concat = 0;
+							
+							else {
+
+								fprintf(stderr, "S retezci se tato operace neda provest.\n");
+								return -1;
+							} 
+						}
+
+						if(boolean == true)
+							returnType = t_expr_boo;
+						else
+							returnType = temp1.symbol->type;
+
+						numberOfExprInsts++;
+
+						if((matusOp = myOp2matousOp(checkRule, temp1.symbol->type)) != -1) {
+							
+							if(localIL == NULL) {
+								
+								insertInst(&IL, matusOp, searchData(temp1.key), searchData(temp3.key), NULL);
+								printf("Vlozil jsem instrukci %d s ukazateli %d a %d do listu %u\n", matusOp, temp1.symbol->content.integer, temp3.symbol->content.integer, &IL);
+							}
+							else {
+
+								insertInst(localIL, matusOp, searchData(temp1.key), searchData(temp3.key), NULL);
+								printf("Vlozil jsem instrukci %d s ukazateli %u a %u do listu %u\n", matusOp, temp1.symbol->content.integer, temp3.symbol->content.integer, localIL);
+							}
+						}
+					}
+					else if((temp1.symbol->type == t_expr_int && temp3.symbol->type == t_expr_dou) || (temp3.symbol->type == t_expr_int && temp1.symbol->type == t_expr_int)) {
+
+						if(temp1.symbol->type == t_expr_int) {		// bud prvni je int a pretypujeme
+							
+							temp1.symbol->content.real = (double) temp1.symbol->content.integer;
+							temp1.symbol->type = t_expr_dou;
+						}
+
+						if(temp3.symbol->type == t_expr_int)	{		// nebo druhy
+							
+							temp3.symbol->content.real = (double) temp3.symbol->content.integer;
+							temp3.symbol->type = t_expr_dou;
+						}
+
+						if(boolean == 1)							// pokud mame logickou operaci, musime vracet boolean hodnotu
+							returnType = t_expr_boo;
+						else
+							returnType = temp1.symbol->type;
+
+						numberOfExprInsts++;
+
+						if((matusOp = myOp2matousOp(checkRule, temp1.symbol->type)) != -1) {
+							
+							if(localIL == NULL) {
+								
+								insertInst(&IL, matusOp, searchData(temp1.key), searchData(temp3.key), NULL);
+								printf("Vlozil jsem instrukci %d s ukazateli %u a %u do listu %u\n", matusOp, &temp1.symbol, &temp3.symbol, &IL);
+							}
+							else {
+
+								insertInst(localIL, matusOp, searchData(temp1.key), searchData(temp3.key), NULL);
+								printf("Vlozil jsem instrukci %d s ukazateli %u a %u do listu %u\n", matusOp, &temp1.symbol, &temp3.symbol, localIL);
+							}
+						}
+					}
+
+					else {
+						//printf("Ve vyrazu nejsou stejne typy.\n");
+						errorHandler(errSemTypArg);
+					}
+
 
 					if(stackEmpty(stack2) == true) {
-
-						stackPop(stack1, &temp);
-						temp.element = NETERM;
-						stackPush(stack2, temp);
-
-						printf("Vyhovuje pravidlu %d.\n", checkRule + 1);
+						printf("ahoj\n");
+						stackPop(stack1, &change);	// odstraneni <
+						change = temp1;
+						change.element = NETERM;
+						stackPush(stack1, change);
 					}
 				}
 
 				else {
 
-					fprintf(stderr, "Nevyhovuje pravidlum2.\n");
 					errorHandler(errSyn);
 					return -1;
 				} 
 			}
 		}
 
-		else if(temp.element == LEFT) {
+		else if(temp1.element == LEFT) {
 
-			stackPop(stack2, &temp);
+			stackPop(stack2, &temp2);
 
-			if(temp.element == NETERM) {
+			if(temp2.element == NETERM) {
 
-				stackPop(stack2, &temp);
+				stackPop(stack2, &temp3);
 
-				if(temp.element == RIGHT && stackEmpty(stack2) == true) {
+				if(temp3.element == RIGHT && stackEmpty(stack2) == true) {
 
-					stackPop(stack1, &temp);
-					temp.element = NETERM;
-					stackPush(stack1, temp);
+					stackPop(stack1, &change);
+					change.element = NETERM;
+					change = temp2;
+					stackPush(stack1, change);
 				}
 			}
 		}
 
 		else {
 
-			fprintf(stderr, "Nevyhovuje pravidlum\n");
 			errorHandler(errSyn);
 			return -1;
 		}
 	}
 
-	printf("redukce skoncila\n");
-	return 0;
+	return returnType;
 
 }
 
+char *randstring(int length) {   
 
+	int mySeed = 27054685;
+    srand(time(NULL) * length * ++mySeed);
+
+    char *string = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,.-#'?!";
+    size_t stringLen = 26*2+10+7;        
+    char *randomString;
+
+    randomString = malloc(sizeof(char) * (length));
+
+    if (!randomString) {
+        return (char*)0;
+    }
+
+    unsigned int key = 0;
+
+    for (int n = 0;n < length;n++) {          
+        key = rand() % stringLen;          
+        randomString[n] = string[key];
+    }
+
+    //randomString[length] = '\0';
+
+    return randomString;
+}
+
+int myOp2matousOp(int myOp, int type) {
+
+	int matusOp;
+
+	switch(myOp) {
+
+		case PLUS:
+
+			if(type == t_expr_int)
+				matusOp = I_ADDI;
+
+			else if(type == t_expr_dou) 
+				matusOp = I_ADDR;
+
+			else if(type == t_expr_str)
+				matusOp = I_CONCATE;
+
+			else
+				return -1;
+
+			break;
+
+		case MINUS:
+
+			if(type == t_expr_int)
+				matusOp = I_SUBI;
+
+			else if(type == t_expr_dou) 
+				matusOp = I_SUBR;
+
+			else
+				return -1;
+
+			break;
+		case MUL:
+
+			if(type == t_expr_int)
+				matusOp = I_MULI;
+
+			else if(type == t_expr_dou) 
+				matusOp = I_MULR;
+
+			else
+				return -1;
+
+			break;
+		case DIV:
+
+			if(type == t_expr_int)
+				matusOp = I_DIVI;
+
+			else if(type == t_expr_dou) 
+				matusOp = I_DIVR;
+
+			else
+				return -1;
+
+			break;
+		case LESS:
+			matusOp = I_LESS;
+			break;
+		case MORE:
+			matusOp = I_MORE;
+			break;
+		case MOREEQUAL:
+			matusOp = I_EMORE;
+			break;
+		case LESSEQUAL:
+			matusOp = I_ELESS;
+			break;
+		case EQUAL:
+			matusOp = I_EQUAL;
+			break;
+		case NONEQUAL:
+			matusOp = I_NEQUAL;
+			break;
+	}
+
+	return matusOp;
+}
+
+tNodePtr searchData(char *key) {
+
+	tNodePtr node;
+
+	if((node = searchSymbol(&localTS, key)) != 0);
+				//printf("Nasel jsem %s v lokalni tabulce symbolu.\n",key);
+	else {
+
+		if((node = searchSymbol(&rootTS, key)) != 0);
+					//printf("Nasel jsem %s v globalni tabulce symbolu.\n",key);
+		else {
+			free(key);
+			free(node);
+			printf("Promenna nebyla nalezena.\n");
+			return NULL;
+		}
+	}
+
+	return node;
+}
