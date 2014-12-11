@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <ctype.h>
+#include "functions.c"
 
 
 #define KNRM  "\x1B[0m"

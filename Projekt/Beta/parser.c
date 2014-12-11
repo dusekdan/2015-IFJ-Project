@@ -54,7 +54,7 @@ token tok;
 
 bool debug=false;
 
-#include "precedence3.c"
+#include "precedence.c"
 
 /* Funkcia pre prichystanie key na prácu so symbolom */
 
