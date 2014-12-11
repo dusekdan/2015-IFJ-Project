@@ -286,6 +286,8 @@ int precedenceParser() {				// hlavni funkce precedencni analyzy
 	int error;
 	int count = 0;
 	int conStep = 1;
+	int returnType = -1;
+	bool skipGib=true;
 
 
 	temp.element = DOLAR;
@@ -295,10 +297,14 @@ int precedenceParser() {				// hlavni funkce precedencni analyzy
 
 		if(conStep == 1) {
 		
-			token tok = gib_tok();
+				if (skipGib==false)
+					tok = gib_tok();
+			
+				skipGib=false;
+				printf("TOKEN: %d\n", tok->type);
 		
-			if((error = zpracuj(tok, &column)) != 0)		// pokud skoncime s chybou, breakujeme
-				break;
+				if((error = zpracuj(tok, &column)) != 0)		// pokud skoncime s chybou, breakujeme
+					break;
 
 		}
 
@@ -316,6 +322,8 @@ int precedenceParser() {				// hlavni funkce precedencni analyzy
 			stackPop(&stack2, &change);
 			stackPush(&stack1, change);
 		}
+
+		printf("ROW: %d COLUMN: %d\n", row.element, column.element);
 
 		switch(precedenceTable[row.element][column.element]) {
 
@@ -351,7 +359,7 @@ int precedenceParser() {				// hlavni funkce precedencni analyzy
 
 				conStep = 0;
 
-				if(reduction(&stack1, &stack2) < 0)
+				if((returnType = reduction(&stack1, &stack2)) < 0)
 					return -1;	
 
 				break;
@@ -385,7 +393,7 @@ int precedenceParser() {				// hlavni funkce precedencni analyzy
 	stackDispose(&stack2);
 
 
-	return 0;	// jeste nedokonceno, zatim mi to funguje jen pro pravidlo E -> i, protoze se nedokazu vickrat zacyklit v te redukci
+	return returnType;	// jeste nedokonceno, zatim mi to funguje jen pro pravidlo E -> i, protoze se nedokazu vickrat zacyklit v te redukci
 }
 
 
@@ -402,21 +410,28 @@ int reduction(tStack *stack1, tStack *stack2) {
 	int matusOp;
 	int control = 0;
 	int checkRule;
+	printf("reduction\n");
 
-	while(help.element != SHIFT && stackEmpty(stack1) != true) {			//	dostaneme se az na SHIFT, vse na druhem zasobniku pouzijeme pro jedno z pravidel
-		
+	//printf("HELP: %d\n", help.element);
+
+	while(help.element != SHIFT/* && stackEmpty(stack1) != true*/) {			//	dostaneme se az na SHIFT, vse na druhem zasobniku pouzijeme pro jedno z pravidel
+
 		stackPop(stack1, &change);
 		stackPush(stack2, change);
 		help = stackTop(stack1);
 	}
 
+
+	//help = stackTop(stack1);
 	if(help.element == SHIFT) {
 
 		stackPop(stack2, &temp1);	// nacteme si dalsi oper z druheho zasobniku
-
+		printf("%d\n", temp1.element);
+		
 		if(temp1.element == ID && stackEmpty(stack2) == true) {		// zacneme od nejjednodusiho - E->ID
+			
 
-			checkRule = PLUS;
+			/*checkRule = PLUS;
 			if((matusOp = myOp2matousOp(checkRule, temp1.symbol->type)) != -1) {
 
 				numberOfExprInsts++;
@@ -432,28 +447,29 @@ int reduction(tStack *stack1, tStack *stack2) {
 				}
 					
 				returnType = temp1.symbol->type;
-			}
+			}*/
 
+			returnType = temp1.symbol->type;
 			stackPop(stack1, &change);		// popneme SHIFT, ze zasobniku, uz neni potreba
+			change = temp1;
 			change.element = NETERM;
 			stackPush(stack1, change);		// pushneme dle pravidla - E (neterminal)
 		}
 
 		else if(temp1.element == NETERM) {	// nyni vsechna pravidla pro neterminaly
 
-			if(stackEmpty(stack2) != true)
-				stackPop(stack2, &temp2);
-			else
-				return -1;
+			stackPop(stack2, &temp2);
+			printf("%d\n", temp2.element);
 
 			switch(temp2.element) {
+				//printf("%d\n", temp2.symbol->type);
 
-				stackPop(stack2, &temp2);
 				case PLUS:
 					checkRule = PLUS;
 					control = 1;
 					break;
 				case MINUS:
+				
 					checkRule = MINUS;
 					control = 1;
 					break;
@@ -508,6 +524,7 @@ int reduction(tStack *stack1, tStack *stack2) {
 			else {
 
 				stackPop(stack2, &temp3);
+				printf("%d\n", temp3.element);
 
 				if(temp3.element == NETERM) {
 
@@ -540,12 +557,12 @@ int reduction(tStack *stack1, tStack *stack2) {
 							if(localIL == NULL) {
 								
 								insertInst(&IL, matusOp, searchData(temp1.key), searchData(temp3.key), NULL);
-								printf("Vlozil jsem instrukci %d s ukazateli %u a %u do listu %u\n", matusOp, &temp1.symbol, &temp3.symbol, &IL);
+								printf("Vlozil jsem instrukci %d s ukazateli %d a %d do listu %u\n", matusOp, temp1.symbol->content.integer, temp3.symbol->content.integer, &IL);
 							}
 							else {
 
 								insertInst(localIL, matusOp, searchData(temp1.key), searchData(temp3.key), NULL);
-								printf("Vlozil jsem instrukci %d s ukazateli %u a %u do listu %u\n", matusOp, &temp1.symbol, &temp3.symbol, localIL);
+								printf("Vlozil jsem instrukci %d s ukazateli %u a %u do listu %u\n", matusOp, temp1.symbol->content.integer, temp3.symbol->content.integer, localIL);
 							}
 						}
 					}
@@ -592,8 +609,9 @@ int reduction(tStack *stack1, tStack *stack2) {
 
 
 					if(stackEmpty(stack2) == true) {
-
+						printf("ahoj\n");
 						stackPop(stack1, &change);	// odstraneni <
+						change = temp1;
 						change.element = NETERM;
 						stackPush(stack1, change);
 					}
@@ -619,13 +637,14 @@ int reduction(tStack *stack1, tStack *stack2) {
 
 					stackPop(stack1, &change);
 					change.element = NETERM;
+					change = temp2;
 					stackPush(stack1, change);
 				}
 			}
 		}
 
 		else {
-			
+
 			errorHandler(errSyn);
 			return -1;
 		}
