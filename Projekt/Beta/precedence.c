@@ -218,6 +218,9 @@ int zpracuj(token tok, tOpData *column) {
 				if(node->data->type == sym_var_boo)
 					column->symbol->type = t_expr_boo;
 			}
+			else
+				errorHandler(errInt);
+
 			break;
 
 		case 41:	// int, real, bool, string
@@ -241,6 +244,8 @@ int zpracuj(token tok, tOpData *column) {
 
 				column->symbol->type = tok->type;
 			}
+			else
+				errorHandler(errInt);
 
 			char *tempKey = randstring(20);
 
@@ -308,10 +313,13 @@ int precedenceParser() {				// hlavni funkce precedencni analyzy
 					tok = gib_tok();
 			
 				skipGib=false;
-				printf("TOKEN: %d\n", tok->type);
 		
-				if((error = zpracuj(tok, &column)) != 0)		// pokud skoncime s chybou, breakujeme
-					break;
+				if((error = zpracuj(tok, &column)) != 0) {	// pokud skoncime s chybou, breakujeme
+
+					stackDispose(&stack1);
+					stackDispose(&stack2);
+					errorHandler(errSyn);
+				}
 
 		}
 
@@ -329,8 +337,6 @@ int precedenceParser() {				// hlavni funkce precedencni analyzy
 			stackPop(&stack2, &change);
 			stackPush(&stack1, change);
 		}
-
-		printf("ROW: %d COLUMN: %d\n", row.element, column.element);
 
 		switch(precedenceTable[row.element][column.element]) {
 
@@ -366,8 +372,12 @@ int precedenceParser() {				// hlavni funkce precedencni analyzy
 
 				conStep = 0;
 
-				if((returnType = reduction(&stack1, &stack2)) < 0)
-					return -1;	
+				if((returnType = reduction(&stack1, &stack2)) < 0) {
+					
+					stackDispose(&stack1);
+					stackDispose(&stack2);
+					errorHandler(errSyn);	
+				}
 
 				break;
 
@@ -376,7 +386,6 @@ int precedenceParser() {				// hlavni funkce precedencni analyzy
 				stackDispose(&stack1);
 				stackDispose(&stack2);
 				errorHandler(errSyn);
-				return -1;
 				break;
 		}
 
@@ -437,8 +446,6 @@ int reduction(tStack *stack1, tStack *stack2) {
 	int returnType = -1;
 	int control = 0;
 	int checkRule;
-
-	printf("reduction\n");
 
 	//printf("HELP: %d\n", help.element);
 
@@ -620,7 +627,7 @@ int reduction(tStack *stack1, tStack *stack2) {
 
 
 					if(stackEmpty(stack2) == true) {
-						printf("ahoj\n");
+
 						stackPop(stack1, &change);	// odstraneni <
 						change = temp1;
 						change.element = NETERM;
