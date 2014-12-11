@@ -57,6 +57,7 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 		
 		switch(new->instype)
 		{
+            case I_NOP: break;
 							//ARITMETICKE OPERACIE//
 			case I_ADDI:
 				if(((tNodePtr) new->adr2) == NULL)

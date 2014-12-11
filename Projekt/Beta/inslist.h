@@ -1,3 +1,4 @@
+#define I_NOP       666 //prázdna operácia
 /*ARITEMETICKE OPERACIE*/
 #define I_ADDI 		0	//adr1 + adr2 = result  p
 #define I_ADDR 		1   //adr1 + adr2 = result  p

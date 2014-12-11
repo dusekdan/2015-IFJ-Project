@@ -699,6 +699,22 @@ void nt_stmt_list (token tok)
 
         if (tok -> type == t_end)
         {
+            //Instrukcia NOP
+
+            /* Ak je aktuálny localIL NULL, znamená že idem   **
+            ** vkladať globálnu inštrukciu takže currIL si    **
+            ** nastavím na IL a v opačnom prípade ideme do    **
+            ** aktuálneho lokálneho listu na ktorý ukazuje    **
+            ** localIL.                                       */
+
+            tInsList * currIL =   (localIL == NULL) ? &IL : localIL;
+            insertInst (currIL, I_NOP, NULL, NULL, NULL);
+
+            /* Vypísanie práve vloženej inštrukcie pre debug  */
+
+            if (debug == true)
+                printf ("\n%sNew Instruction | %u | I_NOP | NULL | NULL | NULL |%s\n", KYEL, currIL, KNRM);
+
             return;
         }
         //////////////////////////////////////////////////////////////////RULE13
