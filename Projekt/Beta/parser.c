@@ -109,6 +109,7 @@ bool saveSymbol (tNodePtr * currTS, char * key, char * name, int type, int argCo
         newsymbol -> localTSadr = NULL;
         newsymbol -> localILadr = NULL;
         //newsymbol -> content.integer = rand() % 100;
+        //printf("newsymbol.integer je %d\n",newsymbol->content.integer );
 
         /*Uložím do aktuálnej tabulky nový symbol ktorý som si práve pripravil*/
         /*Ak vloženie zlyhá, vraciam internú chybu errInt(99)                 */
@@ -1066,18 +1067,14 @@ int nt_assign (token tok)
 
             match (tok, t_fun_id);
             match (tok, t_l_parrent);
-            //printf("idem vytvorit pole\n");
-            //tContent **contentArr=malloc(sizeof(struct tContent*)*100);
-            tContent *contentArr=malloc(sizeof(tContent)*100);
-
-            printf("vytvoril som doublepole %u\n____________________\n",&contentArr);
-            //globalArr=contentArr;
-            //contentArr[0]=&hledam->data->nextArg->data->content;
+            
+            tContent ** contentArr = (tContent**) malloc (sizeof (tContent*) * 100);       printf("vytvoril som doublepole %u\n____________________\n",&contentArr);
 
             nt_term_list(tok, key, contentArr);
             pocetArg = 0;
+            
             //termy su overene idem ich nahradit
-            printf("\nhledam->data->argCount je %d\n",hledam->data->argCount);
+            //printf("\nhledam->data->argCount je %d\n",hledam->data->argCount);
             
 
             j=0;
@@ -1085,6 +1082,23 @@ int nt_assign (token tok)
             match(tok,t_r_parrent);
 
 
+            /* Ak je aktuálny localIL NULL, znamená že idem   **
+            ** vkladať globálnu inštrukciu takže currIL si    **
+            ** nastavím na IL a v opačnom prípade ideme do    **
+            ** aktuálneho lokálneho listu na ktorý ukazuje    **
+            ** localIL.                                       */
+
+            tInsList * currIL =   (localIL == NULL) ? &IL : localIL;
+            insertInst (currIL, I_FCE, hledam -> data, contentArr, NULL);
+
+            /* Vypísanie práve vloženej inštrukcie pre debug  */
+
+            if (debug == true)
+                printf ("\n%sNew Instruction | %u | I_FCE | %u | %u | NULL |%s\n", KYEL, currIL, &hledam -> data, &contentArr, KNRM);
+            
+
+
+/*
             printf("%s",KYEL);                                                                                                          //treba ale este predat premenne
             if (localIL==NULL)
             {
@@ -1098,8 +1112,8 @@ int nt_assign (token tok)
                 printf("LOCAL %u\n",localIL);printf("Vlozil som instrukciu I_FCE s ukazatelom %u do IL %u\n", &hledam->data,localIL);
                 printf("____________________________________________________\n");
             }
-            printf("%s",KNRM);
-            localIL=NULL;
+            printf("%s",KNRM);*/
+            //localIL=NULL;
             free(key);
             return hledam->data->type;
         }
@@ -1112,7 +1126,7 @@ int nt_assign (token tok)
     return -1;
 }
 
-void nt_term (token tok, char *currentFunctionKey, tContent *contentArr)
+void nt_term (token tok, char *currentFunctionKey, tContent **contentArr)
 {
     if (tok->type == t_var_id || tok->type == t_expr_int || tok->type == t_expr_dou || tok->type == t_expr_str)
     {
@@ -1142,13 +1156,18 @@ void nt_term (token tok, char *currentFunctionKey, tContent *contentArr)
             }
             
             if (hledam!=0)
-            {
-                  comparison1 = hledam->data->type;
-                  //printf("\n--overene %s ", hledam->data->name );
-                  
-                  contentArr[j]=hledam->data->content;
-                  //printf("uloxzil som ukayatel s hodnotou %d\n",contentArr[j]->integer);
-                  j++;
+            {   
+                tContent * currCon = &(hledam->data->content);
+                //printf("currcon ukazuje integer %d\n",currCon->integer );
+                //printf("idem ulozit na [%d]\n",j );
+                comparison1 = hledam->data->type;
+                //printf("\n--overene %s ", hledam->data->name );
+                //printf("idem ulozit %d\n",hledam->data->content.integer);
+                contentArr[j]=currCon;
+
+
+                printf("Do contentArr[%d].integer som ulozil %d\n",j,(*contentArr[j]).integer);
+                j++;
             //printf("COMPARISON1 je %d\n",comparison1 );
             }else
             errorHandler(99);
@@ -1259,7 +1278,7 @@ void nt_term (token tok, char *currentFunctionKey, tContent *contentArr)
 
 }
 
-void nt_term_list (token tok, char *currentFunctionKey, tContent *contentArr)
+void nt_term_list (token tok, char *currentFunctionKey, tContent **contentArr)
 {
     if (tok->type == t_var_id || tok->type == t_r_parrent || tok->type == t_expr_int || tok->type == t_expr_dou || tok->type == t_expr_str)
     {
@@ -1285,7 +1304,7 @@ void nt_term_list (token tok, char *currentFunctionKey, tContent *contentArr)
     }
 }
 
-void nt_term_more (token tok, char *currentFunctionKey, tContent *contentArr)
+void nt_term_more (token tok, char *currentFunctionKey, tContent **contentArr)
 {
     if (tok->type == t_comma || tok->type == t_r_parrent)
     {

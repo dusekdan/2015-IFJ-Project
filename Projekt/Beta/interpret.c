@@ -751,23 +751,26 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 
 				for(int i = 0; i < ((tData) new->adr1)->argCount; i++)
 				{
-					printf("1 FORIK zaciatok\n");
+					//printf("1 FORIK zaciatok\n");
 					conOld[i] = currentTerm->data->content;printf("integer conoldu je %d\n",conOld[i].integer );
-					currentTerm->data->content = ((tContent*) new->adr1)[i];
-					printf("integer currentu je %d\n",((tContent*) new->adr1)[i].integer);
+					//printf("integer currentu je %d\n",(*((tContent **)new->adr2)[i]).integer );
+                    currentTerm->data->content = (*((tContent**) new->adr2)[i]);
+					//printf("po ulozeni je v currentTerme %d\n",currentTerm->data->content.integer );
 					currentTerm = currentTerm->data->nextArg;
-					printf("1 FORIK koniec\n");
+					//printf("1 FORIK koniec\n");
 				}
 
 				interpret(/*&(((tData) new->adr1)->localTSadr)*/&rootTS, (((tData) new->adr1)->localILadr));
 
+                currentTerm = (((tData) new->adr1)->nextArg);
 				for(int i = 0; i < ((tData) new->adr1)->argCount; i++)
 				{
 					printf("2 FORIK zaciatok\n");
 					currentTerm->data->content = conOld[i]; 
 					currentTerm = currentTerm->data->nextArg;
 					printf("2 FORIK konieck\n");
-				}	
+				}
+                printf("FUNKCIA SKONCILA ODLOZTE SI KLOBUKY\n");	
 			break;
 			
 			default: printf("kokot dostal som %d\n",new->instype);
