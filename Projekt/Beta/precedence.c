@@ -428,7 +428,7 @@ int precedenceParser() {				// hlavni funkce precedencni analyzy
 
 	stackDispose(&stack1);
 	stackDispose(&stack2);
-
+	countID = 0;
 
 	return returnType;	// jeste nedokonceno, zatim mi to funguje jen pro pravidlo E -> i, protoze se nedokazu vickrat zacyklit v te redukci
 }
