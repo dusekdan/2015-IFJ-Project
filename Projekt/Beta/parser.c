@@ -86,6 +86,7 @@ char * createKey (char * prefix, char * suffix)
 
 bool saveSymbol (tNodePtr * currTS, char * key, char * name, int type, int argCount, bool errOnRedef)
 {
+    printf("zaacina save\n");
     /* Otestujem či už náhodou neexistuje daný symbol */
 
     if (searchSymbol (currTS, key) == 0)
@@ -130,7 +131,10 @@ bool saveSymbol (tNodePtr * currTS, char * key, char * name, int type, int argCo
     }
     else
         if (errOnRedef == true)
+        {   
+            printf("dojebal sa savesymbo;\n");
             errorHandler (errSemDef);
+            }
         return false;
 }
 
@@ -1088,6 +1092,8 @@ int nt_assign (token tok)
 
             tContent * selfVarCon = &(searchSymbol(&hledam->data->localTSadr, key2)->data->content);
 
+            free (key2);
+
             tContent ** contentArr = (tContent**) malloc (sizeof (tContent*) * 100);       printf("vytvoril som doublepole %u\n____________________\n",&contentArr);
 
             nt_term_list(tok, key, contentArr);
@@ -1148,7 +1154,11 @@ int nt_assign (token tok)
 
 void nt_term (token tok, char *currentFunctionKey, tContent **contentArr)
 {
-    if (tok->type == t_var_id || tok->type == t_expr_int || tok->type == t_expr_dou || tok->type == t_expr_str)
+    if (tok -> type == t_var_id   ||
+        tok -> type == t_expr_int ||
+        tok -> type == t_expr_dou ||
+        tok -> type == t_expr_str ||
+        tok -> type == t_expr_boo  )
     {
         int comparison1;
         int comparison2;
@@ -1243,7 +1253,13 @@ void nt_term (token tok, char *currentFunctionKey, tContent **contentArr)
         {
             pocetArg++;
             comparison1=tok->type;
+
+
+
             printf("comparison 1 je %d\n",comparison1 );
+            printf("_________________________\n");
+
+
             if (strcmp(currentFunctionKey, "Fwrite") !=0 &&
                 strcmp(currentFunctionKey, "Fcopy")  !=0 &&
                 strcmp(currentFunctionKey, "Flength")!=0 &&
@@ -1264,6 +1280,9 @@ void nt_term (token tok, char *currentFunctionKey, tContent **contentArr)
 
                 //printf("som na parametri cislo %d a mal by vyhovovat %s\n",argsRead,currentFunction->data->nextArg->data->name);
                 comparison2 = currentFunction->data->nextArg->data->type;
+                comparison2 += 40;
+                printf("comparison 2 je %d\n___________",comparison2);
+
                 
                     if (comparison1!=comparison2)
                     {
@@ -1274,6 +1293,44 @@ void nt_term (token tok, char *currentFunctionKey, tContent **contentArr)
                     else
                     {//idem ulozit content pre volanie
                         
+                        char * randomKey = randstring(20);
+                        printf("randomkey je %s\n",randomKey );
+
+                        if (searchSymbol(&rootTS, randomKey)!=0)
+                            printf("on uz je ty kokot\n");
+
+                        saveSymbol(&rootTS, randomKey, NULL, tok -> type, 0, true);
+
+                        tData * currData = &(searchSymbol(&rootTS, randomKey)->data);
+                        switch (tok -> type)
+                        {
+                            case t_expr_int:    (*currData)->content.integer = tok -> val_int;
+                                                break;
+                            case t_expr_str:    (*currData)->content.string = tok -> val_str;
+                                                break;
+                            case t_expr_dou:    (*currData)->content.real = tok -> val_flo;
+                                                break;
+                            case t_expr_boo:    (*currData)->content.boolean = tok -> val_int;
+                                                break;
+                        }
+
+                        
+                        {   
+                            tContent * currCon = &((*currData)->content);
+                            contentArr[j]=currCon;
+                            printf("Do contentArr[%d].integer som ulozil kokotne cislo %d\n",j,(*contentArr[j]).integer);
+                            j++;
+                            //printf("COMPARISON1 je %d\n",comparison1 );
+                        }
+
+
+                        free (randomKey);
+
+
+
+
+
+
                     }
             }
             else

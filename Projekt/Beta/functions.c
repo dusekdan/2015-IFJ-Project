@@ -3,8 +3,7 @@
 
 char *randstring(int length) {   
 
-	int mySeed = 27054685;
-    srand(time(NULL) * length * ++mySeed);
+    srand(time(NULL) * length * (rand() % 100));
 
     char *string = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,.-#'?!";
     size_t stringLen = 26*2+10+7;        
