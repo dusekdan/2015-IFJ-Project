@@ -11,6 +11,9 @@
 
 #include "precedence.h"
 
+int countID = 0;
+int matusOp;
+
 token gib_tok() {
 	
 	getNextToken(fd, tok);
@@ -239,11 +242,15 @@ int zpracuj(token tok, tOpData *column) {
 				column->symbol->type = tok->type;
 			}
 
-			if((key = malloc(sizeof(char)*(strlen(randstring(20))))) == NULL) {
+			char *tempKey = randstring(20);
+
+			if((key = malloc(sizeof(char)*(strlen(tempKey)))) == NULL) {
 
 				errorHandler(errInt);
 				return -1;
 			}
+
+			strcpy(key, tempKey);
 
 			if((node = malloc(sizeof(struct tNodePtr))) == NULL) {
 
@@ -389,6 +396,27 @@ int precedenceParser() {				// hlavni funkce precedencni analyzy
 
 	} while((column.element != DOLAR) || (theEnd.element != DOLAR));
 	
+	if(countID == 1 && column.element == DOLAR) {
+
+		if((matusOp = myOp2matousOp(PLUS, column.symbol->type)) != -1) {
+
+			numberOfExprInsts++;
+			if(localIL == NULL) {
+							
+				insertInst(&IL, matusOp, searchData(column.key), NULL, NULL);
+				printf("Vlozil jsem instrukci %d s ukazatelem %u do listu %u\n", matusOp, &column.symbol, &IL);
+			}
+			else {
+
+				insertInst(localIL, matusOp, searchData(column.key), NULL, NULL);
+				printf("Vlozil jsem instrukci %d s ukazatelem %u do listu %u\n", matusOp, &column.symbol, localIL);
+			}
+					
+			returnType = column.symbol->type;
+		}
+
+	}
+
 	stackDispose(&stack1);
 	stackDispose(&stack2);
 
@@ -407,9 +435,9 @@ int reduction(tStack *stack1, tStack *stack2) {
 	int concat = 0;
 	bool boolean = false;
 	int returnType = -1;
-	int matusOp;
 	int control = 0;
 	int checkRule;
+
 	printf("reduction\n");
 
 	//printf("HELP: %d\n", help.element);
@@ -430,24 +458,7 @@ int reduction(tStack *stack1, tStack *stack2) {
 		
 		if(temp1.element == ID && stackEmpty(stack2) == true) {		// zacneme od nejjednodusiho - E->ID
 			
-
-			/*checkRule = PLUS;
-			if((matusOp = myOp2matousOp(checkRule, temp1.symbol->type)) != -1) {
-
-				numberOfExprInsts++;
-				if(localIL == NULL) {
-							
-					insertInst(&IL, matusOp, searchData(temp1.key), NULL, NULL);
-					printf("Vlozil jsem instrukci %d s ukazatelem %u do listu %u\n", matusOp, &temp1.symbol, &IL);
-				}
-				else {
-
-					insertInst(localIL, matusOp, searchData(temp1.key), NULL, NULL);
-					printf("Vlozil jsem instrukci %d s ukazatelem %u do listu %u\n", matusOp, &temp1.symbol, localIL);
-				}
-					
-				returnType = temp1.symbol->type;
-			}*/
+			countID++;
 
 			returnType = temp1.symbol->type;
 			stackPop(stack1, &change);		// popneme SHIFT, ze zasobniku, uz neni potreba
@@ -654,32 +665,6 @@ int reduction(tStack *stack1, tStack *stack2) {
 
 }
 
-char *randstring(int length) {   
-
-	int mySeed = 27054685;
-    srand(time(NULL) * length * ++mySeed);
-
-    char *string = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,.-#'?!";
-    size_t stringLen = 26*2+10+7;        
-    char *randomString;
-
-    randomString = malloc(sizeof(char) * (length));
-
-    if (!randomString) {
-        return (char*)0;
-    }
-
-    unsigned int key = 0;
-
-    for (int n = 0;n < length;n++) {          
-        key = rand() % stringLen;          
-        randomString[n] = string[key];
-    }
-
-    //randomString[length] = '\0';
-
-    return randomString;
-}
 
 int myOp2matousOp(int myOp, int type) {
 
