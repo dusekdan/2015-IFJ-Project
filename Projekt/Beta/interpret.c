@@ -6,6 +6,7 @@ bool vypocet = false;
 int lastint = 0;
 double lastdouble = 0;
 char *laststring = NULL;
+char *tmpstring = NULL;
 
 
 char *concate(char *s1, char *s2)
@@ -111,27 +112,23 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 				if(((tNodePtr) new->adr2) == NULL)
 				{
 					temp = ((tNodePtr) new->adr1);
-					laststring = malloc(sizeof temp->data->content.string);
+					laststring = malloc(sizeof strlen(temp->data->content.string));
 					strcpy(laststring, temp->data->content.string);
-					//printf("%s\n", laststring);
 				}
 				else
 				{
 					if(vypocet == false)
 					{
 						temp = ((tNodePtr) new->adr1);
-						//printf("%u %u\n", new->adr1,new->adr2);
 						temp2 = ((tNodePtr) new->adr2);
-						//printf("temp2 %s\n",temp2->data->content.string);
-
+			
 						laststring =  concate(temp->data->content.string, temp2->data->content.string);			
 						vypocet = true;
 					} else
 					{
 						temp2 = ((tNodePtr) new->adr2);
-						laststring = malloc(sizeof temp2->data->content.string);
-						strcpy(laststring, temp2->data->content.string);
-
+						tmpstring = malloc(sizeof strlen(laststring ) + strlen(temp2->data->content.string));
+						laststring = concate(laststring, temp2->data->content.string);
 					}
 				}
 				printf("CONCATE: %s\n", laststring);
