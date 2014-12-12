@@ -8,8 +8,6 @@
 /* Autoři:			Filip Kalous (xkalou03)						*/
 /****************************************************************/
 
-#include "ial.h"
-
 #define ASCIISIZE 256
 
 tNodePtr rootTS;

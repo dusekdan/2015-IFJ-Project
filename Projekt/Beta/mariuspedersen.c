@@ -117,8 +117,8 @@ int mariuspedersen (tSmetisko * Smetisko)
     printf("Uspesne jsem vycistil veskerou alokovanou pamet.\n");
     //disposeTable(&localTS);
     fclose(fd);
-    DisposeList(&IL);
+    DisposeList(&IL);/*disposeTable(&rootTS);*/
     DisposeMarius( Smetisko);
-    disposeTable(&rootTS);
+    
 
 }
