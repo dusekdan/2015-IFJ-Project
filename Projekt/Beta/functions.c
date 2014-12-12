@@ -10,7 +10,6 @@ char *randstring(int length) {
     char *randomString;
 
     randomString = malloc(sizeof(char) * (length));
-    InsertLastMarius(& Smetisko, randomString);
 
     if (!randomString) {
         return (char*)0;
@@ -26,4 +25,33 @@ char *randstring(int length) {
     //randomString[length] = '\0';
 
     return randomString;
+}
+
+char * funCopy(char *string, int i, int n) {       // danova prace
+    
+    // vzdálenost mezi i a n je n
+   if(i > strlen(string))
+   {
+        errorHandler(errRunRest);
+   }
+    int poss = strlen(string) - (i - 1);
+
+    n = (n > poss) ? poss : n;
+
+
+    char *tmpString = malloc(n*(sizeof(char)));    // char is one by its definition    
+        if(tmpString == NULL)
+        {
+            printf("Allocation error!\n");
+            exit(99);
+        }
+        else
+            InsertLastMarius(& Smetisko, tmpString);
+    
+    for(int c = 0; c < n; c++)
+    {
+        tmpString[c] = string[(i-1+c)];
+    }
+
+    return tmpString;
 }
