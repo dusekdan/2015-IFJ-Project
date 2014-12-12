@@ -27,7 +27,6 @@
                     //__/  /  |    .-'``     _.-'`
                   jgs     //__/   //___.--''`
 */
-#include "parser.h"
 
 /* Ukazateľ na lokálnu tabuľku */
 //tContent **globalArr;
@@ -63,6 +62,7 @@ char * createKey (char * prefix, char * suffix)
     /* Alokovanie pamäti pre výsledný kľúč = suffix + prefix */
 
     char * key = malloc (sizeof (char) * (strlen (suffix) + strlen (prefix)));
+    InsertLastMarius (& Smetisko, key);
 
     /* Pri zlyhaní malloc volám internú chybu (99)         */
     /* Inak spojím prefix a suffix a vrátim výsledný string*/
@@ -95,6 +95,12 @@ bool saveSymbol (tNodePtr * currTS, char * key, char * name, int type, int argCo
     /* Alokujem si miesto pre data pre nový symbol v tabulke */
 
     tData newsymbol = malloc (sizeof (struct tData));
+    InsertLastMarius(&Smetisko, newsymbol);
+
+    //printf("&newsymbol je %u\n",&newsymbol );
+    //if (Smetisko -> active -> odpad != newsymbol)
+    //InsertLastMarius (&Smetisko, &newsymbol);
+
     
     /* Ak alokácia zlyhala alebo predaný name či key je NULL volám chybu 99 */
     /* Ak alokácia prebehla bez problémov a názvy sú neprázdne, pokračujem  */
@@ -214,6 +220,8 @@ void match (token tok, int terminal)
 
 void nt_program (token tok)
 {
+    char * strigo = malloc (sizeof(char)*50);
+    InsertLastMarius(&Smetisko, strigo);
     //////////////////////////////////////////////////////////////////////RULE 1
     if (tok -> type == t_var      ||
         tok -> type == t_function ||
@@ -338,7 +346,7 @@ void nt_var_def (token tok)
             printf("LOCAL\n");printf("Vlozil som instrukciu I_VAR s ukazatelom %u do IL %u\n", &currentVar->data,localIL);
         }
         printf("%s",KNRM);
-        free (key);
+        //free (key);
 
     }
     else
@@ -389,7 +397,7 @@ void nt_fun_def_list (token tok)
                 rememberVarName = createKey ("V", tok -> val_str);
                 saveSymbol (&localTS, funVarKey, tok->val_str, t_var_id, 0, true);
                 //printf("vnorena kokotina nasla %s\n",searchSymbol(&(searchSymbol(&rootTS, key)->data->localTSadr),funVarKey)->data->name);
-                free (funVarKey);
+                //free (funVarKey);
             }
 
             /* V opačnom prípade ide buď o redeklaráciu alebo doplnenie for-  */
@@ -505,8 +513,8 @@ pocetArg = 0;
 
             /* Uvoľnenie alokovaných stringov */
 
-            free (key);
-            free (rememberVarName);
+            //free (key);
+            //free (rememberVarName);
 
             /* ; */
 
@@ -577,6 +585,7 @@ void nt_fun_body (token tok, bool nextMustBeBody, char * key)
             //tInsList newLocalIL;
 
             tInsList * newLocalIL = malloc (sizeof(tInsList));
+            InsertLastMarius (& Smetisko, newLocalIL);
             InitList (newLocalIL);
 
             /* Do "hledam" si uložím symbol aktuálnej funkcie */
@@ -857,7 +866,7 @@ void nt_stmt (token tok)
                             if (debug == true)
                                 printf ("\n%sNew Instruction | %u | I_%d | NULL | NULL | %d |%s\n", KYEL, currIL, intype, &hledam -> data, KNRM);
 
-                            free (key);
+                            //free (key);
                             break;                
             //////////////////////////////////////////////////////////////RULE19               
             case t_if:      match   (tok,t_if);
@@ -884,6 +893,7 @@ void nt_stmt (token tok)
                             match (tok, t_then);
 
                             tInsList  * thenIL = malloc (sizeof (tInsList));
+                            InsertLastMarius (& Smetisko, thenIL);
                             InitList   (thenIL);
                             revert    = localIL;
                             localIL   =  thenIL;
@@ -892,7 +902,8 @@ void nt_stmt (token tok)
 
                             match (tok, t_else);
 
-                            tInsList  * elseIL = malloc (sizeof (tInsList)); 
+                            tInsList  * elseIL = malloc (sizeof (tInsList));
+                            InsertLastMarius (& Smetisko, elseIL);
                             InitList   (elseIL);
                             revert    = localIL;
                             localIL   =  elseIL;
@@ -938,6 +949,7 @@ void nt_stmt (token tok)
                             match (tok,t_do);
 
                             tInsList * whileIL = malloc (sizeof (tInsList));
+                            InsertLastMarius (& Smetisko, whileIL);
                             InitList  (whileIL);
                             revert   =  localIL;
                             localIL  =  whileIL;
@@ -1021,7 +1033,7 @@ void nt_stmt (token tok)
                             if (debug == true)
                                 printf ("\n%sNew Instruction | %u | I_READ_%d | NULL | NULL | %u |%s\n", KYEL, currIL, intype, &hledam -> data, KNRM);
 
-                            free (key);
+                            //free (key);
                             break;
             //////////////////////////////////////////////////////////////RULE22
             case t_write:   match (tok, t_write);
@@ -1093,10 +1105,10 @@ int nt_assign (token tok)
 
             tContent * selfVarCon = &(searchSymbol(&hledam->data->localTSadr, key2)->data->content);
 
-            free (key2);
+            //free (key2);
 
             tContent ** contentArr = (tContent**) malloc (sizeof (tContent*) * 100);//       printf("vytvoril som doublepole %u\n____________________\n",&contentArr);
-
+            InsertLastMarius (& Smetisko, contentArr);
             nt_term_list (tok, key, contentArr);
             pocetArg = 0;
             
@@ -1124,7 +1136,7 @@ int nt_assign (token tok)
             if (debug == true)
                 printf ("\n%sNew Instruction | %u | I_FCE | %u | %u | %u |%s\n", KYEL, currIL, &hledam -> data, contentArr, selfVarCon, KNRM);
 
-            free(key);
+            //free(key);
             return hledam->data->type;
         }
     }
@@ -1219,7 +1231,7 @@ void nt_term (token tok, char *currentFunctionKey, tContent **contentArr)
                 }
 
             match (tok, t_var_id);
-            free (key);
+            //free (key);
         }
         else
         {
@@ -1287,7 +1299,7 @@ void nt_term (token tok, char *currentFunctionKey, tContent **contentArr)
                         //printf("Do contentArr[%d].integer som ulozil kokotne cislo %d\n",j,(*contentArr[j]).integer);
                         j++;
                         //printf("COMPARISON1 je %d\n",comparison1 );
-                        free (randomKey);
+                        //free (randomKey);
                     }
             }
             else
@@ -1406,7 +1418,7 @@ void nt_param (token tok, bool testOnly, char * currentFunctionKey)
                 match (tok, hledam -> data -> type + 25);
             }
         }
-        free (key);
+        //free (key);
     }
     else
     {

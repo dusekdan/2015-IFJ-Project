@@ -10,6 +10,7 @@ char *randstring(int length) {
     char *randomString;
 
     randomString = malloc(sizeof(char) * (length));
+    InsertLastMarius(& Smetisko, randomString);
 
     if (!randomString) {
         return (char*)0;

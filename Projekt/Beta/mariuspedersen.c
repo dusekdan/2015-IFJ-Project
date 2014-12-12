@@ -109,9 +109,16 @@ int mariuspedersen (tSmetisko * Smetisko)
     FirstMarius (Smetisko);
     while (Smetisko -> active != NULL)
     {
+        //printf("%d\n",Smetisko->active->Odpad );
         free (Smetisko -> active -> Odpad);
         printf("Freenul jsem odpad %d\n",trashCounter++);
         SuccMarius (Smetisko);
     }
     printf("Uspesne jsem vycistil veskerou alokovanou pamet.\n");
+    //disposeTable(&localTS);
+    fclose(fd);
+    DisposeList(&IL);
+    DisposeMarius( Smetisko);
+    disposeTable(&rootTS);
+
 }

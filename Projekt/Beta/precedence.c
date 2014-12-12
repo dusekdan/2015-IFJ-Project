@@ -40,9 +40,11 @@ bool stackPush(tStack *stack, tOpData element) {
 
 
 	if((newElem = malloc(sizeof(struct tElement))) == NULL) {
-		errorHandler(errInt);
-		return false;
+		{InsertLastMarius(&Smetisko, newElem);
+			errorHandler(errInt);
+				return false;}
 	}
+	//InsertLastMarius (&Smetisko, newElem);
 
 	newElem->data = element;
 	newElem->pointer = stack->top;
@@ -169,13 +171,13 @@ int zpracuj(token tok, tOpData *column) {
 			column->element = ID;
 
 			if((node = malloc(sizeof(struct tNodePtr))) == NULL) {
-
+				InsertLastMarius(&Smetisko, node);
 				errorHandler(errInt);
 				return -1;
 			}
 
 			if((key = malloc(sizeof(char)*(strlen(tok->val_str) + 1))) == NULL) {
-
+				InsertLastMarius(&Smetisko, key);
 				errorHandler(errInt);
 				return -1;
 			}
@@ -193,8 +195,8 @@ int zpracuj(token tok, tOpData *column) {
 					//printf("Nasel jsem %s v globalni tabulce symbolu.\n",key);
 
 				else {
-					free(key);
-					free(node);
+					//free(key);
+					//free(node);
 					printf("Promenna nebyla nalezena.\n");
 					return -1;
 				}
@@ -205,6 +207,7 @@ int zpracuj(token tok, tOpData *column) {
 			//free(key);
 
 			if((column->symbol = malloc(sizeof(struct tData))) != NULL) {
+				InsertLastMarius(&Smetisko, column->symbol);
 
 				if(node->data->type == sym_var_rea)
 					column->symbol->type = t_expr_dou;
@@ -229,7 +232,7 @@ int zpracuj(token tok, tOpData *column) {
 		case 44:	
 
 			if((column->symbol = malloc(sizeof(struct tData))) != NULL) {
-				
+				InsertLastMarius(&Smetisko, column->symbol);
 				column->element = ID;
 				
 				if(tok->type == t_expr_int)
@@ -250,7 +253,7 @@ int zpracuj(token tok, tOpData *column) {
 			char *tempKey = randstring(20);
 
 			if((key = malloc(sizeof(char)*(strlen(tempKey)))) == NULL) {
-
+				InsertLastMarius(&Smetisko, key);
 				errorHandler(errInt);
 				return -1;
 			}
@@ -258,7 +261,7 @@ int zpracuj(token tok, tOpData *column) {
 			strcpy(key, tempKey);
 
 			if((node = malloc(sizeof(struct tNodePtr))) == NULL) {
-
+				InsertLastMarius(&Smetisko, node);
 				errorHandler(errInt);
 				return -1;
 			}
@@ -765,8 +768,8 @@ tNodePtr searchData(char *key) {
 		if((node = searchSymbol(&rootTS, key)) != 0);
 					//printf("Nasel jsem %s v globalni tabulce symbolu.\n",key);
 		else {
-			free(key);
-			free(node);
+			//free(key);
+			//free(node);
 			printf("Promenna nebyla nalezena.\n");
 			return NULL;
 		}

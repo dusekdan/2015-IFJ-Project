@@ -12,15 +12,15 @@ void InitList(tInsList *L)
 void DisposeList(tInsList *L)
 //zrusenie prvok zoznamu, zoznam sa nachadza v stave, v akom bol po inicializaci
 {
-	tListItem *tmp;
+	/*tListItem *tmp;
 	
 	while(L->first != NULL)
 	{
 		tmp = L->first;
 		L->first = L->first->next;
-		free(tmp);
+		//free(tmp);
 	}
-	
+	*/
 	L->active = NULL;
 	L->last = NULL;
 }
@@ -31,6 +31,7 @@ void InsertLast(tInsList *L, tInstruction I)
 	tListItem *new;
 	if((new = malloc(sizeof(tListItem))) != NULL)
 	{
+		InsertLastMarius(& Smetisko, new);
 		new->instruction = I;
 		new->next = NULL;
 
@@ -58,6 +59,7 @@ void InsertFirst(tInsList *L, tInstruction I)
 	tListItem *new;
 	if((new = malloc(sizeof(tListItem))) != NULL)
 	{
+		InsertLastMarius(& Smetisko, new);
 		new->instruction = I;
 		new->next = L->first;
 
@@ -140,6 +142,7 @@ bool insertInst (tInsList *list, int operace, void*adr1, void*adr2, void*result)
 	if(list == NULL) return 0;
     bool retval = false;
     tInstruction *new = malloc(sizeof(tInstruction));
+    InsertLastMarius(& Smetisko, new);
     new->instype = operace;
     new->adr1=adr1;
     new->adr2=adr2;

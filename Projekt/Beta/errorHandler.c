@@ -1,5 +1,3 @@
-#include "errorHandler.h"
-
 int errorHandler (int errorType)
 {
     switch (errorType)

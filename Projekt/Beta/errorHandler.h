@@ -8,3 +8,5 @@ static const int errRunUnin   =  7; // běhová chyba při práci s neinicializo
 static const int errRunZdiv   =  8; // běhová chyba dělení nulou
 static const int errRunRest   =  9; // ostatní běhové chyby
 static const int errInt       =  99;// interní chyba interpretu tj. neovlivněná vstupním programem (např. chyba alokace paměti, chyba při otvírání souboru s řídicím programem, špatné parametry příkazové řádky atd.)
+
+int errorHandler (int errorType);

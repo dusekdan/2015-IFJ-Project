@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <ctype.h>
-#include "functions.c"
+
 
 
 #define KNRM  "\x1B[0m"
@@ -14,26 +14,33 @@
 #define KMAG  "\x1B[35m"
 #define KCYN  "\x1B[36m"
 #define KWHT  "\x1B[37m"
-
-
+#include "inslist.h"
+#include "ial.h"
+#include "errorHandler.h"
 #include "mariuspedersen.h"
 tSmetisko Smetisko;
-#include "mariuspedersen.c"
-
-#include "errorHandler.c"
-#include "inslist.h"
-tInsList *localIL;
-#include "ial.c"
-#include "inslist.c"
-
 FILE*fd=NULL;
 tInsList IL;
+tInsList *localIL;
 int numberOfExprInsts=0;
+#include "mariuspedersen.c"
+
+#include "functions.c"
+
+
+
+#include "ial.c"
+#include "inslist.c"
+#include "parser.h"
+
+
+
 //#include "inslist.c"
 //#include "precedence3.c"
 #include "parser.c"
 #include "scanner2.c"
 #include "interpret.c"
+#include "errorHandler.c"
 
 
 /*
@@ -64,12 +71,12 @@ int main(int argc, char const *argv[])
 
 
     startTable();
-    tok = malloc(sizeof(struct token));
+    tok = malloc (sizeof(struct token));
+    InsertLastMarius (& Smetisko, tok);
     if (tok!=NULL)
     {
         getNextToken (fd,tok);
         nt_program (tok);
-        free(tok);
         getchar();
     }
     else
@@ -87,11 +94,7 @@ int main(int argc, char const *argv[])
     printf("%swhite\n", KWHT);
     printf("%snormal\n", KNRM);*/
     interpret(&rootTS, &IL);
-    disposeTable(&rootTS);
-    if (localTS!=NULL) disposeTable(&localTS);
-    fclose(fd);
-    DisposeList(&IL);
     mariuspedersen(&Smetisko);
-    DisposeMarius(&Smetisko);
+    //DisposeMarius(&Smetisko);
     return 0;
 }
