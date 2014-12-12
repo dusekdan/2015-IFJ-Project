@@ -9,5 +9,6 @@ int errorHandler (int errorType)
                     break;
     }
     printf("%schyba %d%s\n",KRED,errorType,KNRM );
+    mariuspedersen(&Smetisko);
     exit(errorType);
 }

@@ -15,6 +15,11 @@
 #define KCYN  "\x1B[36m"
 #define KWHT  "\x1B[37m"
 
+
+#include "mariuspedersen.h"
+tSmetisko Smetisko;
+#include "mariuspedersen.c"
+
 #include "errorHandler.c"
 #include "inslist.h"
 tInsList *localIL;
@@ -41,6 +46,7 @@ tInsList IL;
 
 int main(int argc, char const *argv[])
 {
+    InitMarius(&Smetisko);
     //printf("%d\n",argc );
     if (argc==3)
     if (strcmp(argv[2],"-d")==0)
@@ -64,6 +70,7 @@ int main(int argc, char const *argv[])
         getNextToken (fd,tok);
         nt_program (tok);
         free(tok);
+        getchar();
     }
     else
     {
@@ -84,5 +91,7 @@ int main(int argc, char const *argv[])
     if (localTS!=NULL) disposeTable(&localTS);
     fclose(fd);
     DisposeList(&IL);
+    mariuspedersen(&Smetisko);
+    DisposeMarius(&Smetisko);
     return 0;
 }
