@@ -1038,13 +1038,29 @@ void nt_stmt (token tok)
             //////////////////////////////////////////////////////////////RULE22
             case t_write:   match (tok, t_write);
                             match (tok, t_l_parrent);
-                            /*tContent * * ptrArr;
-                            ptrArr = malloc (sizeof (struct tContent * ) * 100);*/
+                            tContent ** contentArr = (tContent**) malloc (sizeof (tContent*) * 100);//       printf("vytvoril som doublepole %u\n____________________\n",&contentArr);
+                            InsertLastMarius (& Smetisko, contentArr);
 
-                            nt_term_list (tok, "Fwrite", NULL/*ptrArr*/);
-
+                            nt_term_list (tok, "Fwrite", contentArr);
                             pocetArg = 0;
                             match (tok,t_r_parrent);
+
+                            /* Ak je aktuálny localIL NULL, znamená že idem   **
+                            ** vkladať globálnu inštrukciu takže currIL si    **
+                            ** nastavím na IL a v opačnom prípade ideme do    **
+                            ** aktuálneho lokálneho listu na ktorý ukazuje    **
+                            ** localIL.                                       */
+
+                            currIL =   (localIL == NULL) ? &IL : localIL;
+                            insertInst (currIL, I_WRITE, hledam -> data, contentArr, NULL);
+
+                            /* Vypísanie práve vloženej inštrukcie pre debug  */
+
+                            if (debug == true)
+                                printf ("\n%sNew Instruction | %u | I_WRITE | %u | %u | NULL |%s\n", KYEL, currIL, hledam -> data, contentArr, KNRM);
+
+                            //free (key);
+                            
                             break;
         }
     }    
@@ -1226,6 +1242,7 @@ void nt_term (token tok, char *currentFunctionKey, tContent **contentArr)
                 //printf("---Write kontrola preskocena\n");
                 if (comparison1 < 1 || comparison1 > 4)
                 {
+
                     fprintf (stderr, "Type mismatch.\n");
                     errorHandler (errSemTypArg);
                 }
@@ -1268,7 +1285,10 @@ void nt_term (token tok, char *currentFunctionKey, tContent **contentArr)
                         errorHandler (errSemTypArg);
                     }
                     else
-                    {//idem ulozit content pre volanie
+                    {
+
+
+                    //idem ulozit content pre volanie
                         
                         char * randomKey = randstring(20);
                         printf("randomkey je %s\n",randomKey );
@@ -1306,9 +1326,46 @@ void nt_term (token tok, char *currentFunctionKey, tContent **contentArr)
                 //printf("---Write kontrola preskocena\n");
                 if (comparison1 < 41 || comparison1 > 44)
                 {
+
                     fprintf (stderr, "Type mismatch.\n");
                     errorHandler(errSemTypArg);
                 }
+                else////////////NEVZKOKOTILO CHYBU IDEMM ULOZIT LITERAL DO TABULKZ
+                    {
+                                            //idem ulozit content pre volanie
+                        
+                        char * randomKey2 = randstring(20);
+                        printf("randomkey2 je %s\n",randomKey2 );
+
+                        if (searchSymbol(&rootTS, randomKey2)!=0)
+                        {
+                            fprintf (stderr, "Randomkey2 error\n");
+                            errorHandler (errInt);
+                        }
+
+                        saveSymbol (&rootTS, randomKey2, NULL, tok -> type, 0, true);
+
+                        tData * currData2 = &(searchSymbol(&rootTS, randomKey2) -> data);
+                        switch (tok -> type)
+                        {
+                            case t_expr_int:    (*currData2) -> content.integer = tok -> val_int;
+                                                break;
+                            case t_expr_str:    (*currData2) -> content.string  = tok -> val_str;
+                                                break;
+                            case t_expr_dou:    (*currData2) -> content.real    = tok -> val_flo;
+                                                break;
+                            case t_expr_boo:    (*currData2) -> content.boolean = tok -> val_int;
+                                                break;
+                        }
+
+                        tContent * currCon2 = &((*currData2) -> content);
+                        contentArr[j]       = currCon2;
+                        //printf("Do contentArr[%d].integer som ulozil kokotne cislo %d\n",j,(*contentArr[j]).integer);
+                        j++;
+                        //printf("COMPARISON1 je %d\n",comparison1 );
+                        //free (randomKey);
+
+                    }
             match (tok, tok->type);
         }
     }
