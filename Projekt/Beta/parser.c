@@ -1038,10 +1038,10 @@ void nt_stmt (token tok)
             //////////////////////////////////////////////////////////////RULE22
             case t_write:   match (tok, t_write);
                             match (tok, t_l_parrent);
-                            tContent ** contentArr = (tContent**) malloc (sizeof (tContent*) * 100);//       printf("vytvoril som doublepole %u\n____________________\n",&contentArr);
-                            InsertLastMarius (& Smetisko, contentArr);
+                            tData ** dataArr = (tData**) malloc (sizeof (tData*) * 100);//       printf("vytvoril som doublepole %u\n____________________\n",&contentArr);
+                            InsertLastMarius (& Smetisko, dataArr);
 
-                            nt_term_list (tok, "Fwrite", contentArr);
+                            nt_term_list (tok, "Fwrite", NULL, dataArr);
                             printf("%d JJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJ\n",j );
                             pocetArg = 0;
                             match (tok,t_r_parrent);
@@ -1056,12 +1056,12 @@ void nt_stmt (token tok)
                             ** localIL.                                       */
 
                             currIL =   (localIL == NULL) ? &IL : localIL;
-                            insertInst (currIL, I_WRITE, jp, contentArr, NULL);
+                            insertInst (currIL, I_WRITE, jp, dataArr, NULL);
                             
                             /* Vypísanie práve vloženej inštrukcie pre debug  */
 
                             if (debug == true)
-                                printf ("\n%sNew Instruction | %u | I_WRITE | %u | %u | NULL |%s\n", KYEL, currIL, *jp, contentArr, KNRM);
+                                printf ("\n%sNew Instruction | %u | I_WRITE | %u | %u | NULL |%s\n", KYEL, currIL, *jp, dataArr, KNRM);
 
                             //free (key);
                             
@@ -1129,7 +1129,7 @@ int nt_assign (token tok)
 
             tContent ** contentArr = (tContent**) malloc (sizeof (tContent*) * 100);//       printf("vytvoril som doublepole %u\n____________________\n",&contentArr);
             InsertLastMarius (& Smetisko, contentArr);
-            nt_term_list (tok, key, contentArr);
+            nt_term_list (tok, key, contentArr, NULL);
             pocetArg = 0;
             
             //termy su overene idem ich nahradit
@@ -1168,7 +1168,7 @@ int nt_assign (token tok)
     return -1;
 }
 
-void nt_term (token tok, char *currentFunctionKey, tContent **contentArr)
+void nt_term (token tok, char *currentFunctionKey, tContent **contentArr, tData **dataArr)
 {
     if (tok -> type == t_var_id   ||
         tok -> type == t_expr_int ||
@@ -1199,10 +1199,11 @@ void nt_term (token tok, char *currentFunctionKey, tContent **contentArr)
             {   
                 tContent * currCon = &(hledam -> data -> content);
                 comparison1  = hledam -> data -> type;
-                contentArr[j]= currCon;
+                if (contentArr!=NULL)contentArr[j]= currCon;
+                if (dataArr!=NULL)dataArr[j]=&(hledam -> data);
 
 
-                printf("Do contentArr[%d].integer som ulozil %d\n",j,(*contentArr[j]).integer);
+                //printf("Do contentArr[%d].integer som ulozil %d\n",j,(*contentArr[j]).integer);
                 j++;
             //printf("COMPARISON1 je %d\n",comparison1 );
             }
@@ -1362,8 +1363,8 @@ void nt_term (token tok, char *currentFunctionKey, tContent **contentArr)
                                                 break;
                         }
 
-                        tContent * currCon2 = &((*currData2) -> content);
-                        contentArr[j]       = currCon2;
+                        //tData * currDat = &((*currData2) -> content);
+                        dataArr[j]       = currData2;
                         //printf("Do contentArr[%d].integer som ulozil kokotne cislo %d\n",j,(*contentArr[j]).integer);
                         j++;
                         //printf("COMPARISON1 je %d\n",comparison1 );
@@ -1381,7 +1382,7 @@ void nt_term (token tok, char *currentFunctionKey, tContent **contentArr)
 
 }
 
-void nt_term_list (token tok, char * currentFunctionKey, tContent * * contentArr)
+void nt_term_list (token tok, char * currentFunctionKey, tContent * * contentArr, tData **dataArr)
 {
     if (tok -> type == t_var_id   ||
         tok -> type == t_expr_int ||
@@ -1396,8 +1397,8 @@ void nt_term_list (token tok, char * currentFunctionKey, tContent * * contentArr
             tok -> type == t_expr_dou ||
             tok -> type == t_expr_str  )
         {
-            nt_term      (tok, currentFunctionKey, contentArr);
-            nt_term_more (tok, currentFunctionKey, contentArr);
+            nt_term      (tok, currentFunctionKey, contentArr, dataArr);
+            nt_term_more (tok, currentFunctionKey, contentArr, dataArr);
         }
         /////////////////////////////////////////////////////////////////////RULE25
         else
@@ -1410,7 +1411,7 @@ void nt_term_list (token tok, char * currentFunctionKey, tContent * * contentArr
     }
 }
 
-void nt_term_more (token tok, char * currentFunctionKey, tContent * * contentArr)
+void nt_term_more (token tok, char * currentFunctionKey, tContent * * contentArr, tData **dataArr)
 {
     if (tok -> type == t_comma    ||
         tok -> type == t_r_parrent )
@@ -1419,7 +1420,7 @@ void nt_term_more (token tok, char * currentFunctionKey, tContent * * contentArr
         if (tok -> type == t_comma)
         {
             match        (tok, t_comma);
-            nt_term_list (tok, currentFunctionKey, contentArr);
+            nt_term_list (tok, currentFunctionKey, contentArr, dataArr);
         }
         ////////////////////////////////////////////////////////////////////////RULE28
         else
