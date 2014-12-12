@@ -308,125 +308,122 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 				{
 					if(temp->data->content.integer > temp2->data->content.integer)
 					{
+						
 						lastbool = true;
-						//(((tData) new->result)->content.boolean) = true;
-						//printf("%d\n", (((tData) new->result)->content.boolean));
-				
+						
 					} else 
 					{
+						
 						lastbool = false;
-						//(((tData) new->result)->content.boolean) = false;
-						//printf("%d\n", (((tData) new->result)->content.boolean));
+						
 					}
 				} else if(temp->data->type == t_expr_dou || temp->data->type == sym_var_rea)
 				{
 					if(temp->data->content.real > temp2->data->content.real)
 					{
+						
 						lastbool = true;
-						//(((tData) new->result)->content.boolean) = true;
-						//printf("%d\n", (((tData) new->result)->content.boolean));
-				
+						
 					} else 
 					{
+						
 						lastbool = false;
-						//(((tData) new->result)->content.boolean) = false;
-						//printf("%d\n", (((tData) new->result)->content.boolean));
+						
 					}
 				} else if(temp->data->type == t_expr_str || temp->data->type == sym_var_str)
 				{
 					cmp = strcmp(temp->data->content.string, temp2->data->content.string);
 					if(cmp > 0)
 					{
+						
 						lastbool = true;
-						//(((tData) new->result)->content.boolean) = true;
-						//printf("%d\n", (((tData) new->result)->content.boolean));
+						
 				
 					} else 
 					{
+						
 						lastbool = false;
-						//(((tData) new->result)->content.boolean) = false;
-						//printf("%d\n", (((tData) new->result)->content.boolean));
+					
 					}
 				} else 
 				{
 					if(temp->data->content.boolean > temp2->data->content.boolean)
 					{
+						
 						lastbool = true;
-						//(((tData) new->result)->content.boolean) = true;
-						//printf("%d\n", (((tData) new->result)->content.boolean));
+					
 				
 					} else 
 					{
+						
 						lastbool = false;
-						//(((tData) new->result)->content.boolean) = false;
-						//printf("%d\n", (((tData) new->result)->content.boolean));
+						
 					}
 				}
 				break;
 			
 			case I_LESS:
-				temp = ((tNodePtr) new->adr1);
-				//printf("prva kokotina ok %d\n", temp->data->content.integer);
+				
+				temp = ((tNodePtr) new->adr1);			
 				temp2 = ((tNodePtr) new->adr2);
-				//printf("druha kokotina ok %d\n", temp2->data->content.integer);
-				//printf("dataypz je %d\n",temp->data->type );
+			
 				if(temp->data->type == t_expr_int || temp->data->type == sym_var_int)
-				{//printf("je to int\n");
-					//if((((tData) new->adr1)->content.integer) < (((tData) new->adr2)->content.integer))
+				{
+					
 					if(temp->data->content.integer < temp2->data->content.integer)
-					{//printf("chcem nastavit\n");
-						lastbool = true;//printf("nastavil som\n");
-						//(((tData) new->result)->content.boolean) = true;
-						//printf("%d\n", (((tData) new->result)->content.boolean));
+					{
+						
+						lastbool = true;
+						
 				
 					} else 
-					{//printf("chcem nastavit fa\n");
+					{
+						
 						lastbool = false;
-						//(((tData) new->result)->content.boolean) = false;
-						//printf("%d\n", (((tData) new->result)->content.boolean));
+					
 					}
 				} else if(temp->data->type == t_expr_dou || temp->data->type == sym_var_rea)
 				{
 					if(temp->data->content.real < temp2->data->content.real)
 					{
+						
 						lastbool = true;
-						//(((tData) new->result)->content.boolean) = true;
-						//printf("%d\n", (((tData) new->result)->content.boolean));
+						
 				
 					} else 
 					{
+						
 						lastbool = false;
-						//(((tData) new->result)->content.boolean) = false;
-						//printf("%d\n", (((tData) new->result)->content.boolean));
+						
 					}
 				} else if(temp->data->type == t_expr_str || temp->data->type == sym_var_str)
 				{
 					cmp = strcmp(temp->data->content.string, temp2->data->content.string);
 					if(cmp < 0)
 					{
+						
 						lastbool = true;
-						//(((tData) new->result)->content.boolean) = true;
-						//printf("%d\n", (((tData) new->result)->content.boolean));
+					
 				
 					} else 
 					{
+						
 						lastbool = false;
-						//(((tData) new->result)->content.boolean) = false;
-						//printf("%d\n", (((tData) new->result)->content.boolean));
+						
 					}
 				} else 
 				{
 					if(temp->data->content.boolean < temp2->data->content.boolean)
 					{
+						
 						lastbool = true;
-						//(((tData) new->result)->content.boolean) = true;
-						//printf("%d\n", (((tData) new->result)->content.boolean));
+					
 				
 					} else 
 					{
+						
 						lastbool = false;
-						//(((tData) new->result)->content.boolean) = false;
-						//printf("%d\n", (((tData) new->result)->content.boolean));
+					
 					}
 				}
 				break;
@@ -440,58 +437,58 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 				{
 					if(temp->data->content.integer >= temp2->data->content.integer)
 					{
+						
 						lastbool = true;
-						//(((tData) new->result)->content.boolean) = true;
-						//printf("%d\n", (((tData) new->result)->content.boolean));
+			
 				
 					} else 
 					{
+						
 						lastbool = false;
-						//(((tData) new->result)->content.boolean) = false;
-						//printf("%d\n", (((tData) new->result)->content.boolean));
+					
 					}
 				} else if(temp->data->type == t_expr_dou || temp->data->type == sym_var_rea)
 				{
 					if(temp->data->content.real >= temp2->data->content.real)
 					{
+						
 						lastbool = true;
-						//(((tData) new->result)->content.boolean) = true;
-						//printf("%d\n", (((tData) new->result)->content.boolean));
+					
 				
 					} else 
 					{
+						
 						lastbool = false;
-						//(((tData) new->result)->content.boolean) = false;
-						//printf("%d\n", (((tData) new->result)->content.boolean));
+					
 					}
 				} else if(temp->data->type == t_expr_str || temp->data->type == sym_var_str)
 				{
 					cmp = strcmp(temp->data->content.string, temp2->data->content.string);
 					if(cmp >= 0)
 					{
+						
 						lastbool = true;
-						//(((tData) new->result)->content.boolean) = true;
-						//printf("%d\n", (((tData) new->result)->content.boolean));
+					
 				
 					} else 
 					{
+						
 						lastbool = false;
-						//(((tData) new->result)->content.boolean) = false;
-						//printf("%d\n", (((tData) new->result)->content.boolean));
+				
 					}
 				} else 
 				{
 					if(temp->data->content.boolean >= temp2->data->content.boolean)
 					{
+						
 						lastbool = true;
-						//(((tData) new->result)->content.boolean) = true;
-						//printf("%d\n", (((tData) new->result)->content.boolean));
+					
 				
 					} else 
 					{
+						
 						lastbool = false;
-						//(((tData) new->result)->content.boolean) = false;
-						//printf("%d\n", (((tData) new->result)->content.boolean));
+					
 					}
 				}
 				break;
@@ -505,58 +502,58 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 				{
 					if(temp->data->content.integer <= temp2->data->content.integer)
 					{
+						
 						lastbool = true;
-						//(((tData) new->result)->content.boolean) = true;
-						//printf("%d\n", (((tData) new->result)->content.boolean));
+				
 				
 					} else 
 					{
+						
 						lastbool = false;
-						//(((tData) new->result)->content.boolean) = false;
-						//printf("%d\n", (((tData) new->result)->content.boolean));
+						
 					}
 				} else if(temp->data->type == t_expr_dou || temp->data->type == sym_var_rea)
 				{
 					if(temp->data->content.real <= temp2->data->content.real)
 					{
+						
 						lastbool = true;
-						//(((tData) new->result)->content.boolean) = true;
-						//printf("%d\n", (((tData) new->result)->content.boolean));
+				
 				
 					} else 
 					{
+						
 						lastbool = false;
-						//(((tData) new->result)->content.boolean) = false;
-						//printf("%d\n", (((tData) new->result)->content.boolean));
+					
 					}
 				} else if(temp->data->type == t_expr_str || temp->data->type == sym_var_str)
 				{
 					cmp = strcmp(temp->data->content.string, temp2->data->content.string);
 					if(cmp <= 0)
 					{
+						
 						lastbool = true;
-						//(((tData) new->result)->content.boolean) = true;
-						//printf("%d\n", (((tData) new->result)->content.boolean));
+				
 				
 					} else 
 					{
+						
 						lastbool = false;
-						//(((tData) new->result)->content.boolean) = false;
-						//printf("%d\n", (((tData) new->result)->content.boolean));
+						
 					}
 				} else 
 				{
 					if(temp->data->content.boolean <= temp2->data->content.boolean)
 					{
+						
 						lastbool = true;
-						//(((tData) new->result)->content.boolean) = true;
-						//printf("%d\n", (((tData) new->result)->content.boolean));
+					
 				
 					} else 
 					{
+						
 						lastbool = false;
-						//(((tData) new->result)->content.boolean) = false;
-						//printf("%d\n", (((tData) new->result)->content.boolean));
+					
 					}
 				}
 				break;
@@ -570,58 +567,58 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 				{
 					if(temp->data->content.integer == temp2->data->content.integer)
 					{
+						
 						lastbool = true;
-						//(((tData) new->result)->content.boolean) = true;
-						//printf("%d\n", (((tData) new->result)->content.boolean));
+						
 				
 					} else 
 					{
+						
 						lastbool = false;
-						//(((tData) new->result)->content.boolean) = false;
-						//printf("%d\n", (((tData) new->result)->content.boolean));
+					
 					}
 				} else if(temp->data->type == t_expr_dou || temp->data->type == sym_var_rea)
 				{
 					if(temp->data->content.real == temp2->data->content.real)
 					{
+						
 						lastbool = true;
-						//(((tData) new->result)->content.boolean)= true;
-						//printf("%d\n", (((tData) new->result)->content.boolean));
+					
 				
 					} else 
 					{
+						
 						lastbool = false;
-						//(((tData) new->result)->content.boolean) = false;
-						//printf("%d\n", (((tData) new->result)->content.boolean));
+						
 					}
 				} else if(temp->data->type == t_expr_str || temp->data->type == sym_var_str)
 				{
 					cmp = strcmp(temp->data->content.string, temp2->data->content.string);
 					if(cmp == 0)
 					{
+						
 						lastbool = true;
-						//(((tData) new->result)->content.boolean) = true;
-						//printf("%d\n", (((tData) new->result)->content.boolean));
+					
 				
 					} else 
 					{
+						
 						lastbool = false;
-						//(((tData) new->result)->content.boolean) = false;
-						//printf("%d\n", (((tData) new->result)->content.boolean));
+				
 					}
 				} else 
 				{
 					if(temp->data->content.boolean == temp2->data->content.boolean)
 					{
+						
 						lastbool = true;
-						//(((tData) new->result)->content.boolean) = true;
-						//printf("%d\n", (((tData) new->result)->content.boolean));
+				
 				
 					} else 
 					{
+						
 						lastbool = false;
-						//(((tData) new->result)->content.boolean) = false;
-						//printf("%d\n", (((tData) new->result)->content.boolean));
+				
 					}
 				}
 				break;
@@ -635,58 +632,57 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 				{
 					if(temp->data->content.integer != temp2->data->content.integer)
 					{
+						
 						lastbool = true;
-						//(((tData) new->result)->content.boolean) = true;
-						//printf("%d\n", (((tData) new->result)->content.boolean));
+					
 				
 					} else 
 					{
+						
 						lastbool = false;
-						//(((tData) new->result)->content.boolean) = false;
-						//printf("%d\n", (((tData) new->result)->content.boolean));
+				
+				
 					}
 				} else if(temp->data->type == t_expr_dou || temp->data->type == sym_var_rea)
 				{
 					if(temp->data->content.real != temp2->data->content.real)
 					{
+						
 						lastbool = true;
-						//(((tData) new->result)->content.boolean) = true;
-						//printf("%d\n", (((tData) new->result)->content.boolean));
-				
+					
 					} else 
 					{
+						
 						lastbool = false;
-						//(((tData) new->result)->content.boolean) = false;
-						//printf("%d\n", (((tData) new->result)->content.boolean));
+						
 					}
 				} else if(temp->data->type == t_expr_str || temp->data->type == sym_var_str)
 				{
 					cmp = strcmp(temp->data->content.string, temp2->data->content.string);
 					if(cmp != 0)
 					{
+						
 						lastbool = true;
-						//(((tData) new->result)->content.boolean) = true;
-						//printf("%d\n", (((tData) new->result)->content.boolean));
+						
 				
 					} else 
 					{
+						
 						lastbool = false;
-						//(((tData) new->result)->content.boolean) = false;
-						//printf("%d\n", (((tData) new->result)->content.boolean));
+						
 					}
 				} else 
 				{
 					if(temp->data->content.boolean != temp2->data->content.boolean)
 					{
+						
 						lastbool = true;
-						//(((tData) new->result)->content.boolean) = true;
-						//printf("%d\n", (((tData) new->result)->content.boolean));
+					
 				
 					} else 
 					{
+						
 						lastbool = false;
-						//(((tData) new->result)->content.boolean) = false;
-						//printf("%d\n", (((tData) new->result)->content.boolean));
 					}
 				}
 				break;
@@ -769,7 +765,9 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 				printf("ergerg%s\n", (((tData) new->result)->content.string));
 				break;
 			
-			case I_IF:printf("lastboo je %d\n",lastbool );
+			case I_IF:
+				printf("lastboo je %d\n",lastbool );
+				
 				if(lastbool == true)	
 				{
 
@@ -806,8 +804,9 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 				break;
 
 			case I_FCE:
-				//tContent *conPtrs[100];
-				
+					
+
+
 				printf("FUNKCIA ZACINA DRZTE SI KLOBUKY\n");
 				currentTerm = (((tData) new->adr1)->nextArg);
 				
@@ -827,52 +826,73 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 					//printf("1 FORIK koniec\n");
 				}
 
+				char *nazovfunkcie = ((tData) new->adr1)->name;
 
-				tListItem * revert = currIL->active;
-				
-				printf("%srevert si pamata %u v %u %s\n",KCYN,revert->instruction.instype, revert,KNRM );
-				kanter++;
-				printf("__________________________________LEVEL_VNORENI_%d\n",kanter);
-				
-				interpret(/*&(((tData) new->adr1)->localTSadr)*/NULL, (((tData) new->adr1)->localILadr));
-				
-				printf("__________________________________END_%d\n",kanter);kanter--;
-				
-				
-				currIL->active = revert;
+				if(strcmp(nazovfunkcie, "length") == 0)
+				{
+					printf("lenkt\n");
+				}
+				else
+					if(strcmp(nazovfunkcie, "copy") == 0)
+					{
+						//funkcia copy
+					}
+					else
+						if(strcmp(nazovfunkcie, "find") == 0)
+						{
+							//funkcia FIND
+						}
+						else
+							if(strcmp(nazovfunkcie, "sort") == 0)
+							{
+								//funkcia SORT
+							}
+							else
+							{
+								tListItem * revert = currIL->active;
+								
+								printf("%srevert si pamata %u v %u %s\n",KCYN,revert->instruction.instype, revert,KNRM );
+								kanter++;
+								printf("__________________________________LEVEL_VNORENI_%d\n",kanter);
+								
+								interpret(/*&(((tData) new->adr1)->localTSadr)*/NULL, (((tData) new->adr1)->localILadr));
+								
+								printf("__________________________________END_%d\n",kanter);kanter--;
+								
+								
+								currIL->active = revert;
 
-
-				
                 
             	
-                switch((((tData) new->adr1)->type))
-				{
-					case sym_fun_int:
-					case sym_fok_int:	
-						lastint = (*((tContent *) new->result)).integer;
-						break;
+				                switch((((tData) new->adr1)->type))
+								{
+									case sym_fun_int:
+									case sym_fok_int:	
+										lastint = (*((tContent *) new->result)).integer;
+										break;
 
-					case sym_fun_rea:
-					case sym_fok_rea:
-						lastdouble = (*((tContent *) new->result)).real;
-						break;	
+									case sym_fun_rea:
+									case sym_fok_rea:
+										lastdouble = (*((tContent *) new->result)).real;
+										break;	
 
-					case sym_fun_str:
-					case sym_fok_str:
-						laststring = (*((tContent *) new->result)).string;
-						break;
+									case sym_fun_str:
+									case sym_fok_str:
+										laststring = (*((tContent *) new->result)).string;
+										break;
 
-					case sym_fun_boo:
-					case sym_fok_boo:
-						lastbool =(*((tContent *) new->result)).boolean;
-						break;
-					default: printf("KORVOOOOOOOOOOOOOOOOOOOOO\n");exit(563415616);
-				}
-				//printf("vratil som %d\n", (*((tContent *) new->result)).integer);
-				//printf("lastint je %d\n",lastint );
+									case sym_fun_boo:
+									case sym_fok_boo:
+										lastbool =(*((tContent *) new->result)).boolean;
+										break;
+									default: printf("KORVOOOOOOOOOOOOOOOOOOOOO\n");exit(563415616);
+								}
+								//printf("vratil som %d\n", (*((tContent *) new->result)).integer);
+								//printf("lastint je %d\n",lastint );
 
-                *((tContent *) new->result) = conVarOld;
-                //printf("obnovil som si kokotka %d\n",(*((tContent *) new->result)).integer);
+				                *((tContent *) new->result) = conVarOld;
+				                //printf("obnovil som si kokotka %d\n",(*((tContent *) new->result)).integer);
+               				}
 
                 currentTerm = (((tData) new->adr1)->nextArg);
 
