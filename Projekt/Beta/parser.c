@@ -86,7 +86,7 @@ char * createKey (char * prefix, char * suffix)
 
 bool saveSymbol (tNodePtr * currTS, char * key, char * name, int type, int argCount, bool errOnRedef)
 {
-    printf("zaacina save\n");
+    //printf("zaacina save\n");
     /* Otestujem či už náhodou neexistuje daný symbol */
 
     if (searchSymbol (currTS, key) == 0)
@@ -379,6 +379,19 @@ void nt_var_def (token tok)
 
         //Sem pride instrukcia
         tNodePtr currentVar = searchSymbol(&*currTS, key);
+
+
+        tInsList * currIL =   (localIL == NULL) ? &IL : localIL;
+        insertInst (currIL, I_VAR, currentVar->data, NULL, NULL);
+
+        /* Vypísanie práve vloženej inštrukcie pre debug  */
+
+        if (debug == true)
+            printf ("\n%sNew Instruction | %p | I_VAR | %p | NULL | NULL |%s\n", KYEL, (void *) currIL, (void *) currentVar->data, KNRM);
+
+
+
+/*
         printf("%s",KYEL);
         if (localIL==NULL){
             insertInst (&IL, I_VAR, &currentVar->data, NULL, NULL);
@@ -390,7 +403,7 @@ void nt_var_def (token tok)
             printf("LOCAL\n");printf("Vlozil som instrukciu I_VAR s ukazatelom %p do IL %p\n", (void *) &currentVar->data, (void *) localIL);
         }
         printf("%s",KNRM);
-        //free (key);
+        //free (key);*/
 
     }
     else
@@ -487,7 +500,7 @@ void nt_fun_def_list (token tok)
             if (nextMustBeBody == false)
             {
                 searchSymbol (&rootTS, key) -> data -> argCount = pocetArg;
-                printf("uloil som %d\n",searchSymbol(&rootTS, key)->data->argCount );
+                //printf("uloil som %d\n",searchSymbol(&rootTS, key)->data->argCount );
 
                 /* Vynulujem počítadlo argumentov lebo som skončil paramlist */
 
@@ -1086,7 +1099,6 @@ void nt_stmt (token tok)
                             InsertLastMarius (& Smetisko, dataArr);
 
                             nt_term_list (tok, "Fwrite", NULL, dataArr);
-                            printf("%d JJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJ\n",j );
                             j=0;
                             pocetArg = 0;
                             match (tok,t_r_parrent);
@@ -1157,7 +1169,7 @@ int nt_assign (token tok)
             char * key = createKey ("F", tok -> val_str);
             char * key2 = createKey ("V", tok -> val_str);
             tNodePtr hledam = searchSymbol (&rootTS, key);
-            printf("funkcia je %s\n",key );
+            //printf("funkcia je %s\n",key );
             
             if (hledam == 0)
             {
@@ -1186,7 +1198,7 @@ int nt_assign (token tok)
             //termy su overene idem ich nahradit
             //printf("\nhledam->data->argCount je %d\n",hledam->data->argCount);
             
-            printf("%d jjjjjjjjjjjjjjjjjjjjjkokooooot\n",j );
+            
             j = 0;
 
             match (tok, t_r_parrent);
@@ -1204,7 +1216,7 @@ int nt_assign (token tok)
                 strcmp(key,"Ffind")   == 0 ||
                 strcmp(key,"Fsort")   == 0  )
             selfVarCon=NULL;
-            printf("??????????????????????????%s\n",hledam->data->name);
+            
             insertInst (currIL, I_FCE, hledam -> data, contentArr, selfVarCon);
 
             /* Vypísanie práve vloženej inštrukcie pre debug  */
@@ -1339,11 +1351,19 @@ void nt_term (token tok, char *currentFunctionKey, tContent **contentArr, tData 
                 }
 
                 comparison2 = currentFunction -> data -> nextArg -> data -> type;
-                comparison2 += 40;
+                switch (comparison2)
+                    {
+                        case sym_var_int: comparison2 = t_expr_int; break;
+                        case sym_var_str: comparison2 = t_expr_str; break;
+                        case sym_var_boo: comparison2 = t_expr_boo; break;
+                        case sym_var_rea: comparison2 = t_expr_dou; break;
+                    }
                 
                     if (comparison1 != comparison2)
                     {
                         fprintf (stderr, "Tyme mismatch in nt_assign\n");
+                        //printf("comparison2 je %d\n",comparison2);
+                        //printf("comparison1 je %d\n",comparison1);
                         errorHandler (errSemTypArg);
                     }
                     else

@@ -464,7 +464,7 @@ int reduction(tStack *stack1, tStack *stack2) {
 	if(help.element == SHIFT) {
 
 		stackPop(stack2, &temp1);	// nacteme si dalsi oper z druheho zasobniku
-		printf("%d\n", temp1.element);
+		//printf("%d\n", temp1.element);
 		
 		if(temp1.element == ID && stackEmpty(stack2) == true) {		// zacneme od nejjednodusiho - E->ID
 			
@@ -480,7 +480,7 @@ int reduction(tStack *stack1, tStack *stack2) {
 		else if(temp1.element == NETERM) {	// nyni vsechna pravidla pro neterminaly
 
 			stackPop(stack2, &temp2);
-			printf("%d\n", temp2.element);
+			//printf("%d\n", temp2.element);
 
 			switch(temp2.element) {
 				//printf("%d\n", temp2.symbol->type);
@@ -545,7 +545,7 @@ int reduction(tStack *stack1, tStack *stack2) {
 			else {
 
 				stackPop(stack2, &temp3);
-				printf("%d\n", temp3.element);
+				//printf("%d\n", temp3.element);
 
 				if(temp3.element == NETERM) {
 

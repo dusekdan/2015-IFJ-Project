@@ -81,7 +81,9 @@ int main(int argc, char const *argv[])
     {
         getNextToken (fd,tok);
         nt_program (tok);
-        getchar();
+        printf("Run Interpret? (Y/<any>)\n");
+        if(getchar()=='Y')
+            interpret(&rootTS, &IL);
     }
     else
     {
@@ -97,7 +99,7 @@ int main(int argc, char const *argv[])
     printf("%scyan\n", KCYN);
     printf("%swhite\n", KWHT);
     printf("%snormal\n", KNRM);*/
-    interpret(&rootTS, &IL);
+    
     mariuspedersen(&Smetisko);
     return 0;
 }

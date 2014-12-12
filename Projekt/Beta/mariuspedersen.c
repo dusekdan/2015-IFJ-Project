@@ -17,11 +17,11 @@
 void InitMarius (tSmetisko * Smetisko)
 //inicializuje zoznam
 {
-    printf("Pan Pedersen se snazi inicializovat list.\n");
+    if (supertruck==true)printf("Pan Pedersen se snazi inicializovat list.\n");
     Smetisko -> first  = NULL;
     Smetisko -> last   = NULL;
     Smetisko -> active = NULL;
-    printf("Pan Pedersen uspesne inicializoval list.\n");
+    if (supertruck==true)printf("Pan Pedersen uspesne inicializoval list.\n");
 }
 
 void DisposeMarius (tSmetisko * Smetisko)
@@ -43,28 +43,31 @@ void DisposeMarius (tSmetisko * Smetisko)
 void InsertLastMarius (tSmetisko * Smetisko, void * Odpad)
 //vlozi polozku na koniec zoznamu
 {
-    tKontajner * new;
-    if ((new = malloc (sizeof (tKontajner))) != NULL)
-    {
-        new -> Odpad = Odpad;
-        new -> next  =  NULL;
+    if (&(Smetisko -> active -> Odpad) != &Odpad)
+    {    
+        tKontajner * new;
+        if ((new = malloc (sizeof (tKontajner))) != NULL)
+        {
+            new -> Odpad = Odpad;
+            new -> next  =  NULL;
 
-        if ( Smetisko -> first == NULL)
-        {
-            Smetisko -> first = new;
-        
+            if ( Smetisko -> first == NULL)
+            {
+                Smetisko -> first = new;
+            
+            }
+            else
+            {
+                Smetisko -> last -> next = new;
+            }   
+            
+            Smetisko -> last = new;
         }
-        else
+        else 
         {
-            Smetisko -> last -> next = new;
-        }   
-        
-        Smetisko -> last = new;
-    }
-    else 
-    {
-        exit(1);
-    }
+            exit(1);
+        }
+    }else printf("byli stejne\n");
 }
 
 void FirstMarius (tSmetisko * Smetisko)
@@ -87,9 +90,10 @@ void SuccMarius (tSmetisko * Smetisko)
 
 int mariuspedersen (tSmetisko * Smetisko)
 {
-    int trashCounter = 1;
     
     printf("Dobry den, jmenuji sa Marius Pedersen a prisel jsem vycistit Vas odpad.\n");
+    fclose(fd);
+    int trashCounter = 0;
     if (supertruck==true)
 {
     printf("       ________________   ___/-\\___     ___/-\\___     ___/-\\___\n");
@@ -109,18 +113,25 @@ int mariuspedersen (tSmetisko * Smetisko)
 }
 
     FirstMarius (Smetisko);
+    printf("nastavil sem prvni smetisko\n");
     while (Smetisko -> active != NULL)
     {
         //printf("%d\n",Smetisko->active->Odpad );
-        free (Smetisko -> active -> Odpad);
-        if (supertruck==true)printf("Freenul jsem odpad %d\n",trashCounter++);
+        if (Smetisko -> active -> Odpad != NULL)
+        {    
+            free (Smetisko -> active -> Odpad);
+            Smetisko -> active -> Odpad = NULL;
+        }
+        trashCounter++;
+        if (supertruck==true)printf("Freenul jsem odpad %d\n",trashCounter);
+        
         SuccMarius (Smetisko);
     }
-    printf("Uspesne jsem vycistil veskerou alokovanou pamet.\n");
+    printf("Uspesne jsem provedl %d operaci free.\n",trashCounter);
     //disposeTable(&localTS);
-    fclose(fd);
-    DisposeList(&IL);/*disposeTable(&rootTS);*/
-    DisposeMarius( Smetisko);
+    
+    //DisposeList(&IL);/*disposeTable(&rootTS);*/
+    DisposeMarius(Smetisko);
     return 0;
     
 
