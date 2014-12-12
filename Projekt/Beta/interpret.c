@@ -809,33 +809,43 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 
 				printf("FUNKCIA ZACINA DRZTE SI KLOBUKY\n");
 				currentTerm = (((tData) new->adr1)->nextArg);
-				
+				printf("%s\n", currentTerm->data->name);
 				//odpamatanie kokotka
-				conVarOld = *((tContent *) new->result);
-				printf("odpamatal som si kokotka %d\n",conVarOld.integer);
+				if(new->result!=NULL)
+				conVarOld = *((tContent *) new->result);//else printf("je nal kokot\n");
+				//printf("odpamatal som si kokotka %d\n",conVarOld.integer);
 
 				for(int i = 0; i < ((tData) new->adr1)->argCount; i++)
 				{
 					//printf("1 FORIK zaciatok\n");
 					conOld[i] = currentTerm->data->content;
 					//printf("integer conoldu je %d\n",conOld[i].integer );
-					printf("integer currentu je %d\n",(*((tContent **)new->adr2)[i]).integer );
+				//	printf("integer currentu je %d\n",(*((tContent **)new->adr2)[i]).integer );
+                    //printf("idem tam byt\n");
                     currentTerm->data->content = (*((tContent**) new->adr2)[i]);
+                    //printf("som tu\n");
 					//printf("po ulozeni je v currentTerme %d\n",currentTerm->data->content.integer );
 					currentTerm = currentTerm->data->nextArg;
 					//printf("1 FORIK koniec\n");
 				}
 
+				tNodePtr hledam = searchSymbol  (&rootTS,"Flength");
+				//printf("nasel \n");
 				char *nazovfunkcie = ((tData) new->adr1)->name;
+				//if (nazovfunkcie==NULL)printf("je nal kurva\n");
+				//printf("funkcia je %s\n",nazovfunkcie);
 
 				if(strcmp(nazovfunkcie, "length") == 0)
 				{
-					printf("lenkt\n");
+					lastint = strlen(((tData) new->adr1)->nextArg->data->content.string);
+					//printf("%d\n", lastint);
 				}
 				else
 					if(strcmp(nazovfunkcie, "copy") == 0)
 					{
-						//funkcia copy
+						laststring = funCopy(((tData) new->adr1)->nextArg->data->content.string,
+											 ((tData) new->adr1)->nextArg->data->nextArg->data->content.integer,
+											 ((tData) new->adr1)->nextArg->data->nextArg->data->nextArg->data->content.integer);
 					}
 					else
 						if(strcmp(nazovfunkcie, "find") == 0)
@@ -892,16 +902,17 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 
 				                *((tContent *) new->result) = conVarOld;
 				                //printf("obnovil som si kokotka %d\n",(*((tContent *) new->result)).integer);
+				                currentTerm = (((tData) new->adr1)->nextArg);
+
+								for(int i = 0; i < ((tData) new->adr1)->argCount; i++)
+								{
+									currentTerm->data->content = conOld[i];
+									(((tContent**) new->adr2)[i])=NULL;
+									currentTerm = currentTerm->data->nextArg;
+								}
                				}
 
-                currentTerm = (((tData) new->adr1)->nextArg);
-
-				for(int i = 0; i < ((tData) new->adr1)->argCount; i++)
-				{
-					currentTerm->data->content = conOld[i];
-					(((tContent**) new->adr2)[i])=NULL;
-					currentTerm = currentTerm->data->nextArg;
-				}
+                
 
                 printf("%sFUNKCIA SKONCILA ODLOZTE SI KLOBUCIKY%s\n",KRED,KNRM);	
 			break;
