@@ -850,12 +850,13 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 					else
 						if(strcmp(nazovfunkcie, "find") == 0)
 						{
-							//funkcia FIND
+							lastint = BMASearch(((tData) new->adr1)->nextArg->data->content.string,
+											 ((tData) new->adr1)->nextArg->data->nextArg->data->content.string);
 						}
 						else
 							if(strcmp(nazovfunkcie, "sort") == 0)
 							{
-								//funkcia SORT
+								laststring = allocQuickSort(((tData) new->adr1)->nextArg->data->content.string,0,strlen(((tData) new->adr1)->nextArg->data->content.string)-1);
 							}
 							else
 							{

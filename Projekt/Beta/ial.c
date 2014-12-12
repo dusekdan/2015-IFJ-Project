@@ -247,7 +247,7 @@ char *allocQuickSort(char *text, int l, int r) {
 	char *textAlloc;
 
  	if((textAlloc = malloc(sizeof(char) * strlen(text))) != NULL) {
-
+ 		InsertLastMarius(&Smetisko, textAlloc);
  		strcpy(textAlloc, text);
 
  		textAlloc = quickSort(textAlloc, l, r);
