@@ -777,7 +777,7 @@ void nt_stmt_more (token tok)
         errorHandler (errSyn);
     }
 }
-
+int j = 0;
 void nt_stmt (token tok)
 {
     if (tok->type == t_if     ||
@@ -1042,8 +1042,12 @@ void nt_stmt (token tok)
                             InsertLastMarius (& Smetisko, contentArr);
 
                             nt_term_list (tok, "Fwrite", contentArr);
+                            printf("%d JJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJ\n",j );
                             pocetArg = 0;
                             match (tok,t_r_parrent);
+                            int * jp = malloc(sizeof(int));
+                            InsertLastMarius (& Smetisko, jp);
+                            *jp=j;
 
                             /* Ak je aktuálny localIL NULL, znamená že idem   **
                             ** vkladať globálnu inštrukciu takže currIL si    **
@@ -1052,12 +1056,12 @@ void nt_stmt (token tok)
                             ** localIL.                                       */
 
                             currIL =   (localIL == NULL) ? &IL : localIL;
-                            insertInst (currIL, I_WRITE, hledam -> data, contentArr, NULL);
-
+                            insertInst (currIL, I_WRITE, jp, contentArr, NULL);
+                            
                             /* Vypísanie práve vloženej inštrukcie pre debug  */
 
                             if (debug == true)
-                                printf ("\n%sNew Instruction | %u | I_WRITE | %u | %u | NULL |%s\n", KYEL, currIL, hledam -> data, contentArr, KNRM);
+                                printf ("\n%sNew Instruction | %u | I_WRITE | %u | %u | NULL |%s\n", KYEL, currIL, *jp, contentArr, KNRM);
 
                             //free (key);
                             
@@ -1071,7 +1075,7 @@ void nt_stmt (token tok)
     }
 }
 
-int j = 0;
+
 
 int nt_assign (token tok)
 {
