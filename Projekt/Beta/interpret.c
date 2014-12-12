@@ -15,7 +15,8 @@ char *concate(char *s1, char *s2)
 	size_t len2 = strlen(s2);
 
 	char *result = malloc(len1+len2 + 1);
-
+	InsertLastMarius(&Smetisko, result);
+	
 	memcpy(result, s1, len1);
 	memcpy(result + len1, s2, len2 + 1);
 	return result;
@@ -112,7 +113,9 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 				if(((tNodePtr) new->adr2) == NULL)
 				{
 					temp = ((tNodePtr) new->adr1);
+
 					laststring = malloc(sizeof strlen(temp->data->content.string));
+					InsertLastMarius(&Smetisko, laststring);
 					strcpy(laststring, temp->data->content.string);
 				}
 				else
@@ -127,7 +130,8 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 					} else
 					{
 						temp2 = ((tNodePtr) new->adr2);
-						tmpstring = malloc(sizeof strlen(laststring ) + strlen(temp2->data->content.string));
+						
+						InsertLastMarius(&Smetisko, tmpstring);
 						laststring = concate(laststring, temp2->data->content.string);
 					}
 				}
@@ -248,6 +252,7 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 
 			case I_ASGNS:
 				(((tData) new->result)->content.string) = malloc(sizeof(char) * strlen(laststring));
+				InsertLastMarius(&Smetisko, (((tData) new->result)->content.string));
 				strcpy((((tData) new->result)->content.string), laststring);
 				laststring = NULL;
 				
@@ -840,132 +845,3 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 	} while(currIL->active != NULL);
  return 0; 
 }
-
-
-/*int main()
-{
-	
-	
-
-	tInsList IL;
-	InitList(&IL);
-
-	init(&rootTS);
-
-	tData koks = malloc(sizeof(struct tData));
-
-	koks->name = "yolo";
-	koks->type = t_expr_int;
-	koks->content.integer = 50;
-	koks->content.string = "abb";
-	//koks->content.real = 4;
-
-	tData koks2 = malloc(sizeof(struct tData));
-
-	koks2->name = "swag";
-	koks2->type = t_expr_int;
-	koks2->content.integer = 5;
-	koks2->content.string = "ba";
-	//koks2->content.real = 6;
-
-	tData koks3 = malloc(sizeof(struct tData));
-
-	koks3->name ="nub";
-	koks3->type = t_expr_int;
-	koks3->content.integer = 2;
-
-
-	tNodePtr node1 = insertSymbol(&rootTS, koks->name, koks);
-	tNodePtr node2 = insertSymbol(&rootTS, koks2->name, koks2);
-	tNodePtr node3 = insertSymbol(&rootTS, koks3->name, koks3);
-
-
-	
-	//insertInst(&IL, I_ADDI, (node1->data), (node2->data), (node3->data));
-	//insertInst(&IL, I_ADDR, (node1->data), (node2->data), (node3->data));
-	//insertInst(&IL, I_CONCATE, (node1->data), (node2->data), (node3->data));
-	//insertInst(&IL, I_FIND, (node1->data), (node2->data), (node3->data));
-	
-	insertInst(&IL, I_ADDI, (node1->data), (node2->data), (node3->data));
-	insertInst(&IL, I_SUBI, (node1->data), (node2->data), (node3->data));	
-	insertInst(&IL, I_CONCATE, (node1->data), (node2->data), (node3->data));	
-	insertInst(&IL, I_SORT, (node1->data), (node2->data), (node3->data));		
-	//insertInst(&IL, I_ADDI, (node1->data), (node2->data), (node3->data));
-	//insertInst(&IL, I_WHILE, (node1->data), (node2->data), (node3->data));
-	
-	
-	
-	InitList(&LL);
-
-	init(&rootTS);
-
-	tData pes = malloc(sizeof(struct tData));
-
-	pes->name = "alik";
-	pes->type = t_expr_str;
-	pes->content.integer = 500;
-	pes->content.string = "abb";
-	pes->content.real = 4;
-
-	tData pes2 = malloc(sizeof(struct tData));
-
-	pes2->name = "trezorek";
-	pes2->type = t_expr_str;
-	pes2->content.integer = 50;
-	pes2->content.string = "ba";
-	pes2->content.real = 6;
-
-	tData pes3 = malloc(sizeof(struct tData));
-
-	pes3->name ="kusaj";
-	pes3->type = t_expr_int;
-	pes3->content.integer = 2;
-
-
-	tNodePtr node4 = insertSymbol(&rootTS, pes->name, pes);
-	tNodePtr node5 = insertSymbol(&rootTS, pes2->name, pes2);
-	tNodePtr node6 = insertSymbol(&rootTS, pes3->name, pes3);
-
-	insertInst(&LL, I_ADDI, (node4->data), (node5->data), (node6->data));
-
-
-
-	
-	InitList(&LR);
-
-	init(&rootTS);
-
-	tData macka = malloc(sizeof(struct tData));
-
-	macka->name = "jebnuty";
-	macka->type = t_expr_int;
-	macka->content.integer = 100;
-
-	tData macka2 =  malloc(sizeof(struct tData));
-
-	macka2->name = "GEGED";
-	macka2->type = t_expr_int;
-	macka2->content.integer = 1;
-
-	tData macka3 = malloc(sizeof(struct tData));
-
-	macka3->name = "DOLAN";
-	macka3->type =  t_expr_int;
-	macka3->content.integer = 5;
-
-	tNodePtr node7 = insertSymbol(&rootTS, macka->name, macka);
-	tNodePtr node8 =  insertSymbol(&rootTS, macka2->name, macka2);
-	tNodePtr node9 = insertSymbol(&rootTS, macka3->name, macka3);
-
-
-	insertInst(&LR, I_SUBI, (node7->data), (node8->data), (node9->data));
-
-	interpret(&rootTS, &IL);
-
-	//disposeTable(&rootTS);
-	//DisposeList(&IL);
-	//free(koks);
-	//free(koks2);
-	
-	return 0;
-}*/
