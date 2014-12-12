@@ -39,12 +39,12 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 
 
 
-	while(currIL->active != NULL) {
+	/*while(currIL->active != NULL) {
 
 		printf("INSTUKCIE LISTU %d: %d\n", currIL, currIL->active->instruction.instype);
 		Succ(currIL);
 
-	}
+	}*/
 
 	First(currIL);
 
@@ -55,7 +55,8 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 	{
 
 		new = Copy(currIL);
-		printf("%sAKTUALNA INSTRUKCIA LISTU %d: %d%s\n",KYEL,currIL,new->instype,KNRM);
+		//printf("%sAKTUALNA INSTRUKCIA LISTU %d: %d%s\n",KYEL,currIL,new->instype,KNRM);
+		
 		switch(new->instype)
 		{
             case I_NOP: break;
@@ -178,7 +179,8 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 
 					lastint = temp->data->content.integer * temp2->data->content.integer;
 					vypocet = true;
-				} else
+				} 
+				else
 				{
 					temp2 = ((tNodePtr) new->adr2);
 					lastint *= temp2->data->content.integer;
@@ -194,7 +196,8 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 
 					lastdouble = temp->data->content.real * temp2->data->content.real;
 					vypocet = true;
-				} else
+				} 
+				else
 				{
 					temp2 = ((tNodePtr) new->adr2);
 					lastdouble *= temp2->data->content.real;
@@ -208,12 +211,25 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 					temp = ((tNodePtr) new->adr1);
 					temp2 = ((tNodePtr) new->adr2);
 
-					lastint = temp->data->content.integer / temp2->data->content.integer;
-					vypocet = true;
-				} else
+					if(temp2->data->content.integer == 0)
+					{
+						errorHandler(errRunZdiv);
+					} 
+					else
+					{
+						lastint = temp->data->content.integer / temp2->data->content.integer;
+						vypocet = true;
+					}
+				} 
+				else
 				{
 					temp2 = ((tNodePtr) new->adr2);
-					lastint = lastint / temp2->data->content.integer;
+					
+					if(temp2->data->content.integer == 0)
+					{
+						errorHandler(errRunZdiv);
+					} 
+					else lastint = lastint / temp2->data->content.integer;
 				}
 				printf("DIVI: %d\n", lastint);
 				break;
@@ -224,12 +240,28 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 					temp = ((tNodePtr) new->adr1);
 					temp2 = ((tNodePtr) new->adr2);
 
-					lastdouble = temp->data->content.real / temp2->data->content.real;
-					vypocet = true;
-				} else
+					if(temp2->data->content.real == 0)
+					{
+						errorHandler(errRunZdiv);
+					}
+					else
+					{
+						lastdouble = temp->data->content.real / temp2->data->content.real;
+						vypocet = true;
+					}
+				} 
+				else
 				{
 					temp2 = ((tNodePtr) new->adr2);
-					lastdouble = lastdouble / temp2->data->content.real;
+					
+					if(temp2->data->content.real == 0)
+					{
+						errorHandler(errRunZdiv);
+					}
+					else
+					{
+						lastdouble = lastdouble / temp2->data->content.real;
+					}
 				}
 				printf("DIVR: %g\n", lastdouble);
 				break;		
@@ -240,7 +272,6 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 				printf("%svysledok ASGNI: %d%s\n", KGRN, (((tData) new->result)->content.integer),KNRM);	
 				lastint = 0;
 				vypocet = false;
-				printf("vynuloval som lastint\n");
 				break;		
 
 			case I_ASGNR:
@@ -255,6 +286,7 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 				InsertLastMarius(&Smetisko, (((tData) new->result)->content.string));
 				strcpy((((tData) new->result)->content.string), laststring);
 				laststring = NULL;
+				vypocet =  false;
 				
 				if (debug==true)
 					printf("vysledok ASGNS: %s\n", (((tData) new->result)->content.string));		
@@ -333,7 +365,6 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 				break;
 			
 			case I_LESS:
-				//printf("som v lese\n");
 				temp = ((tNodePtr) new->adr1);
 				//printf("prva kokotina ok %d\n", temp->data->content.integer);
 				temp2 = ((tNodePtr) new->adr2);
@@ -397,7 +428,7 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 						//(((tData) new->result)->content.boolean) = false;
 						//printf("%d\n", (((tData) new->result)->content.boolean));
 					}
-				}printf("koniec lesa a lastgul je %d\n",lastbool);
+				}
 				break;
 
 			case I_EMORE:
@@ -685,18 +716,38 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 					printf("%s\n", (((tData) new->result)->content.string));
 				break;
 
-			case I_WRITEI:
-				printf("%i\n", (((tData) new->result)->content.integer));
-				break;
-
-			case I_WRITER:
-				printf("%g\n", (((tData) new->result)->content.real));
-				break;
-
-			case I_WRITES:
-				printf("sdsdd%s\n", (((tData) new->result)->content.string));
-				break;
+			case I_WRITE:
 				
+				for(int i = 0; i < *((int*) new->adr1); i++)
+				{
+					
+					switch((*((tData**) new->adr2)[i])->type)
+					{
+						case sym_var_int:
+						case t_expr_int:
+							printf("%d", (*((tData**) new->adr2)[i])->content.integer);
+							break;
+					
+						case sym_var_rea:
+						case t_expr_dou:
+							printf("%g", (*((tData**) new->adr2)[i])->content.real);
+							break;
+						
+						case sym_var_str:
+						case t_expr_str:
+							printf("%s", (*((tData**) new->adr2)[i])->content.string);
+							break;
+
+						case sym_var_boo:
+						case t_expr_boo:
+							printf("%d", (*((tData**) new->adr2)[i])->content.boolean);		
+						break;
+					
+						default: printf("KOOOORVA\n");
+					}
+				}
+				break;
+
 			case I_LENGTH:
 				printf("nie je funkcia nie je interpret\n");
 				break;
