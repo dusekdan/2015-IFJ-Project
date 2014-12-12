@@ -97,7 +97,7 @@ bool saveSymbol (tNodePtr * currTS, char * key, char * name, int type, int argCo
     tData newsymbol = malloc (sizeof (struct tData));
     InsertLastMarius(&Smetisko, newsymbol);
 
-    //printf("&newsymbol je %u\n",&newsymbol );
+    //printf("&newsymbol je %p\n",&newsymbol );
     //if (Smetisko -> active -> odpad != newsymbol)
     //InsertLastMarius (&Smetisko, &newsymbol);
 
@@ -382,12 +382,12 @@ void nt_var_def (token tok)
         printf("%s",KYEL);
         if (localIL==NULL){
             insertInst (&IL, I_VAR, &currentVar->data, NULL, NULL);
-            printf("GLOBAL\n");printf("Vlozil som instrukciu I_VAR s ukazatelom %u do IL %u\n", &currentVar->data,&IL);
+            printf("GLOBAL\n");printf("Vlozil som instrukciu I_VAR s ukazatelom %p do IL %p\n", (void *) &currentVar->data, (void *) &IL);
         }
 
         else{
             insertInst (localIL, I_VAR, &currentVar->data, NULL, NULL);
-            printf("LOCAL\n");printf("Vlozil som instrukciu I_VAR s ukazatelom %u do IL %u\n", &currentVar->data,localIL);
+            printf("LOCAL\n");printf("Vlozil som instrukciu I_VAR s ukazatelom %p do IL %p\n", (void *) &currentVar->data, (void *) localIL);
         }
         printf("%s",KNRM);
         //free (key);
@@ -639,7 +639,7 @@ void nt_fun_body (token tok, bool nextMustBeBody, char * key)
             hledam->data->localILadr = newLocalIL;
 
             //localIL=newLocalILptr;
-            //printf("localIL je teraz %u\n",&*localIL );
+            //printf("localIL je teraz %p\n",&*localIL );
 
             /* Ak už teraz musí prísť telo, čiže ak aktuálna funkcia už mala  **
             ** forward deklaráciu, tak to znamená že tým že mi sem neprišlo   **
@@ -768,7 +768,7 @@ void nt_stmt_list (token tok)
             /* Vypísanie práve vloženej inštrukcie pre debug  */
 
             if (debug == true)
-                printf ("\n%sNew Instruction | %u | I_NOP | NULL | NULL | NULL |%s\n", KYEL, currIL, KNRM);
+                printf ("\n%sNew Instruction | %p | I_NOP | NULL | NULL | NULL |%s\n", KYEL, (void *) currIL, KNRM);
 
             return;
         }
@@ -908,7 +908,7 @@ void nt_stmt (token tok)
                             /* Vypísanie práve vloženej inštrukcie pre debug  */
 
                             if (debug == true)
-                                printf ("\n%sNew Instruction | %u | I_%d | NULL | NULL | %d |%s\n", KYEL, currIL, intype, &hledam -> data, KNRM);
+                                printf ("\n%sNew Instruction | %p | I_%d | NULL | NULL | %p |%s\n", KYEL, (void *) currIL, intype, (void *) & hledam -> data, KNRM);
 
                             //free (key);
                             break;                
@@ -966,7 +966,7 @@ void nt_stmt (token tok)
                             /* Vypísanie práve vloženej inštrukcie pre debug  */
 
                             if (debug == true)
-                                printf ("\n%sNew Instruction | %u | I_IF | %u | %u | NULL |%s\n", KYEL, currIL, thenIL, elseIL, KNRM);
+                                printf ("\n%sNew Instruction | %p | I_IF | %p | %p | NULL |%s\n", KYEL, (void *) currIL, (void *) thenIL, (void *) elseIL, KNRM);
                             
                             break;
             //////////////////////////////////////////////////////////////RULE20
@@ -1021,7 +1021,7 @@ void nt_stmt (token tok)
                             /* Vypísanie práve vloženej inštrukcie pre debug  */
 
                             if (debug == true)
-                                printf ("\n%sNew Instruction | %u | I_WHILE | %u | NULL | NULL |%s\n", KYEL, currIL, whileIL, KNRM);
+                                printf ("\n%sNew Instruction | %p | I_WHILE | %p | NULL | NULL |%s\n", KYEL, (void *) currIL, (void *) whileIL, KNRM);
                             break;
             ////////////////////////////////////////////////////////////////////////////////RULE21
             case t_readln:  match (tok,t_readln);
@@ -1075,14 +1075,14 @@ void nt_stmt (token tok)
                             /* Vypísanie práve vloženej inštrukcie pre debug  */
 
                             if (debug == true)
-                                printf ("\n%sNew Instruction | %u | I_READ_%d | NULL | NULL | %u |%s\n", KYEL, currIL, intype, &hledam -> data, KNRM);
+                                printf ("\n%sNew Instruction | %p | I_READ_%d | NULL | NULL | %p |%s\n", KYEL, (void *) currIL, intype, (void *) & hledam -> data, KNRM);
 
                             //free (key);
                             break;
             //////////////////////////////////////////////////////////////RULE22
             case t_write:   match (tok, t_write);
                             match (tok, t_l_parrent);
-                            tData ** dataArr = (tData**) malloc (sizeof (tData*) * 100);//       printf("vytvoril som doublepole %u\n____________________\n",&contentArr);
+                            tData ** dataArr = (tData**) malloc (sizeof (tData*) * 100);//       printf("vytvoril som doublepole %p\n____________________\n",&contentArr);
                             InsertLastMarius (& Smetisko, dataArr);
 
                             nt_term_list (tok, "Fwrite", NULL, dataArr);
@@ -1106,7 +1106,7 @@ void nt_stmt (token tok)
                             /* Vypísanie práve vloženej inštrukcie pre debug  */
 
                             if (debug == true)
-                                printf ("\n%sNew Instruction | %u | I_WRITE | %u | %u | NULL |%s\n", KYEL, currIL, *jp, dataArr, KNRM);
+                                printf ("\n%sNew Instruction | %p | I_WRITE | %p | %p | NULL |%s\n", KYEL, (void *) currIL, (void *) jp, (void *) dataArr, KNRM);
 
                             //free (key);
                             
@@ -1178,7 +1178,7 @@ int nt_assign (token tok)
             
             //free (key2);
 
-            tContent ** contentArr = (tContent**) malloc (sizeof (tContent*) * 100);//       printf("vytvoril som doublepole %u\n____________________\n",&contentArr);
+            tContent ** contentArr = (tContent**) malloc (sizeof (tContent*) * 100);//       printf("vytvoril som doublepole %p\n____________________\n",&contentArr);
             InsertLastMarius (& Smetisko, contentArr);
             nt_term_list (tok, key, contentArr, NULL);
             pocetArg = 0;
@@ -1210,7 +1210,7 @@ int nt_assign (token tok)
             /* Vypísanie práve vloženej inštrukcie pre debug  */
 
             if (debug == true)
-                printf ("\n%sNew Instruction | %u | I_FCE | %u | %u | %u |%s\n", KYEL, currIL, &hledam -> data, contentArr, selfVarCon, KNRM);
+                printf ("\n%sNew Instruction | %p | I_FCE | %p | %p | %p |%s\n", KYEL, (void *) currIL, (void *) & hledam -> data, (void *) contentArr, (void *) selfVarCon, KNRM);
 
             //free(key);
             return hledam->data->type;

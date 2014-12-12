@@ -99,6 +99,5 @@ int main(int argc, char const *argv[])
     printf("%snormal\n", KNRM);*/
     interpret(&rootTS, &IL);
     mariuspedersen(&Smetisko);
-    //DisposeMarius(&Smetisko);
     return 0;
 }

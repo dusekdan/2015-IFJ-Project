@@ -121,6 +121,7 @@ int mariuspedersen (tSmetisko * Smetisko)
     fclose(fd);
     DisposeList(&IL);/*disposeTable(&rootTS);*/
     DisposeMarius( Smetisko);
+    return 0;
     
 
 }
