@@ -88,7 +88,9 @@ void SuccMarius (tSmetisko * Smetisko)
 int mariuspedersen (tSmetisko * Smetisko)
 {
     int trashCounter = 1;
+    
     printf("Dobry den, jmenuji sa Marius Pedersen a prisel jsem vycistit Vas odpad.\n");
+    if (supertruck==true)
 {
     printf("       ________________   ___/-\\___     ___/-\\___     ___/-\\___\n");
     printf("     / /             ||  |---------|   |---------|   |---------|\n");
@@ -111,7 +113,7 @@ int mariuspedersen (tSmetisko * Smetisko)
     {
         //printf("%d\n",Smetisko->active->Odpad );
         free (Smetisko -> active -> Odpad);
-        printf("Freenul jsem odpad %d\n",trashCounter++);
+        if (supertruck==true)printf("Freenul jsem odpad %d\n",trashCounter++);
         SuccMarius (Smetisko);
     }
     printf("Uspesne jsem vycistil veskerou alokovanou pamet.\n");

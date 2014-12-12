@@ -19,6 +19,7 @@
 #include "errorHandler.h"
 #include "mariuspedersen.h"
 tSmetisko Smetisko;
+bool supertruck=false;
 FILE*fd=NULL;
 tInsList IL;
 tInsList *localIL;
@@ -55,9 +56,12 @@ int main(int argc, char const *argv[])
 {
     InitMarius(&Smetisko);
     //printf("%d\n",argc );
-    if (argc==3)
+    if (argc>=3)
     if (strcmp(argv[2],"-d")==0)
         debug=true;
+    if (argc==4)
+    if (strcmp(argv[3],"-mariuspedersen")==0)
+        supertruck=true;
 
     InitList(&IL);
 
