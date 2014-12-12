@@ -148,7 +148,7 @@ bool saveSymbol (tNodePtr * currTS, char * key, char * name, int type, int argCo
 int buildemin ()
 {
     saveSymbol (&rootTS, "Flength", "length", sym_fok_int, 1, true);
-        tNodePtr newLocalTS;
+        tNodePtr newLocalTS;// = malloc (sizeof tNodePtr);
         init  (& newLocalTS);
         saveSymbol (& newLocalTS, "placeholder", "testname", 0, 0, true);
         tData Flength = searchSymbol (& rootTS, "Flength") -> data;
@@ -160,7 +160,7 @@ int buildemin ()
     
 
     saveSymbol (&rootTS, "Fcopy",   "copy",   sym_fok_str, 3, true);
-        tNodePtr newLocalTS2;
+        tNodePtr newLocalTS2;// = malloc (sizeof tNodePtr);
         init  (& newLocalTS2);
         saveSymbol (& newLocalTS2, "placeholder", "testname", 0, 0, true);
         tData Fcopy = searchSymbol (& rootTS, "Fcopy") -> data;
@@ -174,7 +174,7 @@ int buildemin ()
         searchSymbol (& newLocalTS2, "Vn") -> data -> nextArg = NULL;
 
     saveSymbol (&rootTS, "Ffind",   "find",   sym_fok_int, 2, true);
-        tNodePtr newLocalTS3;
+        tNodePtr newLocalTS3;// = malloc (sizeof tNodePtr);
         init  (& newLocalTS3);
         saveSymbol (& newLocalTS3, "placeholder", "testname", 0, 0, true);
         tData Ffind = searchSymbol (& rootTS, "Ffind") -> data;
@@ -186,7 +186,7 @@ int buildemin ()
         searchSymbol (& newLocalTS3, "Vsearch") -> data -> nextArg = NULL;
 
     saveSymbol (&rootTS, "Fsort",   "sort",   sym_fok_str, 1, true);
-        tNodePtr newLocalTS4;
+        tNodePtr newLocalTS4;// = malloc (sizeof tNodePtr);
         init  (& newLocalTS4);
         saveSymbol (& newLocalTS4, "placeholder", "testname", 0, 0, true);
         tData Fsort = searchSymbol (& rootTS, "Fsort") -> data;
@@ -1087,6 +1087,7 @@ void nt_stmt (token tok)
 
                             nt_term_list (tok, "Fwrite", NULL, dataArr);
                             printf("%d JJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJ\n",j );
+                            j=0;
                             pocetArg = 0;
                             match (tok,t_r_parrent);
                             int * jp = malloc(sizeof(int));
@@ -1156,6 +1157,7 @@ int nt_assign (token tok)
             char * key = createKey ("F", tok -> val_str);
             char * key2 = createKey ("V", tok -> val_str);
             tNodePtr hledam = searchSymbol (&rootTS, key);
+            printf("funkcia je %s\n",key );
             
             if (hledam == 0)
             {
@@ -1184,7 +1186,7 @@ int nt_assign (token tok)
             //termy su overene idem ich nahradit
             //printf("\nhledam->data->argCount je %d\n",hledam->data->argCount);
             
-
+            printf("%d jjjjjjjjjjjjjjjjjjjjjkokooooot\n",j );
             j = 0;
 
             match (tok, t_r_parrent);
@@ -1202,7 +1204,7 @@ int nt_assign (token tok)
                 strcmp(key,"Ffind")   == 0 ||
                 strcmp(key,"Fsort")   == 0  )
             selfVarCon=NULL;
-
+            printf("??????????????????????????%s\n",hledam->data->name);
             insertInst (currIL, I_FCE, hledam -> data, contentArr, selfVarCon);
 
             /* Vypísanie práve vloženej inštrukcie pre debug  */
