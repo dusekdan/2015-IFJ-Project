@@ -148,9 +148,53 @@ bool saveSymbol (tNodePtr * currTS, char * key, char * name, int type, int argCo
 int buildemin ()
 {
     saveSymbol (&rootTS, "Flength", "length", sym_fok_int, 1, true);
+        tNodePtr newLocalTS;
+        init  (& newLocalTS);
+        saveSymbol (& newLocalTS, "placeholder", "testname", 0, 0, true);
+        tData Flength = searchSymbol (& rootTS, "Flength") -> data;
+        Flength -> localTSadr = newLocalTS;
+        saveSymbol (& newLocalTS, "Vs", "s", sym_var_str, 0, true);
+        Flength -> nextArg = searchSymbol (& newLocalTS, "Vs");
+        searchSymbol (& newLocalTS, "Vs") -> data -> nextArg = NULL;
+
+    
+
     saveSymbol (&rootTS, "Fcopy",   "copy",   sym_fok_str, 3, true);
+        tNodePtr newLocalTS2;
+        init  (& newLocalTS2);
+        saveSymbol (& newLocalTS2, "placeholder", "testname", 0, 0, true);
+        tData Fcopy = searchSymbol (& rootTS, "Fcopy") -> data;
+        Fcopy -> localTSadr = newLocalTS2;
+        saveSymbol (& newLocalTS2, "Vs", "s", sym_var_str, 0, true);
+        Fcopy -> nextArg = searchSymbol (& newLocalTS2, "Vs");
+        saveSymbol (& newLocalTS2, "Vi", "i", sym_var_int, 0, true);
+        searchSymbol (& newLocalTS2, "Vs") -> data -> nextArg = searchSymbol (& newLocalTS2, "Vi");
+        saveSymbol (& newLocalTS2, "Vn", "n", sym_var_int, 0, true);
+        searchSymbol (& newLocalTS2, "Vi") -> data -> nextArg = searchSymbol (& newLocalTS2, "Vn");
+        searchSymbol (& newLocalTS2, "Vn") -> data -> nextArg = NULL;
+
     saveSymbol (&rootTS, "Ffind",   "find",   sym_fok_int, 2, true);
+        tNodePtr newLocalTS3;
+        init  (& newLocalTS3);
+        saveSymbol (& newLocalTS3, "placeholder", "testname", 0, 0, true);
+        tData Ffind = searchSymbol (& rootTS, "Ffind") -> data;
+        Ffind -> localTSadr = newLocalTS3;
+        saveSymbol (& newLocalTS3, "Vs", "s", sym_var_str, 0, true);
+        Ffind -> nextArg = searchSymbol (& newLocalTS3, "Vs");
+        saveSymbol (& newLocalTS3, "Vsearch", "search", sym_var_str, 0, true);
+        searchSymbol (& newLocalTS3, "Vs") -> data -> nextArg = searchSymbol (& newLocalTS3, "Vsearch");
+        searchSymbol (& newLocalTS3, "Vsearch") -> data -> nextArg = NULL;
+
     saveSymbol (&rootTS, "Fsort",   "sort",   sym_fok_str, 1, true);
+        tNodePtr newLocalTS4;
+        init  (& newLocalTS4);
+        saveSymbol (& newLocalTS4, "placeholder", "testname", 0, 0, true);
+        tData Fsort = searchSymbol (& rootTS, "Fsort") -> data;
+        Fsort -> localTSadr = newLocalTS4;
+        saveSymbol (& newLocalTS4, "Vs", "s", sym_var_str, 0, true);
+        Fsort -> nextArg = searchSymbol (& newLocalTS4, "Vs");
+        searchSymbol (& newLocalTS4, "Vs") -> data -> nextArg = NULL;
+
     return 0;
 }
 
@@ -1214,11 +1258,11 @@ void nt_term (token tok, char *currentFunctionKey, tContent **contentArr, tData 
             }
             
 
-            if (strcmp(currentFunctionKey, "Fwrite") != 0 &&
+            if (strcmp(currentFunctionKey, "Fwrite") != 0/* &&
                 strcmp(currentFunctionKey, "Fcopy")  != 0 &&
                 strcmp(currentFunctionKey, "Flength")!= 0 &&
                 strcmp(currentFunctionKey, "Fsort")  != 0 &&
-                strcmp(currentFunctionKey, "Ffind")  != 0  )
+                strcmp(currentFunctionKey, "Ffind")  != 0  */)
             {
                 //teraz potrebujem najst argument s cicslom argsread
                 tNodePtr hledam2 = searchSymbol (&rootTS, currentFunctionKey);
@@ -1260,11 +1304,11 @@ void nt_term (token tok, char *currentFunctionKey, tContent **contentArr, tData 
             pocetArg++;
             comparison1=tok->type;
 
-            if (strcmp(currentFunctionKey, "Fwrite") != 0 &&
+            if (strcmp(currentFunctionKey, "Fwrite") != 0/* &&
                 strcmp(currentFunctionKey, "Fcopy")  != 0 &&
                 strcmp(currentFunctionKey, "Flength")!= 0 &&
                 strcmp(currentFunctionKey, "Fsort")  != 0 &&
-                strcmp(currentFunctionKey, "Ffind")  != 0  )
+                strcmp(currentFunctionKey, "Ffind")  != 0  */)
             {
                 //teraz potrebujem najst argument s cicslom argsread
                 
