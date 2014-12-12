@@ -1167,8 +1167,13 @@ int nt_assign (token tok)
             match (tok, t_l_parrent);
 
 
-            tContent * selfVarCon = &(searchSymbol(&hledam->data->localTSadr, key2)->data->content);
-
+            tContent * selfVarCon;
+            if (strcmp(key,"Fcopy")   != 0 &&
+                strcmp(key,"Flength") != 0 &&
+                strcmp(key,"Ffind")   != 0 &&
+                strcmp(key,"Fsort")   != 0  )
+            selfVarCon = &(searchSymbol(&hledam->data->localTSadr, key2)->data->content);
+            
             //free (key2);
 
             tContent ** contentArr = (tContent**) malloc (sizeof (tContent*) * 100);//       printf("vytvoril som doublepole %u\n____________________\n",&contentArr);
@@ -1192,7 +1197,12 @@ int nt_assign (token tok)
             ** localIL.                                       */
 
             tInsList * currIL =   (localIL == NULL) ? &IL : localIL;
-            
+            if (strcmp(key,"Fcopy")   == 0 ||
+                strcmp(key,"Flength") == 0 ||
+                strcmp(key,"Ffind")   == 0 ||
+                strcmp(key,"Fsort")   == 0  )
+            selfVarCon=NULL;
+
             insertInst (currIL, I_FCE, hledam -> data, contentArr, selfVarCon);
 
             /* Vypísanie práve vloženej inštrukcie pre debug  */
@@ -1202,6 +1212,7 @@ int nt_assign (token tok)
 
             //free(key);
             return hledam->data->type;
+
         }
     }
     else
