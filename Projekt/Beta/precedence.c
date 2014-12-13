@@ -551,6 +551,12 @@ int reduction(tStack *stack1, tStack *stack2) {
 
 					if(temp1.symbol->type == temp3.symbol->type) {
 
+						if(checkRule == DIV && temp1.symbol->type == t_expr_int) {
+
+							temp1.symbol->type = t_expr_dou;
+							temp3.symbol->type = t_expr_dou;
+						}
+
 						if(boolean == true)
 							returnType = t_expr_boo;
 						else
@@ -563,7 +569,9 @@ int reduction(tStack *stack1, tStack *stack2) {
 							if(localIL == NULL) {
 								
 								insertInst(&IL, matusOp, searchData(temp1.key), searchData(temp3.key), NULL);
-								printf("Vlozil jsem instrukci %d s ukazateli %d a %d do listu %u\n", matusOp, temp1.symbol->content.integer, temp3.symbol->content.integer, &IL);
+								//printf("Vlozil jsem instrukci %d s ukazateli %d a %d do listu %u\n", matusOp, temp1.symbol->content.integer, temp3.symbol->content.integer, &IL);
+								printf("Vlozil jsem instrukci %d s ukazateli %d a %d do listu %u\n", matusOp, temp1.symbol, temp3.symbol, &IL);
+
 							}
 							else {
 
