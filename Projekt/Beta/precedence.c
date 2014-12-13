@@ -376,7 +376,7 @@ int precedenceParser() {				// hlavni funkce precedencni analyzy
 				conStep = 0;
 
 				if((returnType = reduction(&stack1, &stack2)) < 0) {
-					
+
 					stackDispose(&stack1);
 					stackDispose(&stack2);
 					errorHandler(errSyn);	
@@ -551,21 +551,6 @@ int reduction(tStack *stack1, tStack *stack2) {
 
 					if(temp1.symbol->type == temp3.symbol->type) {
 
-						if(temp1.symbol->type == t_expr_str) {
-
-							if(checkRule == PLUS)
-								concat = 1;
-
-							else if(checkRule == LESS || checkRule == MORE || checkRule == MOREEQUAL || checkRule == LESSEQUAL || checkRule == EQUAL || checkRule == NONEQUAL)
-								concat = 0;
-							
-							else {
-
-								fprintf(stderr, "S retezci se tato operace neda provest.\n");
-								return -1;
-							} 
-						}
-
 						if(boolean == true)
 							returnType = t_expr_boo;
 						else
@@ -632,6 +617,7 @@ int reduction(tStack *stack1, tStack *stack2) {
 					if(stackEmpty(stack2) == true) {
 
 						stackPop(stack1, &change);	// odstraneni <
+						//change.symbol->type = temp1.symbol->type;
 						change = temp1;
 						change.element = NETERM;
 						stackPush(stack1, change);
@@ -660,6 +646,7 @@ int reduction(tStack *stack1, tStack *stack2) {
 					change.element = NETERM;
 					change = temp2;
 					stackPush(stack1, change);
+					returnType = temp2.symbol->type;
 				}
 			}
 		}
