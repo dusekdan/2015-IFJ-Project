@@ -18,6 +18,7 @@
 #include "ial.h"
 #include "errorHandler.h"
 #include "mariuspedersen.h"
+bool stmtMustntBeEmpty=false;
 tSmetisko Smetisko;
 bool supertruck=false;
 FILE*fd=NULL;

@@ -705,6 +705,8 @@ void nt_fun_body (token tok, bool nextMustBeBody, char * key)
     }
 }
 
+
+
 void nt_body (token tok)
 {
     //////////////////////////////////////////////////////////////////////RULE11
@@ -748,7 +750,7 @@ void nt_main (token tok)
     }
 }
 
-bool stmtMustntBeEmpty=false;
+
 
 void nt_stmt_list (token tok)
 {
@@ -767,11 +769,13 @@ void nt_stmt_list (token tok)
 
         if (tok -> type == t_end)
         {
+            printf("stmtMustntBeEmpty je %d\n",stmtMustntBeEmpty );
             if (stmtMustntBeEmpty==true)
             {
                 fprintf(stderr, "Expected another statement after semicolon.\n");
                 errorHandler(errSyn);
             }
+
             //Instrukcia NOP
 
             /* Ak je aktuálny localIL NULL, znamená že idem   **
@@ -821,7 +825,9 @@ void nt_stmt_more (token tok)
         if (tok->type == t_semicolon)
         {
             match(tok,t_semicolon);
+            printf("NASTAVIL TRU\n");
             stmtMustntBeEmpty=true;
+
             nt_stmt_list(tok);
         }
         //////////////////////////////////////////////////////////////////RULE16
@@ -842,7 +848,10 @@ void nt_stmt_more (token tok)
 }
 int j = 0;
 void nt_stmt (token tok)
-{
+{   
+    stmtMustntBeEmpty=false;
+    printf("FALS\n");
+    
     if (tok->type == t_if     ||
         tok->type == t_begin  ||
         tok->type == t_write  ||

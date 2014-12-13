@@ -103,11 +103,12 @@ void SuccMarius (tSmetisko * Smetisko)
 
 int mariuspedersen (tSmetisko * SmetiskoPTR)
 {
-    
+    if (supertruck==true)
+    {
     printf("Dobry den, jmenuji sa Marius Pedersen a prisel jsem vycistit Vas odpad.\n");
     fclose(fd);
     
-    if (supertruck==true)
+    
 {
     printf("       ________________   ___/-\\___     ___/-\\___     ___/-\\___\n");
     printf("     / /             ||  |---------|   |---------|   |---------|\n");
@@ -171,8 +172,10 @@ int mariuspedersen (tSmetisko * SmetiskoPTR)
     }
     printf("som v nnajhlbsom pravom a je to %s a jeho localts je %u\n",currentNode->key,currentNode->data->localTSadr );
     *///DisposeList(&IL);
+    }
     disposeTable(&rootTS);
     //exit(666);
+
     return 0;
     
 
