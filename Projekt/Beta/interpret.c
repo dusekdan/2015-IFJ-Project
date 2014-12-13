@@ -76,11 +76,11 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 					//printf("TEMP: %d\n", temp->data->content.integer);
 
 
-					if(debug == true)printf("\n\n Horne %d + %d | LI:%d A1:%d A2:%d\n\n", lastint,temp->data->content.integer,lastint,temp->data->content.integer,((tNodePtr)new->adr2)->data->content.integer);
+					//if(debug == true)printf("\n\n Horne %d + %d | LI:%d A1:%d A2:%d\n\n", lastint,temp->data->content.integer,lastint,temp->data->content.integer,((tNodePtr)new->adr2)->data->content.integer);
 
 
 					lastint += temp->data->content.integer;
-					if(debug == true)printf("lastint: \n", lastint);
+					//if(debug == true)printf("lastint: \n", lastint);
 				}
 				else
 				{
@@ -89,26 +89,26 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 						temp = ((tNodePtr) new->adr1);//	printf("TEMP v else: %d\n", temp->data->content.integer);
 						temp2 = ((tNodePtr)new->adr2);//	printf("TEMP2 v else: %d\n", temp2->data->content.integer);
 						lastAdr = temp2;
-						if(debug == true)printf("LASTADR je %p\n",lastAdr );
+						//if(debug == true)printf("LASTADR je %p\n",lastAdr );
 
-						if(debug == true)printf("\n\n Stredne %d + %d + %d | LI:%d A1:%d A2:%d\n\n", lastint, temp->data->content.integer,temp2->data->content.integer,lastint,temp->data->content.integer,temp2->data->content.integer);
+						//if(debug == true)printf("\n\n Stredne %d + %d + %d | LI:%d A1:%d A2:%d\n\n", lastint, temp->data->content.integer,temp2->data->content.integer,lastint,temp->data->content.integer,temp2->data->content.integer);
 
 
 						lastint += temp->data->content.integer + temp2->data->content.integer;	//printf("lastint  v else %d\n", lastint);
 						vypocet = true;
 					} else
 					{
-						//temp = ((tNodePtr) new->adr1);	printf("TEMP posledny: %d\n", temp->data->content.integer);
-						temp2 = ((tNodePtr) new->adr2);	if(debug == true)printf("TEMP2 posledny: %d\n", temp2->data->content.integer);
+						temp = ((tNodePtr) new->adr1);	//printf("TEMP posledny: %d\n", temp->data->content.integer);
+						temp2 = ((tNodePtr) new->adr2);	//if(debug == true)printf("TEMP2 posledny: %d\n", temp2->data->content.integer);
 						lastAdr = temp2;
-						if(debug == true)printf("LASTADR je %p\n",lastAdr );
+						//if(debug == true)printf("LASTADR je %p\n",lastAdr );
 
 						if ( lastAdr==lastAdr1)
 						{
 							temp2 = ((tNodePtr) new->adr1);
-							if(debug == true)printf("narval som adresu jedna do adresy 2\n");
+							//if(debug == true)printf("narval som adresu jedna do adresy 2\n");
 						}
-						if(debug == true)printf("\n\n Dolne %d + %d | LI:%d A1:%d A2:%d\n\n", lastint,temp2->data->content.integer,lastint,((tNodePtr)new->adr1)->data->content.integer,temp2->data->content.integer);
+						//if(debug == true)printf("\n\n Dolne %d + %d | LI:%d A1:%d A2:%d\n\n", lastint,temp2->data->content.integer,lastint,((tNodePtr)new->adr1)->data->content.integer,temp2->data->content.integer);
 
 						
 						lastint += temp2->data->content.integer;	if(debug == true)printf("LASTINT: %d\n", lastint);
@@ -185,22 +185,22 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 					temp = ((tNodePtr) new->adr1);
 					temp2 = ((tNodePtr) new->adr2);
 					lastAdr = temp2;
-						if(debug == true)printf("LASTADR je %p\n",lastAdr );
-					if(debug == true)printf("\n\n%d - %d | LI:%d A1:%d A2:%d\n\n", temp->data->content.integer,temp2->data->content.integer,lastint,temp->data->content.integer,temp2->data->content.integer);
+						//if(debug == true)printf("LASTADR je %p\n",lastAdr );
+					//if(debug == true)printf("\n\n%d - %d | LI:%d A1:%d A2:%d\n\n", temp->data->content.integer,temp2->data->content.integer,lastint,temp->data->content.integer,temp2->data->content.integer);
 					lastint = temp->data->content.integer - temp2->data->content.integer;
 					vypocet = true;
 				} else
 				{
 					temp2 = ((tNodePtr)new->adr2);
 					lastAdr = temp2;
-						if(debug == true)printf("LASTADR je %p\n",lastAdr );
-					if(debug == true)printf("\n\n%d - %d | LI:%d A1:%d A2:%d\n\n", lastint,temp2->data->content.integer,lastint,((tNodePtr)new->adr1)->data->content.integer,temp2->data->content.integer);
+						//if(debug == true)printf("LASTADR je %p\n",lastAdr );
+					//if(debug == true)printf("\n\n%d - %d | LI:%d A1:%d A2:%d\n\n", lastint,temp2->data->content.integer,lastint,((tNodePtr)new->adr1)->data->content.integer,temp2->data->content.integer);
 					
 	//megakontrolasveta9000
 					if ( lastAdr==lastAdr1)
 						{
 							temp2 = ((tNodePtr) new->adr1);
-							if(debug == true)printf("narval som adresu jedna do adresy 2\n");
+							///if(debug == true)printf("narval som adresu jedna do adresy 2\n");
 						}
 
 					lastint -= temp2->data->content.integer;
@@ -234,8 +234,8 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 					temp = ((tNodePtr) new->adr1);
 					temp2 = ((tNodePtr) new->adr2);
 					lastAdr1 = temp;
-						printf("LASTADR1 je %p\n",lastAdr1 );
-					printf("\n\n%d * %d | LI:%d A1:%d A2:%d\n\n", temp->data->content.integer,temp2->data->content.integer,lastint,temp->data->content.integer,temp2->data->content.integer);
+						//printf("LASTADR1 je %p\n",lastAdr1 );
+					//printf("\n\n%d * %d | LI:%d A1:%d A2:%d\n\n", temp->data->content.integer,temp2->data->content.integer,lastint,temp->data->content.integer,temp2->data->content.integer);
 					lastint = temp->data->content.integer * temp2->data->content.integer;
 					vypocet = true;
 				} 
@@ -243,8 +243,8 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 				{
 					temp2 = ((tNodePtr) new->adr2);
 					lastAdr1 = temp;
-						printf("LASTADR1 je %p\n",lastAdr1 );
-					printf("\n\n%d * %d | LI:%d A1:%d A2:%d\n\n", lastint,temp2->data->content.integer,lastint,((tNodePtr)new->adr1)->data->content.integer,temp2->data->content.integer);
+						//printf("LASTADR1 je %p\n",lastAdr1 );
+					//printf("\n\n%d * %d | LI:%d A1:%d A2:%d\n\n", lastint,temp2->data->content.integer,lastint,((tNodePtr)new->adr1)->data->content.integer,temp2->data->content.integer);
 					lastint *= temp2->data->content.integer;
 				}
 				
@@ -277,14 +277,14 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 					temp = ((tNodePtr) new->adr1);
 					temp2 = ((tNodePtr) new->adr2);
 					lastAdr1 = temp;
-						if(debug == true)printf("LASTADR1 je %p\n",lastAdr1 );
+						//if(debug == true)printf("LASTADR1 je %p\n",lastAdr1 );
 					if(temp2->data->content.integer == 0)
 					{
 						errorHandler(errRunZdiv);
 					} 
 					else
 					{
-						if(debug == true)printf("\n\n%d / %d | LI:%d A1:%d A2:%d\n\n", temp->data->content.integer,temp2->data->content.integer,lastint,temp->data->content.integer,temp2->data->content.integer);
+						//if(debug == true)printf("\n\n%d / %d | LI:%d A1:%d A2:%d\n\n", temp->data->content.integer,temp2->data->content.integer,lastint,temp->data->content.integer,temp2->data->content.integer);
 						lastint = temp->data->content.integer / temp2->data->content.integer;
 						vypocet = true;
 					}
@@ -298,7 +298,7 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 						errorHandler(errRunZdiv);
 					} 
 					else 
-						{	if(debug == true)printf("\n\n%d / %d | LI:%d A1:%d A2:%d\n\n", lastint,temp2->data->content.integer,lastint,((tNodePtr) new->adr1)->data->content.integer,temp2->data->content.integer);
+						{	//if(debug == true)printf("\n\n%d / %d | LI:%d A1:%d A2:%d\n\n", lastint,temp2->data->content.integer,lastint,((tNodePtr) new->adr1)->data->content.integer,temp2->data->content.integer);
 							lastint = lastint / temp2->data->content.integer;
 						}
 				}
