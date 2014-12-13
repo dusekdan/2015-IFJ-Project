@@ -551,18 +551,19 @@ int reduction(tStack *stack1, tStack *stack2) {
 
 					if(temp1.symbol->type == temp3.symbol->type) {
 
-						/*if(checkRule == DIV && temp1.symbol->type == t_expr_int) {
+						if(checkRule == DIV && temp1.symbol->type == t_expr_int)
+							returnType = t_expr_dou;
 
-							temp1.symbol->type = t_expr_dou;
-							temp1.symbol->content.real = (double) temp1.symbol->content.integer;
-							temp3.symbol->type = t_expr_dou;
-							temp3.symbol->content.real = (double) temp3.symbol->content.integer;
-						}*/
 
 						if(boolean == true)
 							returnType = t_expr_boo;
+						
+						else if(checkRule == DIV && temp1.symbol->type == t_expr_int) {
+							returnType = t_expr_dou;
+						}
 						else
 							returnType = temp1.symbol->type;
+						
 
 						numberOfExprInsts++;
 
@@ -584,7 +585,9 @@ int reduction(tStack *stack1, tStack *stack2) {
 					}
 					else if((temp1.symbol->type == t_expr_int && temp3.symbol->type == t_expr_dou) || (temp3.symbol->type == t_expr_int && temp1.symbol->type == t_expr_int)) {
 
-						if(temp1.symbol->type == t_expr_int) {		// bud prvni je int a pretypujeme
+						//void special = 1;
+
+						/*if(temp1.symbol->type == t_expr_int) {		// bud prvni je int a pretypujeme
 							
 							temp1.symbol->content.real = (double) temp1.symbol->content.integer;
 							temp1.symbol->type = t_expr_dou;
@@ -594,12 +597,12 @@ int reduction(tStack *stack1, tStack *stack2) {
 							
 							temp3.symbol->content.real = (double) temp3.symbol->content.integer;
 							temp3.symbol->type = t_expr_dou;
-						}
+						}*/
 
 						if(boolean == 1)							// pokud mame logickou operaci, musime vracet boolean hodnotu
 							returnType = t_expr_boo;
 						else
-							returnType = temp1.symbol->type;
+							returnType = t_expr_dou;
 
 						numberOfExprInsts++;
 
