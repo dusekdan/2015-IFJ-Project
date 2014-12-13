@@ -264,8 +264,6 @@ void match (token tok, int terminal)
 
 void nt_program (token tok)
 {
-    char * strigo = malloc (sizeof(char)*50);
-    InsertLastMarius(&Smetisko, strigo);
     //////////////////////////////////////////////////////////////////////RULE 1
     if (tok -> type == t_var      ||
         tok -> type == t_function ||
@@ -750,6 +748,8 @@ void nt_main (token tok)
     }
 }
 
+bool stmtMustntBeEmpty=false;
+
 void nt_stmt_list (token tok)
 {
     if (tok->type == t_if     ||
@@ -767,6 +767,11 @@ void nt_stmt_list (token tok)
 
         if (tok -> type == t_end)
         {
+            if (stmtMustntBeEmpty==true)
+            {
+                fprintf(stderr, "Expected another statement after semicolon.\n");
+                errorHandler(errSyn);
+            }
             //Instrukcia NOP
 
             /* Ak je aktuálny localIL NULL, znamená že idem   **
@@ -816,6 +821,7 @@ void nt_stmt_more (token tok)
         if (tok->type == t_semicolon)
         {
             match(tok,t_semicolon);
+            stmtMustntBeEmpty=true;
             nt_stmt_list(tok);
         }
         //////////////////////////////////////////////////////////////////RULE16
