@@ -551,11 +551,13 @@ int reduction(tStack *stack1, tStack *stack2) {
 
 					if(temp1.symbol->type == temp3.symbol->type) {
 
-						if(checkRule == DIV && temp1.symbol->type == t_expr_int) {
+						/*if(checkRule == DIV && temp1.symbol->type == t_expr_int) {
 
 							temp1.symbol->type = t_expr_dou;
+							temp1.symbol->content.real = (double) temp1.symbol->content.integer;
 							temp3.symbol->type = t_expr_dou;
-						}
+							temp3.symbol->content.real = (double) temp3.symbol->content.integer;
+						}*/
 
 						if(boolean == true)
 							returnType = t_expr_boo;
@@ -570,7 +572,7 @@ int reduction(tStack *stack1, tStack *stack2) {
 								
 								insertInst(&IL, matusOp, searchData(temp1.key), searchData(temp3.key), NULL);
 								//printf("Vlozil jsem instrukci %d s ukazateli %d a %d do listu %u\n", matusOp, temp1.symbol->content.integer, temp3.symbol->content.integer, &IL);
-								printf("Vlozil jsem instrukci %d s ukazateli %d a %d do listu %u\n", matusOp, temp1.symbol, temp3.symbol, &IL);
+								printf("Vlozil jsem instrukci %d s ukazateli %d a %d do listu %u\n", matusOp, &temp1.symbol, &temp3.symbol, &IL);
 
 							}
 							else {
@@ -718,16 +720,7 @@ int myOp2matousOp(int myOp, int type) {
 
 			break;
 		case DIV:
-
-			if(type == t_expr_int)
-				matusOp = I_DIVI;
-
-			else if(type == t_expr_dou) 
-				matusOp = I_DIVR;
-
-			else
-				return -1;
-
+			matusOp = I_DIVR;
 			break;
 		case LESS:
 			matusOp = I_LESS;
