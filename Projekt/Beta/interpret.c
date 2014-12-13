@@ -11,14 +11,17 @@ char *tmpstring = NULL;
 
 char *concate(char *s1, char *s2)
 {
-	size_t len1 = strlen(s1);
-	size_t len2 = strlen(s2);
+	int len1 = (int)strlen(s1);
+	int len2 = (int)strlen(s2);
 
-	char *result = malloc(len1+len2 + 1);
+	char * result = malloc(sizeof(char)*(len1+len2));
 	InsertLastMarius(&Smetisko, result);
-	
-	memcpy(result, s1, len1);
-	memcpy(result + len1, s2, len2 + 1);
+	printf("concate dal mariosi %u\n",result);
+	memset (result, 0, len1+len2);
+	strcpy (result, s1);
+	strcat (result, s2);
+	/*memcpy(result, s1, len1);
+	memcpy(result + len1, s2, len2);*/
 	return result;
 }
 
@@ -62,9 +65,14 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
             case I_NOP: break;
 							//ARITMETICKE OPERACIE//
 			case I_ADDI:
+				
 				if(((tNodePtr) new->adr2) == NULL)
 				{
+			
 					temp = ((tNodePtr) new->adr1);
+					
+					if(temp->data->content.integer < 0) errorHandler(errRunRest);
+				
 					lastint += temp->data->content.integer;
 				}
 				else
@@ -73,12 +81,15 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 					{
 						temp = ((tNodePtr) new->adr1);
 						temp2 = ((tNodePtr)new->adr2);
-						//printf("%d\n", temp->data->content.integer);
+			
+						if(temp->data->content.integer < 0 || temp2->data->content.integer < 0) errorHandler(errRunRest);
 
 						lastint += temp->data->content.integer + temp2->data->content.integer;
 						vypocet = true;
 					} else
 					{
+						if(temp2->data->content.integer < 0) errorHandler(errRunRest);
+
 						temp2 = ((tNodePtr) new->adr2);
 						lastint += temp2->data->content.integer;
 					}		
@@ -115,9 +126,13 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 				{
 					temp = ((tNodePtr) new->adr1);
 
-					laststring = malloc(sizeof strlen(temp->data->content.string));
+					laststring = malloc(sizeof (char)* (int)strlen(temp->data->content.string));
 					InsertLastMarius(&Smetisko, laststring);
-					strcpy(laststring, temp->data->content.string);
+
+					printf("Mariuskovi som dal %u\n",laststring);
+
+					memset(laststring, 0, strlen(laststring));
+					strcat(laststring, temp->data->content.string);
 				}
 				else
 				{
@@ -131,8 +146,6 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 					} else
 					{
 						temp2 = ((tNodePtr) new->adr2);
-						
-						InsertLastMarius(&Smetisko, tmpstring);
 						laststring = concate(laststring, temp2->data->content.string);
 					}
 				}
