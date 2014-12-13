@@ -1,71 +1,4 @@
 #define APOSTROF_ASCII 39
-
-/************************ VYTRŽENO Z PARSER.H **********************-*/
-/*
-static const int t_var       =  1;
-static const int t_colon     =  2;
-static const int t_semicolon =  3;
-static const int t_l_parrent =  4;
-static const int t_r_parrent =  5;
-static const int t_function  =  6;
-static const int t_forward   =  7;
-static const int t_begin     =  8;
-static const int t_end       =  9;
-static const int t_period    = 10;
-static const int t_comma     = 11;
-static const int t_assign    = 12;
-static const int t_if        = 13;
-static const int t_then      = 14;
-static const int t_else      = 15;
-static const int t_while     = 16;
-static const int t_do        = 17;
-static const int t_readln    = 18;
-static const int t_write     = 19;
-static const int t_var_id    = 20;
-static const int t_expr      = 21;
-static const int t_fun_id    = 22;
-static const int t_term      = 23;
-//static const int t_param     = 24;
-//static const int t_read_id   = 25;  //////////////////////////////read id nakoniec nebude treba
-static const int t_integer   = 26;
-static const int t_real      = 27;
-static const int t_string    = 28;
-static const int t_boolean   = 29;
-static const int t_dollar    = 30;
-
-static const int t_plus      = 31;// +
-static const int t_minus     = 32;// -
-static const int t_mul       = 33;// *
-static const int t_div       = 34;// /
-/// zatvorky su t_l_parrent a rparrent cize 4 a 5
-static const int t_less      = 35;//<
-static const int t_more      = 36;//>
-static const int t_lesseq    = 37;//<=
-static const int t_moreeq    = 38;//>=
-static const int t_equal     = 39;//=
-static const int t_nequal    = 40;//<>
-static const int t_expr_int  = 41;
-static const int t_expr_str  = 42;
-static const int t_expr_dou  = 43;                                    // tento terminal ak prislo nieco konecne ako cislo alebo string, vtomto pripade bude v odpovedajucej casti struktury token obsah
-static const int t_expr_boo  = 44; */
-                                  // ale moze sa tam vyskytnut aj premenna cize, var_id a v tom pripade je v *val_str bude obsahovat nazov premennej a po vyhladani
-                                  // v tabulke symbolov zistis typ, (hledam->data->type), tam su typy int 1 real 2 string 3 bool 4, iny typ nieje platna premenna
-
-
-/*
-typedef struct token
-{
-    int type;      //Typ podla zoznamu terminalov
-    char *val_str; //Názov v prípade že ide o id, tak sem pojde jeho nazov, ak ide o string sem ide obsah stringu
-    int   val_int; //Hodnota int ak ide o integer alebo 0/1 ak ide o bool
-    double val_flo; //Hodnota na float (real)
-    //////////String netreba nato pozijeme val_str
-    //////////Bool netreba naten pouzijeme val_int
-}*token;
-
-/************************ VYTRŽENO Z PARSER.H **********************-*/
-
-
 /************************ ENUM PRO CASE ****************************-*/
 
 enum states {
@@ -88,22 +21,6 @@ int maxStringLength = 200; // maximal string length that we've been able to reac
 int baseStringLength = 200; // base is 200, everytime we reach this limit, we double it (expecatation that if string level is reached, next even longer string may be present)
 int newAllocationSpace;
 
-/************************ ENUM PRO CASE ****************************-*/
-
-/************************ keywords ***********************************/
-
-char* keywords[] = {
-	"begin", "boolean", "do", "else", "end", "false", "find", "forward", "function",
-	"if", "integer", "readln", "real", "sort", "string", "then", "true", "var", "while",
-	"write"
-};
-
-
-
-
-
-
-//void getNextToken();
 int getNextChar(FILE* fd);
 int getNextToken(FILE* fd, token TToken);
 void makeStringLowerCase(char *string);
