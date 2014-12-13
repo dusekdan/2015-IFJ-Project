@@ -2,7 +2,7 @@ typedef struct Kontajner
 {
     void * Odpad;
     struct Kontajner *next;
-} tKontajner;
+} *tKontajner;
 
 typedef struct 
 {
