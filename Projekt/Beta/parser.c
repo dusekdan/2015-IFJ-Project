@@ -1089,7 +1089,7 @@ void nt_stmt (token tok)
                             ** localIL.                                       */
 
                             currIL =   (localIL == NULL) ? &IL : localIL;
-                            insertInst (currIL, intype, NULL, NULL, &hledam -> data);
+                            insertInst (currIL, intype, NULL, NULL, hledam -> data);
 
                             /* Vypísanie práve vloženej inštrukcie pre debug  */
 
@@ -1274,11 +1274,19 @@ void nt_term (token tok, char *currentFunctionKey, tContent **contentArr, tData 
             {   
                 tContent * currCon = &(hledam -> data -> content);
                 comparison1  = hledam -> data -> type;
-                if (contentArr!=NULL)contentArr[j]= currCon;
-                if (dataArr!=NULL)dataArr[j]=&(hledam -> data);
+                if (contentArr!=NULL)
+                    {
+                        contentArr[j]= currCon;
+                        printf("Do contentArr[%d].integer som ulozil %d\n",j,(*contentArr[j]).integer);
+                    }
+                if (dataArr!=NULL)
+                    {
+                        printf("davam do dataru\n");
+                        dataArr[j]=&(hledam -> data);
+                    }
 
 
-                //printf("Do contentArr[%d].integer som ulozil %d\n",j,(*contentArr[j]).integer);
+                
                 j++;
             //printf("COMPARISON1 je %d\n",comparison1 );
             }
