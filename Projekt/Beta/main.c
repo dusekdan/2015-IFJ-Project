@@ -24,6 +24,7 @@ FILE*fd=NULL;
 tInsList IL;
 tInsList *localIL;
 int numberOfExprInsts=0;
+int trashCounter = 0;
 #include "mariuspedersen.c"
 
 #include "functions.c"
@@ -81,8 +82,8 @@ int main(int argc, char const *argv[])
     {
         getNextToken (fd,tok);
         nt_program (tok);
-        printf("Run Interpret? (Y/<any>)\n");
-        if(getchar()=='Y')
+        /*printf("Run Interpret? (Y/<any>)\n");
+        if(getchar()=='Y')*/
             interpret(&rootTS, &IL);
     }
     else
@@ -101,5 +102,6 @@ int main(int argc, char const *argv[])
     printf("%snormal\n", KNRM);*/
     
     mariuspedersen(&Smetisko);
+    //DisposeMarius(&Smetisko);
     return 0;
 }

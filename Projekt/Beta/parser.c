@@ -95,7 +95,7 @@ bool saveSymbol (tNodePtr * currTS, char * key, char * name, int type, int argCo
     /* Alokujem si miesto pre data pre nový symbol v tabulke */
 
     tData newsymbol = malloc (sizeof (struct tData));
-    InsertLastMarius(&Smetisko, newsymbol);
+    //InsertLastMarius(&Smetisko, newsymbol);
 
     //printf("&newsymbol je %p\n",&newsymbol );
     //if (Smetisko -> active -> odpad != newsymbol)
@@ -1101,7 +1101,7 @@ void nt_stmt (token tok)
             //////////////////////////////////////////////////////////////RULE22
             case t_write:   match (tok, t_write);
                             match (tok, t_l_parrent);
-                            tData ** dataArr = (tData**) malloc (sizeof (tData*) * 100);//       printf("vytvoril som doublepole %p\n____________________\n",&contentArr);
+                            tData ** dataArr = (tData**) malloc (sizeof (tData*) * 10);//       printf("vytvoril som doublepole %p\n____________________\n",&contentArr);
                             InsertLastMarius (& Smetisko, dataArr);
 
                             nt_term_list (tok, "Fwrite", NULL, dataArr);
@@ -1196,7 +1196,7 @@ int nt_assign (token tok)
             
             //free (key2);
 
-            tContent ** contentArr = (tContent**) malloc (sizeof (tContent*) * 100);//       printf("vytvoril som doublepole %p\n____________________\n",&contentArr);
+            tContent ** contentArr = (tContent**) malloc (sizeof (tContent*) * 10);//       printf("vytvoril som doublepole %p\n____________________\n",&contentArr);
             InsertLastMarius (& Smetisko, contentArr);
             nt_term_list (tok, key, contentArr, NULL);
             pocetArg = 0;
