@@ -66,7 +66,8 @@ int getNextChar(FILE* fd)
 
 
 int getNextToken(FILE* fd, token TToken)
-{int c, cx; 
+{
+	int c, cx; 
 	int actState = sSTART; 
 	int fcv = 0;
 
@@ -80,8 +81,8 @@ int getNextToken(FILE* fd, token TToken)
 	strBuffer = malloc(baseStringLength); // we alloc only to "baseStringLength", because size of char is one by definition
 		if(strBuffer == NULL)
 		{
-			printf("Allocation error! (strBuffer)\n");
-			exit(99);
+			fprintf(stderr, "Allocation error! (strBuffer)\n");
+			errorHandler(errInt);
 		}
 
 	char *tmpBuffer; // reallocation purposes only 
@@ -91,8 +92,8 @@ int getNextToken(FILE* fd, token TToken)
 	entityBuffer = malloc(baseStringLength);	// same as few lines up
 		if(entityBuffer == NULL)
 		{
-			printf("Alocation error! (entityBuffer)\n");
-			exit(99);
+			fprintf(stderr, "Alocation error! (entityBuffer)\n");
+			errorHandler(errInt);
 		}
 
 	bool forceTokenSend = false;
@@ -148,7 +149,12 @@ int getNextToken(FILE* fd, token TToken)
 		if(c == '}')
 		{
 			inComment = false;
-			printf("Commentary skipped!\n");
+			//printf("Commentary skipped!\n");
+		}
+		if(c == EOF)
+		{
+			fprintf(stderr, "Unexpected end of FILE YOU NIGGER!\n");
+			errorHandler(errLex);
 		}
 		continue;
 	}
@@ -160,6 +166,9 @@ int getNextToken(FILE* fd, token TToken)
 
 	switch(actState)
 	{
+
+		case 999:
+		break;
 
 		case sSTART:
 
@@ -407,6 +416,13 @@ int getNextToken(FILE* fd, token TToken)
 
 		case sSTRING:
 
+
+			if(c == EOF || c == -1)
+			{
+				fprintf(stderr, "Unexpected EOF!\n");
+				errorHandler(errLex);
+			}
+
 			if(apostrof && !entity)	// jsme uvnitř stringu
 			{
 
@@ -458,13 +474,13 @@ int getNextToken(FILE* fd, token TToken)
 					if(c == '#' && cx == APOSTROF_ASCII)
 					{
 						printf("Incorrect entity entry!\n");
-						exit(666);
+						exit(1);
 					}
 
 					if(c == '#' && !isdigit(cx))
 					{
-						printf("Incorrect entity entry!\n");
-						exit(666);
+						fprintf(stderr, "Incorrect entity entry!\n");
+						errorHandler(errLex);
 					}
 
 						// at this we should be sure we get at least #number (letter may occur later though)
@@ -481,15 +497,15 @@ int getNextToken(FILE* fd, token TToken)
 						long tentityID = strtol(entityBuffer, &strtolErrPtr, 10); // base of 10
 								if(entityBuffer == strtolErrPtr)
 								{
-									printf("Non-convertable entity, fuck you.\n");
-									exit(666);
+									fprintf(stderr, "Entity not convertable!\n");
+									errorHandler(errLex);
 								}
 						entityID = tentityID;
 						
 								if(entityID < 1 || entityID > 255)
 								{
-									printf("Entity out of its range. Or you possibly run the script too many times in a short time -> buffer was not empty on time. %d\n", entityID);
-									exit(1);
+									fprintf(stderr, "Entity out of its range. Or you possibly run the script too many times in a short time -> buffer was not empty on time. %d\n", entityID);
+									errorHandler(errLex);
 								}
 
 						strBuffer[fcv] = entityID;
@@ -561,8 +577,8 @@ int getNextToken(FILE* fd, token TToken)
 					tmpTokInt = strtol(strBuffer, &strtolErrPtr, strtolBase);
 					if(strtolErrPtr == strBuffer)
 					{
-						printf("Trial to convert a string that is not convertable to long. Integer branch.\n");
-						exit(666);
+						fprintf(stderr, "Trial to convert a string that is not convertable to long. Integer branch.\n");
+						errorHandler(errLex);
 					} 
 
 				tokInt = tmpTokInt;	// now we have value of the integer stored in an integer variable, which is what we wanted, right.
@@ -616,8 +632,8 @@ int getNextToken(FILE* fd, token TToken)
 								tokDouble = strtod(strBuffer, &strtodErrPtr);
 									if(strBuffer == strtodErrPtr)
 									{
-										printf("Trial to convert non-convertable string to double! Real branch.\n");
-										exit(666);
+									fprintf(stderr, "Trial to convert non-convertable string to double! Real branch.\n");
+									errorHandler(errLex);
 									}
 
 								terminateLoop = true;
@@ -649,8 +665,8 @@ int getNextToken(FILE* fd, token TToken)
 								}
 								else 	// jakýkoliv jiný znak není povolen == chyba literálu
 								{
-									printf("REAL ve spatnem tvaru!\n");
-									exit(666);
+									fprintf(stderr, "Wrong format for REAL!\n");
+									errorHandler(errLex);
 								}
 							}
 						}
@@ -663,8 +679,8 @@ int getNextToken(FILE* fd, token TToken)
 						}
 						else
 						{
-							printf("REAL zase ve spatnem tvaru!\n");
-							exit(666);
+							fprintf(stderr, "Wrong format for REAL!\n");
+							errorHandler(errLex);
 						}
 
 					}
@@ -677,8 +693,8 @@ int getNextToken(FILE* fd, token TToken)
 
 							if(!isdigit(c))
 							{
-								printf("REAL konci znamenkem == problem!\n");
-								exit(666);
+								fprintf(stderr, "Wrong format for REAL!\n");
+								errorHandler(errLex);
 							}
 						}
 
@@ -696,8 +712,8 @@ int getNextToken(FILE* fd, token TToken)
 							tokDouble = strtod(strBuffer, &strtodErrPtr);
 								if(strBuffer == strtodErrPtr)
 								{
-									printf("Trial to convert non-convertable string to double! Real breanch!\n");
-									exit(666);
+									fprintf(stderr, "Trial to convert non-convertable string to double! Real breanch!\n");
+									errorHandler(errLex);
 								}
 
 							terminateLoop = true;
@@ -729,8 +745,8 @@ int getNextToken(FILE* fd, token TToken)
 								}
 								else 	// jakýkoliv jiný znak není povolen == chyba literálu
 								{
-									printf("REAL ve spatnem tvaru! (3)\n");
-									exit(666);
+									fprintf(stderr, "Wrong format for REAL!\n");
+									errorHandler(errLex);
 								}
 						}
 						break;
@@ -755,8 +771,8 @@ int getNextToken(FILE* fd, token TToken)
 							tokDouble = strtod(strBuffer, &strtodErrPtr);
 								if(strBuffer == strtodErrPtr)
 								{
-									printf("Trial to convert non-convertable string to double!\n");
-									exit(666);
+									fprintf(stderr, "Trial to convert non-convertable string to double!\n");
+									errorHandler(errLex);
 								}
 							terminateLoop = true;
 							numberDoubleCase = true;
@@ -768,37 +784,39 @@ int getNextToken(FILE* fd, token TToken)
 		break;
 
 		case WRONG_OPERATOR:
-			printf("Operator does not exist!\n");
+			fprintf(stderr, "Operator does not exist!\n");
 			free(strBuffer);
 			free(entityBuffer);
-			fclose(fd);
-			exit(1);
+			errorHandler(errLex);
 		break;
 
 		case UNEXPECTED_CHAR:
 			if(c == EOF || c == -1)
 			{
-				printf("End of file occured!\n");
+				//printf("End of file occured!\n");
 				return -1;
 			}
-			printf("Neocekavany znak!\n");
+			
+			fseek(fd, -2, SEEK_CUR);	// Swiggity swooty, I’m comin’ for that booty
+			c = fgetc(fd);
+			fprintf(stderr, "Unexpected character! ('%c')\n", c);
 			free(strBuffer);
 			free(entityBuffer);
-			fclose(fd);
-			exit(1); // lex. error
+			errorHandler(errLex);
 		break;
 
 		default: 
-			printf("Default case entered!\n");
+			fprintf(stderr, "Case that should never occur just occured. Mayday, mayday, we're going down!\n");
+			errorHandler(errLex);
 		break;
 	}
 
-	//reallocation
+	//reallocation works JUST FINE ;) (proud of this one)
 
 	if((fcv+1) == baseStringLength)
 		{
 			// time for reallocation
-			printf("Additional memory required!\n");
+			//printf("Additional memory required!\n");
 
 			newAllocationSpace = 2*baseStringLength;
 
@@ -807,9 +825,8 @@ int getNextToken(FILE* fd, token TToken)
 				if(!tmpBuffer)
 				{
 					free(strBuffer);	// in case reallocation failed, it is important to free strBuffer
-					printf("Realloc failed!\n");
-					fclose(fd);	// closing the file
-					exit(99);
+					fprintf(stderr, "Realloc failed!\n");
+					errorHandler(errInt);
 				}
 				else
 				{
@@ -818,15 +835,14 @@ int getNextToken(FILE* fd, token TToken)
 
 				if(strBuffer == NULL)
 				{
-					printf("Failed to allocate additional space!\n");
-					fclose(fd);
-					exit(99);
+					fprintf(stderr, "Failed to allocate additional space!\n");
+					errorHandler(errInt);
 				}
 				else
 				{
 					baseStringLength = newAllocationSpace;
-					printf("Reallocation successfull!\n");
-					printf("Allocated %d bytes of memory.\n", baseStringLength);
+				//	printf("Reallocation successfull!\n");
+				//	printf("Allocated %d bytes of memory.\n", baseStringLength);
 				}
 
 
@@ -846,9 +862,8 @@ int getNextToken(FILE* fd, token TToken)
 			TToken->val_str = malloc(baseStringLength);	// once again, sizeof(char) is one by its definition, so there's no need to use it
 				if(TToken->val_str == NULL)
 				{
-					printf("Token allocation for string failed!\n");
-					fclose(fd);
-					exit(99);
+					fprintf(stderr, "Token allocation for string failed!\n");
+					errorHandler(errInt);
 				}
 			strcpy(TToken->val_str, strBuffer);
 		}
@@ -858,9 +873,8 @@ int getNextToken(FILE* fd, token TToken)
 			TToken->val_str = malloc(baseStringLength);
 					if(TToken->val_str == NULL)
 					{
-						printf("Token allocation for string failed!\n");
-						fclose(fd);
-						exit(99);
+						fprintf(stderr, "Token allocation for string failed!\n");
+						errorHandler(errInt);
 					}
 					strcpy(TToken->val_str, strBuffer);			
 		}
@@ -902,11 +916,10 @@ int getNextToken(FILE* fd, token TToken)
 					TToken->val_str = malloc(baseStringLength);
 						if(TToken->val_str == NULL)
 						{
-							printf("Token allocation for string failed!\n");
+							fprintf(stderr, "Token allocation for string failed!\n");
 							free(strBuffer);
 							free(entityBuffer);
-							fclose(fd);
-							exit(99);
+							errorHandler(errInt);
 						}
 					strcpy(TToken->val_str,strBuffer);
 				}
@@ -940,11 +953,10 @@ int getNextToken(FILE* fd, token TToken)
 					TToken->val_str = malloc(baseStringLength);
 						if(TToken->val_str == NULL)
 						{
-							printf("Token allocation for string failed!\n");
+							fprintf(stderr, "Token allocation for string failed!\n");
 							free(strBuffer);
 							free(entityBuffer);
-							fclose(fd);
-							exit(99);
+							errorHandler(errInt);
 						}
 					strcpy(TToken->val_str,strBuffer);
 				}
@@ -996,9 +1008,8 @@ int getNextToken(FILE* fd, token TToken)
 			TToken->val_str = malloc(baseStringLength);
 				if(TToken->val_str == NULL)
 				{
-					printf("Token allocation for string failed!\n");
-					fclose(fd);
-					exit(99);
+					fprintf(stderr, "Token allocation for string failed!\n");
+					errorHandler(errInt);
 				}
 			makeStringLowerCase(strBuffer);
 			strcpy(TToken->val_str,strBuffer);			
@@ -1009,7 +1020,7 @@ int getNextToken(FILE* fd, token TToken)
 			fseek(fd, -1, SEEK_CUR);
 		}
 
-		printf("Odeslán token s typem: %d (values: %s|%d|%f)\n", TToken->type, TToken->val_str, TToken->val_int, TToken->val_flo);
+		//printf("Odeslán token s typem: %d (values: %s|%d|%f)\n", TToken->type, TToken->val_str, TToken->val_int, TToken->val_flo);
 		free(strBuffer);
 		free(entityBuffer);
 		
@@ -1024,52 +1035,5 @@ int getNextToken(FILE* fd, token TToken)
 }
 
 
+
 }
-
-
-
-/*int main()
-{
-
-	token TToken = malloc(sizeof(struct token));
-		if(TToken == NULL)
-		{
-			printf("Encountered allocation issue!\n");
-			return 1;
-		}
-
-	FILE* fd = fopen("testFiles/t1string", "r");
-		if(fd == NULL)
-		{
-			printf("Encountered an error while opening the file!\n");
-			return 1;
-		}
-
-	printf("Starting a scanning process! \n");
-			int pica = 0;
-			while(1)
-			{
-				int td = getNextToken(fd, TToken);
-				pica++;
-
-
-//				printf("Token #%d, structure string='%s', integer='%d', real='%f' (type=%d)\n", pica, TToken->val_str, TToken->val_int, TToken->val_flo, TToken->type);
-
-				if(TToken->type == t_expr_str || TToken->type == t_var_id)
-				{
-					free(TToken->val_str);
-				}
-
-				
-				if(td == -1)
-				{
-					break;
-				}				
-			}
-
-	printf("Ending a scanning process! \n");
-	fclose(fd);
-	free(TToken);
-	return 0;
-
-}*/
