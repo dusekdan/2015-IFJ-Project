@@ -44,12 +44,13 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 	tNodePtr temp2;
 
 
-
-	while(currIL->active != NULL) {
+	if(debug == true)
+	{
+		while(currIL->active != NULL) {
 
 		printf("INSTUKCIE LISTU %d: %d\n", currIL, currIL->active->instruction.instype);
 		Succ(currIL);
-
+		}
 	}
 
 	First(currIL);
@@ -194,6 +195,14 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 					lastAdr = temp2;
 						if(debug == true)printf("LASTADR je %p\n",lastAdr );
 					if(debug == true)printf("\n\n%d - %d | LI:%d A1:%d A2:%d\n\n", lastint,temp2->data->content.integer,lastint,((tNodePtr)new->adr1)->data->content.integer,temp2->data->content.integer);
+					
+	//megakontrolasveta9000
+					if ( lastAdr==lastAdr1)
+						{
+							temp2 = ((tNodePtr) new->adr1);
+							if(debug == true)printf("narval som adresu jedna do adresy 2\n");
+						}
+
 					lastint -= temp2->data->content.integer;
 				}
 				
@@ -979,9 +988,8 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 			break;
 		}	
 		Succ(currIL);
-		/*if (currIL->active != NULL)
-		printf("Aktiv instu listu::: %d\n", currIL->active->instruction.instype);
-*/
+
+
 	} while(currIL->active != NULL);
  return 0; 
 }
