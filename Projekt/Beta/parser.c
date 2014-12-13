@@ -1105,7 +1105,7 @@ void nt_stmt (token tok)
                             InsertLastMarius (& Smetisko, dataArr);
 
                             nt_term_list (tok, "Fwrite", NULL, dataArr);
-                            j=0;
+                            
                             pocetArg = 0;
                             match (tok,t_r_parrent);
                             int * jp = malloc(sizeof(int));
@@ -1120,11 +1120,11 @@ void nt_stmt (token tok)
 
                             currIL =   (localIL == NULL) ? &IL : localIL;
                             insertInst (currIL, I_WRITE, jp, dataArr, NULL);
-                            
+                            j=0;//toto bolo povodne pred pocetarg
                             /* Vypísanie práve vloženej inštrukcie pre debug  */
 
                             if (debug == true)
-                                printf ("\n%sNew Instruction | %p | I_WRITE | %p | %p | NULL |%s\n", KYEL, (void *) currIL, (void *) jp, (void *) dataArr, KNRM);
+                                printf ("\n%sNew Instruction | %p | I_WRITE | %i | %p | NULL |%s\n", KYEL, (void *) currIL, *(int *) jp, (void *) dataArr, KNRM);
 
                             //free (key);
                             
