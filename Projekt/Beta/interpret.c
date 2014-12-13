@@ -73,6 +73,7 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 				if(((tNodePtr) new->adr2) == NULL)
 				{
 					temp = ((tNodePtr) new->adr1);
+
 					//printf("TEMP: %d\n", temp->data->content.integer);
 
 
@@ -127,16 +128,25 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 				}
 				else
 				{
+					temp = ((tNodePtr) new->adr1);
+					temp2 = ((tNodePtr) new->adr2);
+
+					if(temp->data->type == sym_var_int || temp->data->type == t_expr_int)
+					temp->data->content.real = (double) temp->data->content.integer;
+					
+					if(temp2->data->type == sym_var_int || temp2->data->type == t_expr_int)
+					temp2->data->content.real = (double) temp2->data->content.integer;
+
 					if(vypocet == false)
 					{
-						temp = ((tNodePtr) new->adr1);
-						temp2 = ((tNodePtr) new->adr2);
+						//temp = ((tNodePtr) new->adr1);
+						//temp2 = ((tNodePtr) new->adr2);
 
 						lastdouble += temp->data->content.real + temp2->data->content.real;
 						vypocet = true;
 					} else
 					{
-						temp2 = ((tNodePtr) new->adr2);
+						//temp2 = ((tNodePtr) new->adr2);
 						lastdouble += temp2->data->content.real;
 					}
 				}
@@ -211,16 +221,26 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 				break;
 
 			case I_SUBR:
+
+				temp = ((tNodePtr) new->adr1);
+				temp2 = ((tNodePtr) new->adr2);
+
+				if(temp->data->type == sym_var_int || temp->data->type == t_expr_int)
+					temp->data->content.real = (double) temp->data->content.integer;
+					
+				if(temp2->data->type == sym_var_int || temp2->data->type == t_expr_int)
+					temp2->data->content.real = (double) temp2->data->content.integer;
+
 				if(vypocet == false)
 				{
-					temp = ((tNodePtr) new->adr1);
-					temp2 = ((tNodePtr) new->adr2);
+					//temp = ((tNodePtr) new->adr1);
+					//temp2 = ((tNodePtr) new->adr2);
 
 					lastdouble = temp->data->content.real - temp2->data->content.real;
 					vypocet = true;
 				} else
 				{
-					temp2 = ((tNodePtr) new->adr2);
+					//temp2 = ((tNodePtr) new->adr2);
 					lastdouble -= temp2->data->content.real;
 				}
 				
@@ -253,17 +273,25 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 				break;		
 
 			case I_MULR:
+
+				temp = ((tNodePtr) new->adr1);
+				temp2 = ((tNodePtr) new->adr2);
+
+				if(temp->data->type == sym_var_int || temp->data->type == t_expr_int)
+					temp->data->content.real = (double) temp->data->content.integer;
+					
+				if(temp2->data->type == sym_var_int || temp2->data->type == t_expr_int)
+					temp2->data->content.real = (double) temp2->data->content.integer;
+
 				if(vypocet == false)
 				{
-					temp = ((tNodePtr) new->adr1);
-					temp2 = ((tNodePtr) new->adr2);
 
 					lastdouble = temp->data->content.real * temp2->data->content.real;
 					vypocet = true;
 				} 
 				else
 				{
-					temp2 = ((tNodePtr) new->adr2);
+					//temp2 = ((tNodePtr) new->adr2);
 					lastdouble *= temp2->data->content.real;
 				}
 				
@@ -271,7 +299,7 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 					printf("MULR: %g\n", lastint);
 				break;
 			
-			case I_DIVI:
+			/*case I_DIVI:
 				if(vypocet == false)
 				{
 					temp = ((tNodePtr) new->adr1);
@@ -306,13 +334,22 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 				if(debug ==  true)
 					printf("DIVI: %d\n", lastint);
 				break;
-
+*/
 			case I_DIVR:
+
+				temp = ((tNodePtr) new->adr1);
+				temp2 = ((tNodePtr) new->adr2);
+
+				if(temp->data->type == sym_var_int || temp->data->type == t_expr_int)
+					temp->data->content.real = (double) temp->data->content.integer;
+					
+				if(temp2->data->type == sym_var_int || temp2->data->type == t_expr_int)
+					temp2->data->content.real = (double) temp2->data->content.integer;
+
 				if(vypocet == false)
 				{
-					temp = ((tNodePtr) new->adr1);
-					temp2 = ((tNodePtr) new->adr2);
 
+					
 					if(temp2->data->content.real == 0)
 					{
 						errorHandler(errRunZdiv);
@@ -325,7 +362,7 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 				} 
 				else
 				{
-					temp2 = ((tNodePtr) new->adr2);
+					//temp2 = ((tNodePtr) new->adr2);
 					
 					if(temp2->data->content.real == 0)
 					{
@@ -336,7 +373,7 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 						lastdouble = lastdouble / temp2->data->content.real;
 					}
 				}
-				
+
 				if(debug == true)
 					printf("DIVR: %g\n", lastdouble);
 				break;		
