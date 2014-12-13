@@ -102,5 +102,5 @@ int precedenceParser();
 int zpracuj(token tok, tOpData *column);
 int reduction(tStack *stack1, tStack *stack2);
 char *randstring(int length);
-int myOp2matousOp(int myOp, int type);
+int myOp2matousOp(int myOp, int type1, int type2);
 tNodePtr searchData(char *key);

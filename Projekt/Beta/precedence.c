@@ -410,7 +410,7 @@ int precedenceParser() {				// hlavni funkce precedencni analyzy
 	
 	if(countID == 1 && column.element == DOLAR) {
 
-		if((matusOp = myOp2matousOp(PLUS, column.symbol->type)) != -1) {
+		if((matusOp = myOp2matousOp(PLUS, column.symbol->type, 41)) != -1) {
 
 			numberOfExprInsts++;
 			if(localIL == NULL) {
@@ -567,7 +567,7 @@ int reduction(tStack *stack1, tStack *stack2) {
 
 						numberOfExprInsts++;
 
-						if((matusOp = myOp2matousOp(checkRule, temp1.symbol->type)) != -1) {
+						if((matusOp = myOp2matousOp(checkRule, temp1.symbol->type, temp3.symbol->type)) != -1) {
 							
 							if(localIL == NULL) {
 								
@@ -585,20 +585,6 @@ int reduction(tStack *stack1, tStack *stack2) {
 					}
 					else if((temp1.symbol->type == t_expr_int && temp3.symbol->type == t_expr_dou) || (temp3.symbol->type == t_expr_int && temp1.symbol->type == t_expr_int)) {
 
-						//void special = 1;
-
-						/*if(temp1.symbol->type == t_expr_int) {		// bud prvni je int a pretypujeme
-							
-							temp1.symbol->content.real = (double) temp1.symbol->content.integer;
-							temp1.symbol->type = t_expr_dou;
-						}
-
-						if(temp3.symbol->type == t_expr_int)	{		// nebo druhy
-							
-							temp3.symbol->content.real = (double) temp3.symbol->content.integer;
-							temp3.symbol->type = t_expr_dou;
-						}*/
-
 						if(boolean == 1)							// pokud mame logickou operaci, musime vracet boolean hodnotu
 							returnType = t_expr_boo;
 						else
@@ -606,7 +592,7 @@ int reduction(tStack *stack1, tStack *stack2) {
 
 						numberOfExprInsts++;
 
-						if((matusOp = myOp2matousOp(checkRule, temp1.symbol->type)) != -1) {
+						if((matusOp = myOp2matousOp(checkRule, temp1.symbol->type, temp3.symbol->type)) != -1) {
 							
 							if(localIL == NULL) {
 								
@@ -633,7 +619,7 @@ int reduction(tStack *stack1, tStack *stack2) {
 						//change.symbol->type = temp1.symbol->type;
 						change = temp1;
 						change.element = NETERM;
-						stackPush(stack1, change);
+						stackPush(stack1, change);	
 					}
 				}
 
@@ -676,21 +662,22 @@ int reduction(tStack *stack1, tStack *stack2) {
 }
 
 
-int myOp2matousOp(int myOp, int type) {
+int myOp2matousOp(int myOp, int type1, int type2) {
 
 	int matusOp;
 
 	switch(myOp) {
 
 		case PLUS:
+						printf("AAAAAa %d %d\n", type1, type2);
 
-			if(type == t_expr_int)
+			if(type1 == t_expr_int && type2 == t_expr_int)
 				matusOp = I_ADDI;
 
-			else if(type == t_expr_dou) 
+			else if(type1 == t_expr_dou || type2 == t_expr_dou) 
 				matusOp = I_ADDR;
 
-			else if(type == t_expr_str)
+			else if(type1 == t_expr_str)
 				matusOp = I_CONCATE;
 
 			else
@@ -700,10 +687,10 @@ int myOp2matousOp(int myOp, int type) {
 
 		case MINUS:
 
-			if(type == t_expr_int)
+			if(type1 == t_expr_int && type2 == t_expr_int)
 				matusOp = I_SUBI;
 
-			else if(type == t_expr_dou) 
+			else if(type1 == t_expr_dou || type2 == t_expr_dou) 
 				matusOp = I_SUBR;
 
 			else
@@ -712,10 +699,10 @@ int myOp2matousOp(int myOp, int type) {
 			break;
 		case MUL:
 
-			if(type == t_expr_int)
+			if(type1 == t_expr_int && type2 == t_expr_int)
 				matusOp = I_MULI;
 
-			else if(type == t_expr_dou) 
+			else if(type1 == t_expr_dou || type2 == t_expr_dou) 
 				matusOp = I_MULR;
 
 			else
