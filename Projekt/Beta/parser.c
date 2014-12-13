@@ -115,6 +115,7 @@ bool saveSymbol (tNodePtr * currTS, char * key, char * name, int type, int argCo
         newsymbol -> argCount = argCount;
         newsymbol -> localTSadr = NULL;
         newsymbol -> localILadr = NULL;
+        newsymbol -> initialized = false;
         //newsymbol -> content.integer = rand() % 100;
         //printf("newsymbol.integer je %d\n",newsymbol->content.integer );
 
@@ -896,6 +897,9 @@ void nt_stmt (token tok)
 
                             //SEMANTICKA KONTROLA
                             int semControlVar = nt_assign (tok);
+                            //printf("Is the variable %s initialized? %d\n",hledam->data->name, hledam->data->initialized);
+                            hledam -> data -> initialized = true;
+                            //printf("Is the variable %s initialized? %d\n",hledam->data->name, hledam->data->initialized);
 
                             if (semControlVar != hledam->data->type+4 && semControlVar != hledam->data->type+12 && semControlVar != hledam->data->type)
                             {
@@ -1343,7 +1347,6 @@ void nt_term (token tok, char *currentFunctionKey, tContent **contentArr, tData 
                     fprintf (stderr, "Type mismatch.\n");
                     errorHandler (errSemTypArg);
                 }
-
             match (tok, t_var_id);
             //free (key);
         }
