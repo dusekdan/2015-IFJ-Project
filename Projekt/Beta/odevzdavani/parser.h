@@ -1,3 +1,15 @@
+/***********************parser.c*********************************/
+/* Soubor: parser.c - syntaktická/sémantická analýza a generá-  */
+/*                    tor inštrukcií.                           */
+/* Předmět: Formalní jazyky a překladače (IFJ)                  */
+/* Projekt: Implementace interpretu imperativního jazyka IFJ14  */
+/* Varianta zadání: b/1/I                                       */
+/* Datum: prosinec 2014                                         */
+/* Kódování: UTF-8                                              */
+/* Autoři:          Roman Jaška (xjaska00)                      */
+/* ASCII Art:       http://ascii.co.uk/art/pig                  */                
+/****************************************************************/
+
 #define t_var       1
 #define t_colon     2
 #define t_semicolon 3

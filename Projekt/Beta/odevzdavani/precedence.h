@@ -8,14 +8,7 @@
 /* Autoři:			Filip Kalous (xkalou03)						*/
 /*					Matúš Bútora (xbutor01)						*/
 /****************************************************************/
-//#include <stdio.h>
-//#include <string.h>
-//#include <stdlib.h>
-//#include <stdbool.h>
-//#include "errorHandler.c"
-//#include "parser.h"
-//#include "inslist.h"
-//#include "ial.c"
+
 #include <time.h>
 
 

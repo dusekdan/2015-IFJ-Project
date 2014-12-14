@@ -1,5 +1,5 @@
 /***********************ial.c************************************/
-/* Soubor: ial.h - Hlavičkový soubor pro ial.c 			*/
+/* Soubor: ial.h - Hlavičkový soubor pro ial.c 			        */
 /* Předmět: Formalní jazyky a překladače (IFJ) 					*/
 /* Projekt: Implementace interpretu imperativního jazyka IFJ14  */
 /* Varianta zadání: b/1/I 										*/

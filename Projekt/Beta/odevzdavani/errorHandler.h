@@ -1,3 +1,13 @@
+/***********************errorHandler.h***************************/
+/* Soubor: errorHandler.h - spracovani chyb                     */
+/* Předmět: Formalní jazyky a překladače (IFJ)                  */
+/* Projekt: Implementace interpretu imperativního jazyka IFJ14  */
+/* Varianta zadání: b/1/I                                       */
+/* Datum: prosinec 2014                                         */
+/* Kódování: UTF-8                                              */
+/* Autoři:          Roman Jaška (xjaska00)                      */
+/****************************************************************/
+
 static const int errLex       =  1; // chyba v programu v rámci lexikální analýzy (chybná struktura aktuálního lexému)
 static const int errSyn       =  2; // chyba v programu v rámci syntaktické analýzy (chybná syntaxe struktury programu)
 static const int errSemDef    =  3; // sémantická chyba v programu – nedeﬁnovaná funkce/proměnná, pokus o redeﬁnici funkce/proměnné, atd.
