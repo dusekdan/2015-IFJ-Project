@@ -11,6 +11,8 @@
 
 #include "precedence.h"
 
+bool isReal = false;
+
 int countID = 0;
 int matusOp;
 
@@ -242,7 +244,10 @@ int zpracuj(token tok, tOpData *column) {
 				if(tok->type == t_expr_str)
 					column->symbol->content.string = tok->val_str;
 				if(tok->type == t_expr_dou)
+				{
 					column->symbol->content.real = tok->val_flo;
+					isReal=true;
+				}
 
 				column->symbol->content.initialized = true;
 				column->symbol->used = false;
@@ -433,7 +438,7 @@ int precedenceParser() {				// hlavni funkce precedencni analyzy
 	stackDispose(&stack1);
 	stackDispose(&stack2);
 	countID = 0;
-
+	if (returnType == 41 && isReal == true) returnType = t_expr_dou;
 	return returnType;	// jeste nedokonceno, zatim mi to funguje jen pro pravidlo E -> i, protoze se nedokazu vickrat zacyklit v te redukci
 }
 
@@ -610,7 +615,6 @@ int reduction(tStack *stack1, tStack *stack2) {
 
 					else {
 						//printf("Ve vyrazu nejsou stejne typy.\n");
-						printf("ahoj\n");
 						errorHandler(errSemTypArg);
 					}
 
@@ -619,16 +623,8 @@ int reduction(tStack *stack1, tStack *stack2) {
 
 						stackPop(stack1, &change);	// odstraneni <
 						//change.symbol->type = temp1.symbol->type;
-						if(temp1.symbol->type == t_expr_dou || temp3.symbol->type == t_expr_dou) {
-
-							change = temp1;
-							change.symbol->type = t_expr_dou;
-						} 
-						else
-							change = temp1;
-
+						change = temp1;
 						change.element = NETERM;
-						
 						stackPush(stack1, change);	
 					}
 				}
