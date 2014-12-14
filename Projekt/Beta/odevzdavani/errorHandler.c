@@ -1,6 +1,6 @@
 int errorHandler (int errorType)
 {
-    fprintf(stderr,"%sError %d%s\n",KRED,errorType,KNRM );
+    fprintf(stderr,"Chyba %d\n",errorType);
     mariuspedersen(&Smetisko);
     DisposeMarius(&Smetisko);
     exit(errorType);
