@@ -6,6 +6,8 @@
 /* Datum: prosinec 2014						*/
 /* Kódování: UTF-8						*/
 /* Autoři:			Daniel Dušek (xdusek21)		*/
+/* Poznámka: Na česko-anglických komentářích je poznat jak 	*/
+/* náročnost programu s časem rostla				*/
 /****************************************************************/
 #define APOSTROF_ASCII 39
 /************************ ENUM PRO CASE ****************************-*/
