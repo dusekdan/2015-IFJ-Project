@@ -1,12 +1,7 @@
 int errorHandler (int errorType)
 {
-    switch (errorType)
-    {
-        case 1:     break;
-        default:    printf("Unspecified error occured.\n");
-                    break;
-    }
-    printf("%schyba %d%s\n",KRED,errorType,KNRM );
+    fprintf(stderr,"%sError %d%s\n",KRED,errorType,KNRM );
     mariuspedersen(&Smetisko);
+    DisposeMarius(&Smetisko);
     exit(errorType);
 }
