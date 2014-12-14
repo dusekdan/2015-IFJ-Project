@@ -332,8 +332,6 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 
 				if (A1 -> data -> type == t_expr_int || A1 -> data -> type == sym_var_int )
 					A1 -> data -> content . real = (double) A1 -> data -> content . integer;
-				if (A2 -> data -> type == t_expr_int || A2 -> data -> type == sym_var_int )
-					A2 -> data -> content . real = (double) A2 -> data -> content . integer;
 
 				// Prisla nam len jedna adresa => priradenie
 
@@ -349,6 +347,9 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 					if(debug == true) printf("ADDR: %g\n", readyDou);
 					break;
 				}
+
+				if (A2 -> data -> type == t_expr_int || A2 -> data -> type == sym_var_int )
+					A2 -> data -> content . real = (double) A2 -> data -> content . integer;
 
 				// Prisli nam dve nove adresy => zaciatok noveho medzivypoctu
 
