@@ -584,7 +584,7 @@ int reduction(tStack *stack1, tStack *stack2) {
 							}
 						}
 					}
-					else if((temp1.symbol->type == t_expr_int && temp3.symbol->type == t_expr_dou) || (temp3.symbol->type == t_expr_int && temp1.symbol->type == t_expr_int)) {
+					else if((temp1.symbol->type == t_expr_int && temp3.symbol->type == t_expr_dou) || (temp3.symbol->type == t_expr_int && temp1.symbol->type == t_expr_dou)) {
 
 						if(boolean == 1)							// pokud mame logickou operaci, musime vracet boolean hodnotu
 							returnType = t_expr_boo;
@@ -610,6 +610,7 @@ int reduction(tStack *stack1, tStack *stack2) {
 
 					else {
 						//printf("Ve vyrazu nejsou stejne typy.\n");
+						printf("ahoj\n");
 						errorHandler(errSemTypArg);
 					}
 
@@ -618,8 +619,16 @@ int reduction(tStack *stack1, tStack *stack2) {
 
 						stackPop(stack1, &change);	// odstraneni <
 						//change.symbol->type = temp1.symbol->type;
-						change = temp1;
+						if(temp1.symbol->type == t_expr_dou || temp3.symbol->type == t_expr_dou) {
+
+							change = temp1;
+							change.symbol->type = t_expr_dou;
+						} 
+						else
+							change = temp1;
+
 						change.element = NETERM;
+						
 						stackPush(stack1, change);	
 					}
 				}
