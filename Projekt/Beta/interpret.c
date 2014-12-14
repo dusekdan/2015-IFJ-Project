@@ -1202,330 +1202,736 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 			case I_LESS:
 
 
-				
-				temp = ((tNodePtr) new->adr1);			
-				temp2 = ((tNodePtr) new->adr2);
+				A1 = (tNodePtr) new -> adr1;
+				A2 = (tNodePtr) new -> adr2;
 
-				printf("PRVE: %d\n", temp->data->content.integer);
-				printf("DRUHE: %d\n", temp2->data->content.integer);
-				if(temp->data->type == t_expr_int || temp->data->type == sym_var_int)
+				// Prisli nam dve nove adresy => zaciatok noveho medzivypoctu
+
+				if (A1 -> data -> used == false && A2 -> data -> used == false)
 				{
+					if (debug == true) printf("dve nove\n");
+
+					if (A1 -> data -> content . initialized == false ||
+						A2 -> data -> content . initialized == false  ) 
+						errorHandler (errRunUnin);
+
 					
-					if(temp->data->content.integer < temp2->data->content.integer)
-					{
-						
-						lastbool = true;
-						
-				
-					} else 
-					{
-						
-						lastbool = false;
-					
+					if ((A1 -> data -> type == t_expr_int || A1 -> data -> type == sym_var_int) &&
+						(A2 -> data -> type == t_expr_int || A2 -> data -> type == sym_var_int))
+					{	
+						lastbool = (A1 -> data -> content . integer < A2 -> data -> content . integer ) ? true : false;
 					}
-				} else if(temp->data->type == t_expr_dou || temp->data->type == sym_var_rea)
-				{
-					if(temp->data->content.real < temp2->data->content.real)
-					{
-						
-						lastbool = true;
-						
-				
-					} else 
-					{
-						
-						lastbool = false;
-						
+
+					if ((A1 -> data -> type == t_expr_dou || A1 -> data -> type == sym_var_rea) &&
+						(A2 -> data -> type == t_expr_dou || A2 -> data -> type == sym_var_rea))
+					{	
+						lastbool = (A1 -> data -> content . real < A2 -> data -> content . real ) ? true : false;
 					}
-				} else if(temp->data->type == t_expr_str || temp->data->type == sym_var_str)
-				{
-					cmp = strcmp(temp->data->content.string, temp2->data->content.string);
-					if(cmp < 0)
-					{
-						
-						lastbool = true;
-					
-				
-					} else 
-					{
-						
-						lastbool = false;
-						
+
+					if ((A1 -> data -> type == t_expr_str || A1 -> data -> type == sym_var_str) &&
+						(A2 -> data -> type == t_expr_str || A2 -> data -> type == sym_var_str))
+					{	
+						cmp = strcmp (A1 -> data -> content . string, A2 -> data -> content . string);
+						lastbool = (cmp < 0) ? true : false;
 					}
-				} else 
-				{
-					if(temp->data->content.boolean < temp2->data->content.boolean)
-					{
-						
-						lastbool = true;
-					
-				
-					} else 
-					{
-						
-						lastbool = false;
-					
+
+					if ((A1 -> data -> type == t_expr_boo || A1 -> data -> type == sym_var_boo) &&
+						(A2 -> data -> type == t_expr_boo || A2 -> data -> type == sym_var_boo))
+					{	
+						lastbool = (A1 -> data -> content . boolean < A2 -> data -> content . boolean) ? true : false;
 					}
+					A1 -> data -> used = true;
+					A2 -> data -> used = true;
+
+					if(debug == true) printf("MORE: %d\n", lastbool);
+
+					break;
 				}
+
+				// Prva adresa nebola pouzita ale druha ano => pouzijem prvu
+
+				if (A1 -> data -> used == false && A2 -> data -> used == true)
+				{	
+					if (debug == true) printf("prva\n");
+
+					if (A1 -> data -> content . initialized == false) 
+						errorHandler (errRunUnin);
+
+					if (A1 -> data -> type == t_expr_int || A1 -> data -> type == sym_var_int)
+					{	
+						lastbool = (A1 -> data -> content . integer < resArrInt [resArrIntIndex] ) ? true : false;
+					}
+
+					if (A1 -> data -> type == t_expr_dou || A1 -> data -> type == sym_var_rea)
+					{	
+						lastbool = (A1 -> data -> content . real < resArrDou [resArrDouIndex] ) ? true : false;
+					}
+
+					A1 -> data -> used = true;
+
+					if(debug == true) printf("MORE: %d\n", lastbool);
+					break;
+				}
+
+				// Prva adresa uz bola druha nie  => pouzijem druhu
+
+				
+				if (A1 -> data -> used == true && A2 -> data -> used == false)
+				{	
+					if (debug == true) printf("druha\n");
+
+					if (A2 -> data -> content . initialized == false) 
+						errorHandler (errRunUnin);
+
+					if (A2 -> data -> type == t_expr_int || A2 -> data -> type == sym_var_int)
+					{	
+						lastbool = ( resArrInt [resArrIntIndex] < A2 -> data -> content . integer ) ? true : false;
+					}
+
+					if (A2 -> data -> type == t_expr_dou || A2 -> data -> type == sym_var_rea)
+					{	
+						lastbool = ( resArrDou [resArrDouIndex] < A2 -> data -> content . real ) ? true : false;
+					}
+
+					A2 -> data -> used = true;
+
+					if(debug == true) printf("MORE: %d\n", lastbool);
+					break;
+				}
+
+				// Obe adresy boli pouzite => zratam medzivysledky
+
+				if (A1 -> data -> used == true && A2 -> data -> used == true)
+				{
+					if (debug == true) printf("aniani\n");
+
+					if 	((A1 -> data -> type == t_expr_int || A1 -> data -> type == sym_var_int) &&
+						 (A2 -> data -> type == t_expr_int || A2 -> data -> type == sym_var_int)  )
+					{
+						if (realOnly == true)
+							lastbool = ( resArrDou [resArrDouIndex-1] < resArrDou [resArrDouIndex] ) ? true : false;
+						else
+							lastbool = ( resArrInt [resArrIntIndex-1] < resArrInt [resArrIntIndex] ) ? true : false;
+					}
+
+					if 	((A1 -> data -> type == t_expr_dou || A1 -> data -> type == sym_var_rea) &&
+						 (A2 -> data -> type == t_expr_dou || A2 -> data -> type == sym_var_rea)  )
+					{
+						lastbool = ( resArrDou [resArrDouIndex-1] < resArrDou [resArrDouIndex] ) ? true : false;
+					}
+
+					if 	((A1 -> data -> type == t_expr_dou || A1 -> data -> type == sym_var_rea) &&
+						 (A2 -> data -> type == t_expr_int || A2 -> data -> type == sym_var_int)  )
+					{
+						if (realOnly == true)
+							lastbool = ( resArrDou [resArrDouIndex-1] < resArrDou [resArrDouIndex] ) ? true : false;
+						else
+							lastbool = ( resArrInt [resArrIntIndex-1] < resArrInt [resArrIntIndex] ) ? true : false;
+					}
+
+					if 	((A1 -> data -> type == t_expr_int || A1 -> data -> type == sym_var_int) &&
+						 (A2 -> data -> type == t_expr_dou || A2 -> data -> type == sym_var_rea)  )
+					{
+						if (realOnly == true)
+							lastbool = ( resArrDou [resArrDouIndex-1] < resArrDou [resArrDouIndex] ) ? true : false;
+						else
+							lastbool = ( resArrInt [resArrIntIndex-1] < resArrInt [resArrIntIndex] ) ? true : false;
+					}
+
+					if(debug == true) printf("MORE: %g\n", lastbool);
+					break;
+				}
+
+				errorHandler (errRunRest);
+
 				break;
 
 			case I_EMORE:
 				
-				temp = ((tNodePtr) new->adr1);
-				temp2 = ((tNodePtr) new->adr2);
+							
+				A1 = (tNodePtr) new -> adr1;
+				A2 = (tNodePtr) new -> adr2;
 
-				if(temp->data->type == t_expr_int || temp->data->type == sym_var_int)
+				// Prisli nam dve nove adresy => zaciatok noveho medzivypoctu
+
+				if (A1 -> data -> used == false && A2 -> data -> used == false)
 				{
-					if(temp->data->content.integer >= temp2->data->content.integer)
-					{
-						
-						lastbool = true;
-			
-				
-					} else 
-					{
-						
-						lastbool = false;
+					if (debug == true) printf("dve nove\n");
+
+					if (A1 -> data -> content . initialized == false ||
+						A2 -> data -> content . initialized == false  ) 
+						errorHandler (errRunUnin);
+
 					
+					if ((A1 -> data -> type == t_expr_int || A1 -> data -> type == sym_var_int) &&
+						(A2 -> data -> type == t_expr_int || A2 -> data -> type == sym_var_int))
+					{	
+						lastbool = (A1 -> data -> content . integer >= A2 -> data -> content . integer ) ? true : false;
 					}
-				} else if(temp->data->type == t_expr_dou || temp->data->type == sym_var_rea)
-				{
-					if(temp->data->content.real >= temp2->data->content.real)
-					{
-						
-						lastbool = true;
-					
-				
-					} else 
-					{
-						
-						lastbool = false;
-					
+
+					if ((A1 -> data -> type == t_expr_dou || A1 -> data -> type == sym_var_rea) &&
+						(A2 -> data -> type == t_expr_dou || A2 -> data -> type == sym_var_rea))
+					{	
+						lastbool = (A1 -> data -> content . real >= A2 -> data -> content . real ) ? true : false;
 					}
-				} else if(temp->data->type == t_expr_str || temp->data->type == sym_var_str)
-				{
-					cmp = strcmp(temp->data->content.string, temp2->data->content.string);
-					if(cmp >= 0)
-					{
-						
-						lastbool = true;
-					
-				
-					} else 
-					{
-						
-						lastbool = false;
-				
+
+					if ((A1 -> data -> type == t_expr_str || A1 -> data -> type == sym_var_str) &&
+						(A2 -> data -> type == t_expr_str || A2 -> data -> type == sym_var_str))
+					{	
+						cmp = strcmp (A1 -> data -> content . string, A2 -> data -> content . string);
+						lastbool = (cmp >= 0) ? true : false;
 					}
-				} else 
-				{
-					if(temp->data->content.boolean >= temp2->data->content.boolean)
-					{
-						
-						lastbool = true;
-					
-				
-					} else 
-					{
-						
-						lastbool = false;
-					
+
+					if ((A1 -> data -> type == t_expr_boo || A1 -> data -> type == sym_var_boo) &&
+						(A2 -> data -> type == t_expr_boo || A2 -> data -> type == sym_var_boo))
+					{	
+						lastbool = (A1 -> data -> content . boolean >= A2 -> data -> content . boolean) ? true : false;
 					}
+					A1 -> data -> used = true;
+					A2 -> data -> used = true;
+
+					if(debug == true) printf("MORE: %d\n", lastbool);
+
+					break;
 				}
+
+				// Prva adresa nebola pouzita ale druha ano => pouzijem prvu
+
+				if (A1 -> data -> used == false && A2 -> data -> used == true)
+				{	
+					if (debug == true) printf("prva\n");
+
+					if (A1 -> data -> content . initialized == false) 
+						errorHandler (errRunUnin);
+
+					if (A1 -> data -> type == t_expr_int || A1 -> data -> type == sym_var_int)
+					{	
+						lastbool = (A1 -> data -> content . integer >= resArrInt [resArrIntIndex] ) ? true : false;
+					}
+
+					if (A1 -> data -> type == t_expr_dou || A1 -> data -> type == sym_var_rea)
+					{	
+						lastbool = (A1 -> data -> content . real >= resArrDou [resArrDouIndex] ) ? true : false;
+					}
+
+					A1 -> data -> used = true;
+
+					if(debug == true) printf("MORE: %d\n", lastbool);
+					break;
+				}
+
+				// Prva adresa uz bola druha nie  => pouzijem druhu
+
+				
+				if (A1 -> data -> used == true && A2 -> data -> used == false)
+				{	
+					if (debug == true) printf("druha\n");
+
+					if (A2 -> data -> content . initialized == false) 
+						errorHandler (errRunUnin);
+
+					if (A2 -> data -> type == t_expr_int || A2 -> data -> type == sym_var_int)
+					{	
+						lastbool = ( resArrInt [resArrIntIndex] >= A2 -> data -> content . integer ) ? true : false;
+					}
+
+					if (A2 -> data -> type == t_expr_dou || A2 -> data -> type == sym_var_rea)
+					{	
+						lastbool = ( resArrDou [resArrDouIndex] >= A2 -> data -> content . real ) ? true : false;
+					}
+
+					A2 -> data -> used = true;
+
+					if(debug == true) printf("MORE: %d\n", lastbool);
+					break;
+				}
+
+				// Obe adresy boli pouzite => zratam medzivysledky
+
+				if (A1 -> data -> used == true && A2 -> data -> used == true)
+				{
+					if (debug == true) printf("aniani\n");
+
+					if 	((A1 -> data -> type == t_expr_int || A1 -> data -> type == sym_var_int) &&
+						 (A2 -> data -> type == t_expr_int || A2 -> data -> type == sym_var_int)  )
+					{
+						if (realOnly == true)
+							lastbool = ( resArrDou [resArrDouIndex-1] >= resArrDou [resArrDouIndex] ) ? true : false;
+						else
+							lastbool = ( resArrInt [resArrIntIndex-1] >= resArrInt [resArrIntIndex] ) ? true : false;
+					}
+
+					if 	((A1 -> data -> type == t_expr_dou || A1 -> data -> type == sym_var_rea) &&
+						 (A2 -> data -> type == t_expr_dou || A2 -> data -> type == sym_var_rea)  )
+					{
+						lastbool = ( resArrDou [resArrDouIndex-1] >= resArrDou [resArrDouIndex] ) ? true : false;
+					}
+
+					if 	((A1 -> data -> type == t_expr_dou || A1 -> data -> type == sym_var_rea) &&
+						 (A2 -> data -> type == t_expr_int || A2 -> data -> type == sym_var_int)  )
+					{
+						if (realOnly == true)
+							lastbool = ( resArrDou [resArrDouIndex-1] >= resArrDou [resArrDouIndex] ) ? true : false;
+						else
+							lastbool = ( resArrInt [resArrIntIndex-1] >= resArrInt [resArrIntIndex] ) ? true : false;
+					}
+
+					if 	((A1 -> data -> type == t_expr_int || A1 -> data -> type == sym_var_int) &&
+						 (A2 -> data -> type == t_expr_dou || A2 -> data -> type == sym_var_rea)  )
+					{
+						if (realOnly == true)
+							lastbool = ( resArrDou [resArrDouIndex-1] >= resArrDou [resArrDouIndex] ) ? true : false;
+						else
+							lastbool = ( resArrInt [resArrIntIndex-1] >= resArrInt [resArrIntIndex] ) ? true : false;
+					}
+
+					if(debug == true) printf("MORE: %g\n", lastbool);
+					break;
+				}
+
+				errorHandler (errRunRest);
+
 				break;
 
 			case I_ELESS:
 				
-				temp = ((tNodePtr) new->adr1);
-				temp2 = ((tNodePtr) new->adr2);
-				
-				if(temp->data->type == t_expr_int || temp->data->type == sym_var_int)
+							
+				A1 = (tNodePtr) new -> adr1;
+				A2 = (tNodePtr) new -> adr2;
+
+				// Prisli nam dve nove adresy => zaciatok noveho medzivypoctu
+
+				if (A1 -> data -> used == false && A2 -> data -> used == false)
 				{
-					if(temp->data->content.integer <= temp2->data->content.integer)
-					{
-						
-						lastbool = true;
-				
-				
-					} else 
-					{
-						
-						lastbool = false;
-						
-					}
-				} else if(temp->data->type == t_expr_dou || temp->data->type == sym_var_rea)
-				{
-					if(temp->data->content.real <= temp2->data->content.real)
-					{
-						
-						lastbool = true;
-				
-				
-					} else 
-					{
-						
-						lastbool = false;
+					if (debug == true) printf("dve nove\n");
+
+					if (A1 -> data -> content . initialized == false ||
+						A2 -> data -> content . initialized == false  ) 
+						errorHandler (errRunUnin);
+
 					
+					if ((A1 -> data -> type == t_expr_int || A1 -> data -> type == sym_var_int) &&
+						(A2 -> data -> type == t_expr_int || A2 -> data -> type == sym_var_int))
+					{	
+						lastbool = (A1 -> data -> content . integer <= A2 -> data -> content . integer ) ? true : false;
 					}
-				} else if(temp->data->type == t_expr_str || temp->data->type == sym_var_str)
-				{
-					cmp = strcmp(temp->data->content.string, temp2->data->content.string);
-					if(cmp <= 0)
-					{
-						
-						lastbool = true;
-				
-				
-					} else 
-					{
-						
-						lastbool = false;
-						
+
+					if ((A1 -> data -> type == t_expr_dou || A1 -> data -> type == sym_var_rea) &&
+						(A2 -> data -> type == t_expr_dou || A2 -> data -> type == sym_var_rea))
+					{	
+						lastbool = (A1 -> data -> content . real <= A2 -> data -> content . real ) ? true : false;
 					}
-				} else 
-				{
-					if(temp->data->content.boolean <= temp2->data->content.boolean)
-					{
-						
-						lastbool = true;
-					
-				
-					} else 
-					{
-						
-						lastbool = false;
-					
+
+					if ((A1 -> data -> type == t_expr_str || A1 -> data -> type == sym_var_str) &&
+						(A2 -> data -> type == t_expr_str || A2 -> data -> type == sym_var_str))
+					{	
+						cmp = strcmp (A1 -> data -> content . string, A2 -> data -> content . string);
+						lastbool = (cmp <= 0) ? true : false;
 					}
+
+					if ((A1 -> data -> type == t_expr_boo || A1 -> data -> type == sym_var_boo) &&
+						(A2 -> data -> type == t_expr_boo || A2 -> data -> type == sym_var_boo))
+					{	
+						lastbool = (A1 -> data -> content . boolean <= A2 -> data -> content . boolean) ? true : false;
+					}
+					A1 -> data -> used = true;
+					A2 -> data -> used = true;
+
+					if(debug == true) printf("MORE: %d\n", lastbool);
+
+					break;
 				}
+
+				// Prva adresa nebola pouzita ale druha ano => pouzijem prvu
+
+				if (A1 -> data -> used == false && A2 -> data -> used == true)
+				{	
+					if (debug == true) printf("prva\n");
+
+					if (A1 -> data -> content . initialized == false) 
+						errorHandler (errRunUnin);
+
+					if (A1 -> data -> type == t_expr_int || A1 -> data -> type == sym_var_int)
+					{	
+						lastbool = (A1 -> data -> content . integer <= resArrInt [resArrIntIndex] ) ? true : false;
+					}
+
+					if (A1 -> data -> type == t_expr_dou || A1 -> data -> type == sym_var_rea)
+					{	
+						lastbool = (A1 -> data -> content . real <= resArrDou [resArrDouIndex] ) ? true : false;
+					}
+
+					A1 -> data -> used = true;
+
+					if(debug == true) printf("MORE: %d\n", lastbool);
+					break;
+				}
+
+				// Prva adresa uz bola druha nie  => pouzijem druhu
+
+				
+				if (A1 -> data -> used == true && A2 -> data -> used == false)
+				{	
+					if (debug == true) printf("druha\n");
+
+					if (A2 -> data -> content . initialized == false) 
+						errorHandler (errRunUnin);
+
+					if (A2 -> data -> type == t_expr_int || A2 -> data -> type == sym_var_int)
+					{	
+						lastbool = ( resArrInt [resArrIntIndex] <= A2 -> data -> content . integer ) ? true : false;
+					}
+
+					if (A2 -> data -> type == t_expr_dou || A2 -> data -> type == sym_var_rea)
+					{	
+						lastbool = ( resArrDou [resArrDouIndex] <= A2 -> data -> content . real ) ? true : false;
+					}
+
+					A2 -> data -> used = true;
+
+					if(debug == true) printf("MORE: %d\n", lastbool);
+					break;
+				}
+
+				// Obe adresy boli pouzite => zratam medzivysledky
+
+				if (A1 -> data -> used == true && A2 -> data -> used == true)
+				{
+					if (debug == true) printf("aniani\n");
+
+					if 	((A1 -> data -> type == t_expr_int || A1 -> data -> type == sym_var_int) &&
+						 (A2 -> data -> type == t_expr_int || A2 -> data -> type == sym_var_int)  )
+					{
+						if (realOnly == true)
+							lastbool = ( resArrDou [resArrDouIndex-1] <= resArrDou [resArrDouIndex] ) ? true : false;
+						else
+							lastbool = ( resArrInt [resArrIntIndex-1] <= resArrInt [resArrIntIndex] ) ? true : false;
+					}
+
+					if 	((A1 -> data -> type == t_expr_dou || A1 -> data -> type == sym_var_rea) &&
+						 (A2 -> data -> type == t_expr_dou || A2 -> data -> type == sym_var_rea)  )
+					{
+						lastbool = ( resArrDou [resArrDouIndex-1] <= resArrDou [resArrDouIndex] ) ? true : false;
+					}
+
+					if 	((A1 -> data -> type == t_expr_dou || A1 -> data -> type == sym_var_rea) &&
+						 (A2 -> data -> type == t_expr_int || A2 -> data -> type == sym_var_int)  )
+					{
+						if (realOnly == true)
+							lastbool = ( resArrDou [resArrDouIndex-1] <= resArrDou [resArrDouIndex] ) ? true : false;
+						else
+							lastbool = ( resArrInt [resArrIntIndex-1] <= resArrInt [resArrIntIndex] ) ? true : false;
+					}
+
+					if 	((A1 -> data -> type == t_expr_int || A1 -> data -> type == sym_var_int) &&
+						 (A2 -> data -> type == t_expr_dou || A2 -> data -> type == sym_var_rea)  )
+					{
+						if (realOnly == true)
+							lastbool = ( resArrDou [resArrDouIndex-1] <= resArrDou [resArrDouIndex] ) ? true : false;
+						else
+							lastbool = ( resArrInt [resArrIntIndex-1] <= resArrInt [resArrIntIndex] ) ? true : false;
+					}
+
+					if(debug == true) printf("MORE: %g\n", lastbool);
+					break;
+				}
+
+				errorHandler (errRunRest);
+
 				break;
 
 			case I_EQUAL:
 				
-				temp = ((tNodePtr) new->adr1);
-				temp2 = ((tNodePtr) new->adr2);
+							
+				A1 = (tNodePtr) new -> adr1;
+				A2 = (tNodePtr) new -> adr2;
 
-				if(temp->data->type == t_expr_int || temp->data->type == sym_var_int)
+				// Prisli nam dve nove adresy => zaciatok noveho medzivypoctu
+
+				if (A1 -> data -> used == false && A2 -> data -> used == false)
 				{
-					if(temp->data->content.integer == temp2->data->content.integer)
-					{
-						
-						lastbool = true;
-						
-				
-					} else 
-					{
-						
-						lastbool = false;
+					if (debug == true) printf("dve nove\n");
+
+					if (A1 -> data -> content . initialized == false ||
+						A2 -> data -> content . initialized == false  ) 
+						errorHandler (errRunUnin);
+
 					
+					if ((A1 -> data -> type == t_expr_int || A1 -> data -> type == sym_var_int) &&
+						(A2 -> data -> type == t_expr_int || A2 -> data -> type == sym_var_int))
+					{	
+						lastbool = (A1 -> data -> content . integer == A2 -> data -> content . integer ) ? true : false;
 					}
-				} else if(temp->data->type == t_expr_dou || temp->data->type == sym_var_rea)
-				{
-					if(temp->data->content.real == temp2->data->content.real)
-					{
-						
-						lastbool = true;
-					
-				
-					} else 
-					{
-						
-						lastbool = false;
-						
+
+					if ((A1 -> data -> type == t_expr_dou || A1 -> data -> type == sym_var_rea) &&
+						(A2 -> data -> type == t_expr_dou || A2 -> data -> type == sym_var_rea))
+					{	
+						lastbool = (A1 -> data -> content . real == A2 -> data -> content . real ) ? true : false;
 					}
-				} else if(temp->data->type == t_expr_str || temp->data->type == sym_var_str)
-				{
-					cmp = strcmp(temp->data->content.string, temp2->data->content.string);
-					if(cmp == 0)
-					{
-						
-						lastbool = true;
-					
-				
-					} else 
-					{
-						
-						lastbool = false;
-				
+
+					if ((A1 -> data -> type == t_expr_str || A1 -> data -> type == sym_var_str) &&
+						(A2 -> data -> type == t_expr_str || A2 -> data -> type == sym_var_str))
+					{	
+						cmp = strcmp (A1 -> data -> content . string, A2 -> data -> content . string);
+						lastbool = (cmp == 0) ? true : false;
 					}
-				} else 
-				{
-					if(temp->data->content.boolean == temp2->data->content.boolean)
-					{
-						
-						lastbool = true;
-				
-				
-					} else 
-					{
-						
-						lastbool = false;
-				
+
+					if ((A1 -> data -> type == t_expr_boo || A1 -> data -> type == sym_var_boo) &&
+						(A2 -> data -> type == t_expr_boo || A2 -> data -> type == sym_var_boo))
+					{	
+						lastbool = (A1 -> data -> content . boolean == A2 -> data -> content . boolean) ? true : false;
 					}
+					A1 -> data -> used = true;
+					A2 -> data -> used = true;
+
+					if(debug == true) printf("MORE: %d\n", lastbool);
+
+					break;
 				}
+
+				// Prva adresa nebola pouzita ale druha ano => pouzijem prvu
+
+				if (A1 -> data -> used == false && A2 -> data -> used == true)
+				{	
+					if (debug == true) printf("prva\n");
+
+					if (A1 -> data -> content . initialized == false) 
+						errorHandler (errRunUnin);
+
+					if (A1 -> data -> type == t_expr_int || A1 -> data -> type == sym_var_int)
+					{	
+						lastbool = (A1 -> data -> content . integer == resArrInt [resArrIntIndex] ) ? true : false;
+					}
+
+					if (A1 -> data -> type == t_expr_dou || A1 -> data -> type == sym_var_rea)
+					{	
+						lastbool = (A1 -> data -> content . real == resArrDou [resArrDouIndex] ) ? true : false;
+					}
+
+					A1 -> data -> used = true;
+
+					if(debug == true) printf("MORE: %d\n", lastbool);
+					break;
+				}
+
+				// Prva adresa uz bola druha nie  => pouzijem druhu
+
+				
+				if (A1 -> data -> used == true && A2 -> data -> used == false)
+				{	
+					if (debug == true) printf("druha\n");
+
+					if (A2 -> data -> content . initialized == false) 
+						errorHandler (errRunUnin);
+
+					if (A2 -> data -> type == t_expr_int || A2 -> data -> type == sym_var_int)
+					{	
+						lastbool = ( resArrInt [resArrIntIndex] == A2 -> data -> content . integer ) ? true : false;
+					}
+
+					if (A2 -> data -> type == t_expr_dou || A2 -> data -> type == sym_var_rea)
+					{	
+						lastbool = ( resArrDou [resArrDouIndex] == A2 -> data -> content . real ) ? true : false;
+					}
+
+					A2 -> data -> used = true;
+
+					if(debug == true) printf("MORE: %d\n", lastbool);
+					break;
+				}
+
+				// Obe adresy boli pouzite => zratam medzivysledky
+
+				if (A1 -> data -> used == true && A2 -> data -> used == true)
+				{
+					if (debug == true) printf("aniani\n");
+
+					if 	((A1 -> data -> type == t_expr_int || A1 -> data -> type == sym_var_int) &&
+						 (A2 -> data -> type == t_expr_int || A2 -> data -> type == sym_var_int)  )
+					{
+						if (realOnly == true)
+							lastbool = ( resArrDou [resArrDouIndex-1] == resArrDou [resArrDouIndex] ) ? true : false;
+						else
+							lastbool = ( resArrInt [resArrIntIndex-1] == resArrInt [resArrIntIndex] ) ? true : false;
+					}
+
+					if 	((A1 -> data -> type == t_expr_dou || A1 -> data -> type == sym_var_rea) &&
+						 (A2 -> data -> type == t_expr_dou || A2 -> data -> type == sym_var_rea)  )
+					{
+						lastbool = ( resArrDou [resArrDouIndex-1] == resArrDou [resArrDouIndex] ) ? true : false;
+					}
+
+					if 	((A1 -> data -> type == t_expr_dou || A1 -> data -> type == sym_var_rea) &&
+						 (A2 -> data -> type == t_expr_int || A2 -> data -> type == sym_var_int)  )
+					{
+						if (realOnly == true)
+							lastbool = ( resArrDou [resArrDouIndex-1] == resArrDou [resArrDouIndex] ) ? true : false;
+						else
+							lastbool = ( resArrInt [resArrIntIndex-1] == resArrInt [resArrIntIndex] ) ? true : false;
+					}
+
+					if 	((A1 -> data -> type == t_expr_int || A1 -> data -> type == sym_var_int) &&
+						 (A2 -> data -> type == t_expr_dou || A2 -> data -> type == sym_var_rea)  )
+					{
+						if (realOnly == true)
+							lastbool = ( resArrDou [resArrDouIndex-1] == resArrDou [resArrDouIndex] ) ? true : false;
+						else
+							lastbool = ( resArrInt [resArrIntIndex-1] == resArrInt [resArrIntIndex] ) ? true : false;
+					}
+
+					if(debug == true) printf("MORE: %g\n", lastbool);
+					break;
+				}
+
+				errorHandler (errRunRest);
+
 				break;
 			
 			case I_NEQUAL:
 				
-				temp = ((tNodePtr) new->adr1);
-				temp2 = ((tNodePtr) new->adr2);
+							
+				A1 = (tNodePtr) new -> adr1;
+				A2 = (tNodePtr) new -> adr2;
 
-				if(temp->data->type == t_expr_int || temp->data->type == sym_var_int)
+				// Prisli nam dve nove adresy => zaciatok noveho medzivypoctu
+
+				if (A1 -> data -> used == false && A2 -> data -> used == false)
 				{
-					if(temp->data->content.integer != temp2->data->content.integer)
-					{
-						
-						lastbool = true;
+					if (debug == true) printf("dve nove\n");
+
+					if (A1 -> data -> content . initialized == false ||
+						A2 -> data -> content . initialized == false  ) 
+						errorHandler (errRunUnin);
+
 					
-				
-					} else 
-					{
-						
-						lastbool = false;
-				
-				
+					if ((A1 -> data -> type == t_expr_int || A1 -> data -> type == sym_var_int) &&
+						(A2 -> data -> type == t_expr_int || A2 -> data -> type == sym_var_int))
+					{	
+						lastbool = (A1 -> data -> content . integer != A2 -> data -> content . integer ) ? true : false;
 					}
-				} else if(temp->data->type == t_expr_dou || temp->data->type == sym_var_rea)
-				{
-					if(temp->data->content.real != temp2->data->content.real)
-					{
-						
-						lastbool = true;
-					
-					} else 
-					{
-						
-						lastbool = false;
-						
+
+					if ((A1 -> data -> type == t_expr_dou || A1 -> data -> type == sym_var_rea) &&
+						(A2 -> data -> type == t_expr_dou || A2 -> data -> type == sym_var_rea))
+					{	
+						lastbool = (A1 -> data -> content . real != A2 -> data -> content . real ) ? true : false;
 					}
-				} else if(temp->data->type == t_expr_str || temp->data->type == sym_var_str)
-				{
-					cmp = strcmp(temp->data->content.string, temp2->data->content.string);
-					if(cmp != 0)
-					{
-						
-						lastbool = true;
-						
-				
-					} else 
-					{
-						
-						lastbool = false;
-						
+
+					if ((A1 -> data -> type == t_expr_str || A1 -> data -> type == sym_var_str) &&
+						(A2 -> data -> type == t_expr_str || A2 -> data -> type == sym_var_str))
+					{	
+						cmp = strcmp (A1 -> data -> content . string, A2 -> data -> content . string);
+						lastbool = (cmp != 0) ? true : false;
 					}
-				} else 
-				{
-					if(temp->data->content.boolean != temp2->data->content.boolean)
-					{
-						
-						lastbool = true;
-					
-				
-					} else 
-					{
-						
-						lastbool = false;
+
+					if ((A1 -> data -> type == t_expr_boo || A1 -> data -> type == sym_var_boo) &&
+						(A2 -> data -> type == t_expr_boo || A2 -> data -> type == sym_var_boo))
+					{	
+						lastbool = (A1 -> data -> content . boolean != A2 -> data -> content . boolean) ? true : false;
 					}
+					A1 -> data -> used = true;
+					A2 -> data -> used = true;
+
+					if(debug == true) printf("MORE: %d\n", lastbool);
+
+					break;
 				}
+
+				// Prva adresa nebola pouzita ale druha ano => pouzijem prvu
+
+				if (A1 -> data -> used == false && A2 -> data -> used == true)
+				{	
+					if (debug == true) printf("prva\n");
+
+					if (A1 -> data -> content . initialized == false) 
+						errorHandler (errRunUnin);
+
+					if (A1 -> data -> type == t_expr_int || A1 -> data -> type == sym_var_int)
+					{	
+						lastbool = (A1 -> data -> content . integer != resArrInt [resArrIntIndex] ) ? true : false;
+					}
+
+					if (A1 -> data -> type == t_expr_dou || A1 -> data -> type == sym_var_rea)
+					{	
+						lastbool = (A1 -> data -> content . real != resArrDou [resArrDouIndex] ) ? true : false;
+					}
+
+					A1 -> data -> used = true;
+
+					if(debug == true) printf("MORE: %d\n", lastbool);
+					break;
+				}
+
+				// Prva adresa uz bola druha nie  => pouzijem druhu
+
+				
+				if (A1 -> data -> used == true && A2 -> data -> used == false)
+				{	
+					if (debug == true) printf("druha\n");
+
+					if (A2 -> data -> content . initialized == false) 
+						errorHandler (errRunUnin);
+
+					if (A2 -> data -> type == t_expr_int || A2 -> data -> type == sym_var_int)
+					{	
+						lastbool = ( resArrInt [resArrIntIndex] != A2 -> data -> content . integer ) ? true : false;
+					}
+
+					if (A2 -> data -> type == t_expr_dou || A2 -> data -> type == sym_var_rea)
+					{	
+						lastbool = ( resArrDou [resArrDouIndex] != A2 -> data -> content . real ) ? true : false;
+					}
+
+					A2 -> data -> used = true;
+
+					if(debug == true) printf("MORE: %d\n", lastbool);
+					break;
+				}
+
+				// Obe adresy boli pouzite => zratam medzivysledky
+
+				if (A1 -> data -> used == true && A2 -> data -> used == true)
+				{
+					if (debug == true) printf("aniani\n");
+
+					if 	((A1 -> data -> type == t_expr_int || A1 -> data -> type == sym_var_int) &&
+						 (A2 -> data -> type == t_expr_int || A2 -> data -> type == sym_var_int)  )
+					{
+						if (realOnly == true)
+							lastbool = ( resArrDou [resArrDouIndex-1] != resArrDou [resArrDouIndex] ) ? true : false;
+						else
+							lastbool = ( resArrInt [resArrIntIndex-1] != resArrInt [resArrIntIndex] ) ? true : false;
+					}
+
+					if 	((A1 -> data -> type == t_expr_dou || A1 -> data -> type == sym_var_rea) &&
+						 (A2 -> data -> type == t_expr_dou || A2 -> data -> type == sym_var_rea)  )
+					{
+						lastbool = ( resArrDou [resArrDouIndex-1] != resArrDou [resArrDouIndex] ) ? true : false;
+					}
+
+					if 	((A1 -> data -> type == t_expr_dou || A1 -> data -> type == sym_var_rea) &&
+						 (A2 -> data -> type == t_expr_int || A2 -> data -> type == sym_var_int)  )
+					{
+						if (realOnly == true)
+							lastbool = ( resArrDou [resArrDouIndex-1] != resArrDou [resArrDouIndex] ) ? true : false;
+						else
+							lastbool = ( resArrInt [resArrIntIndex-1] != resArrInt [resArrIntIndex] ) ? true : false;
+					}
+
+					if 	((A1 -> data -> type == t_expr_int || A1 -> data -> type == sym_var_int) &&
+						 (A2 -> data -> type == t_expr_dou || A2 -> data -> type == sym_var_rea)  )
+					{
+						if (realOnly == true)
+							lastbool = ( resArrDou [resArrDouIndex-1] != resArrDou [resArrDouIndex] ) ? true : false;
+						else
+							lastbool = ( resArrInt [resArrIntIndex-1] != resArrInt [resArrIntIndex] ) ? true : false;
+					}
+
+					if(debug == true) printf("MORE: %g\n", lastbool);
+					break;
+				}
+
+				errorHandler (errRunRest);
+
 				break;
 							//FUNKCIE//
 			
