@@ -3,12 +3,16 @@
 int kanter=0;
 bool lastbool;
 bool vypocet = false;
-int lastint = 0;
+int readyInt = 0;
+int resArrIntIndex = -1;
+int resArrDouIndex = -1;
 double lastdouble = 0;
 char *laststring = NULL;
 char *tmpstring = NULL;
 void * lastAdr = NULL;
 void * lastAdr1 = NULL;
+bool recycleAdr = false;
+int * currentInstType;
 
 
 
@@ -28,9 +32,44 @@ char *concate(char *s1, char *s2)
 	return result;
 }
 
+void * preklopenie (tInsList *currIL)
+{
+	
+	struct ListItem *origActiv = currIL -> active;
+	First(currIL);
+	while (currIL -> active != NULL)
+			{
+				currentInstType = & (currIL -> active -> instruction . instype);
+
+				if ( * currentInstType >= I_ADDI   &&
+					 * currentInstType <= I_NEQUAL &&
+					 * currentInstType != I_ASGNI  &&
+					 * currentInstType != I_ASGNS  &&
+					 * currentInstType != I_ASGNR  &&
+					 * currentInstType != I_ASGNB   )
+				{
+					if (currIL -> active -> instruction . adr1 != NULL)
+						((tNodePtr)currIL -> active -> instruction . adr1)->data->used = false;
+					if (currIL -> active -> instruction . adr2 != NULL)
+						((tNodePtr)currIL -> active -> instruction . adr2)->data->used = false;
+				
+				}
+
+			Succ(currIL);
+			}
+	currIL->active=origActiv;
+}
+
+//Funkcia na prehodenie hodnot z integroveho pola do pola double
+void intArr2douArr (int * intArr [], double * douArr [], int count)
+{
+	for (int i = 0; i < count; ++i)
+		* douArr [i] = (double) * (intArr [i]);
+}
+
 int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 {
-	printf("zacal interpret a som v insliste %u\n",currIL);
+	if(debug == true) printf("zacal interpret a som v insliste %u\n",currIL);
 
 	tContent conOld[100];
 	tContent conVarOld;
@@ -38,20 +77,87 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 	int l;
 	int r;
 	int cmp;
-	First(currIL);
+	
 	tInstruction *new;
 	tNodePtr temp;
 	tNodePtr temp2;
 
+	tNodePtr A1 = NULL;
+	tNodePtr A2 = NULL;
 
-	if(debug == true)
-	{
-		while(currIL->active != NULL) {
+	int longestExpressionLength = 0; //dlzka najdlhsieho vyrazu
+	int currentExpressionLength = 0; //dlzka aktualneho vyrazu
+	First(currIL);
+	//if(debug == true)
+	//{
+		//Prechadzanie vsetkych instrukcii z listu pre anál
+		while (currIL -> active != NULL)
+		{
+			currentInstType = & (currIL -> active -> instruction . instype);
+			
+			// Nájdenie najdlhšieho výrazu (počet operátorov)
 
-		printf("INSTUKCIE LISTU %d: %d\n", currIL, currIL->active->instruction.instype);
+			if ( * currentInstType >= I_ADDI   &&
+				 * currentInstType <= I_NEQUAL &&
+				 * currentInstType != I_ASGNI  &&
+				 * currentInstType != I_ASGNS  &&
+				 * currentInstType != I_ASGNR  &&
+				 * currentInstType != I_ASGNB   )
+				
+				{
+					currentExpressionLength++;
+					if (recycleAdr == true)
+					{
+						if (currIL -> active -> instruction . adr1 != NULL)
+							//printf("ADR1 je %p\n", (tNodePtr)new->adr1);
+						{
+							printf("idem dat false na %s\n",((tNodePtr)currIL -> active -> instruction . adr1)->key);
+							printf("jeho iteger je %d\n", ((tNodePtr)currIL -> active -> instruction . adr1)->data->content.integer );
+							((tNodePtr)currIL -> active -> instruction . adr1)->data->used = false;
+						}
+						if (currIL -> active -> instruction . adr2 != NULL)
+						{
+							printf("idem dat false na %s\n",((tNodePtr)currIL -> active -> instruction . adr2)->key);
+							printf("jeho iteger je %d\n", ((tNodePtr)currIL -> active -> instruction . adr2)->data->content.integer );
+							((tNodePtr)currIL -> active -> instruction . adr2)->data->used = false;
+						}
+					}
+				}
+			else
+			{
+				if (debug == true) printf ("currentExpressionLength: %d\n", currentExpressionLength);
+				if ( currentExpressionLength > longestExpressionLength)
+					longestExpressionLength = currentExpressionLength;
+				currentExpressionLength = 0;
+			}
+
+			// Koniec hladania najdlhšieho výrazu (počet operátorov)
+
+		/*	new = Copy(currIL);
+		
+		if (currIL->active->instruction.instype !=32)
+		{	
+		*/printf("INSTUKCIE LISTU %d: %d \n", currIL, currIL->active->instruction.instype);/*
+		if (((tNodePtr)new->adr1) != NULL)
+		printf("A1 = %p:  %d | ", (void*)((tNodePtr)new->adr1), ((tNodePtr)new->adr1)->data->content.integer);
+		if (((tNodePtr)new->adr2) != NULL)
+		printf("A2 = %p:  %d", (void*)((tNodePtr)new->adr2),  ((tNodePtr)new->adr2)->data->content.integer);
+		printf("\n");
+		//if (((tNodePtr)new->result) != NULL)
+		//printf("RE:  %d | \n",  ((tNodePtr)new->result)->data->content.integer);*/
+		
+		//}
 		Succ(currIL);
 		}
-	}
+		if (recycleAdr==true) recycleAdr=false;
+		printf("longestExpressionLength: %d\n",longestExpressionLength);
+	//}
+	new = NULL;
+
+
+
+	int resArrInt [longestExpressionLength];
+	int resArrDou [longestExpressionLength];
 
 	First(currIL);
 
@@ -69,55 +175,98 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
             case I_NOP: break;
 							//ARITMETICKE OPERACIE//
 			case I_ADDI:
-				
-				if(((tNodePtr) new->adr2) == NULL)
+				A1 = (tNodePtr) new -> adr1;
+				A2 = (tNodePtr) new -> adr2;
+
+				// Prisla nam len jedna adresa => priradenie
+
+				if (A2 == NULL)
 				{
-					temp = ((tNodePtr) new->adr1);
+					if (debug == true) printf("len priradenie\n");
 
-					//printf("TEMP: %d\n", temp->data->content.integer);
+					if (A1 -> data -> content . initialized == false) 
+						errorHandler (errRunUnin);
 
+					readyInt = A1 -> data -> content . integer;
 
-					//if(debug == true)printf("\n\n Horne %d + %d | LI:%d A1:%d A2:%d\n\n", lastint,temp->data->content.integer,lastint,temp->data->content.integer,((tNodePtr)new->adr2)->data->content.integer);
-
-
-					lastint += temp->data->content.integer;
-					//if(debug == true)printf("lastint: \n", lastint);
+					if(debug == true) printf("ADDI: %d\n", readyInt);
+					break;
 				}
-				else
+
+				// Prisli nam dve nove adresy => zaciatok noveho medzivypoctu
+
+				if (A1 -> data -> used == false && A2 -> data -> used == false)
 				{
-					if(vypocet == false)
-					{
-						temp = ((tNodePtr) new->adr1);//	printf("TEMP v else: %d\n", temp->data->content.integer);
-						temp2 = ((tNodePtr)new->adr2);//	printf("TEMP2 v else: %d\n", temp2->data->content.integer);
-						lastAdr = temp2;
-						//if(debug == true)printf("LASTADR je %p\n",lastAdr );
+					if (debug == true) printf("dve nove\n");
 
-						//if(debug == true)printf("\n\n Stredne %d + %d + %d | LI:%d A1:%d A2:%d\n\n", lastint, temp->data->content.integer,temp2->data->content.integer,lastint,temp->data->content.integer,temp2->data->content.integer);
+					if (A1 -> data -> content . initialized == false ||
+						A2 -> data -> content . initialized == false  ) 
+						errorHandler (errRunUnin);
 
+					resArrIntIndex++;
+					resArrInt [resArrIntIndex] = A1 -> data -> content . integer + A2 -> data -> content . integer;
+					A1 -> data -> used = true;
+					A2 -> data -> used = true;
+					readyInt = resArrInt [resArrIntIndex];
 
-						lastint += temp->data->content.integer + temp2->data->content.integer;	//printf("lastint  v else %d\n", lastint);
-						vypocet = true;
-					} else
-					{
-						temp = ((tNodePtr) new->adr1);	//printf("TEMP posledny: %d\n", temp->data->content.integer);
-						temp2 = ((tNodePtr) new->adr2);	//if(debug == true)printf("TEMP2 posledny: %d\n", temp2->data->content.integer);
-						lastAdr = temp2;
-						//if(debug == true)printf("LASTADR je %p\n",lastAdr );
-
-						if ( lastAdr==lastAdr1)
-						{
-							temp2 = ((tNodePtr) new->adr1);
-							//if(debug == true)printf("narval som adresu jedna do adresy 2\n");
-						}
-						//if(debug == true)printf("\n\n Dolne %d + %d | LI:%d A1:%d A2:%d\n\n", lastint,temp2->data->content.integer,lastint,((tNodePtr)new->adr1)->data->content.integer,temp2->data->content.integer);
-
-						
-						lastint += temp2->data->content.integer;	if(debug == true)printf("LASTINT: %d\n", lastint);
-					}		
+					if(debug == true) printf("ADDI: %d\n", readyInt);
+					break;
 				}
-				
-				if(debug == true)
-					printf("ADDI: %d\n", lastint);
+
+				// Prva adresa nebola pouzita ale druha ano => pouzijem prvu
+
+				if (A1 -> data -> used == false && A2 -> data -> used == true)
+				{	
+					if (debug == true) printf("prva\n");
+
+					if (A1 -> data -> content . initialized == false) 
+						errorHandler (errRunUnin);
+
+					resArrInt [resArrIntIndex] += A1 -> data -> content . integer;
+					A1 -> data -> used = true;
+					readyInt = resArrInt [resArrIntIndex];
+
+					if(debug == true) printf("ADDI: %d\n", readyInt);
+					break;
+				}
+
+				// Prva adresa uz bola druha nie  => pouzijem druhu
+
+				if (A1 -> data -> used == true && A2 -> data -> used == false)
+				{
+					if (debug == true) printf("druha\n");
+
+					if (A2 -> data -> content . initialized == false) 
+						errorHandler (errRunUnin);
+
+					resArrInt [resArrIntIndex] += A2 -> data -> content . integer;
+					A2 -> data -> used = true;
+					readyInt = resArrInt [resArrIntIndex];
+
+					if(debug == true) printf("ADDI: %d\n", readyInt);
+					break;
+				}
+
+				// Obe adresy boli pouzite => zratam medzivysledky
+
+				if (A1 -> data -> used == true && A2 -> data -> used == true)
+				{
+					if (debug == true) printf("aniani\n");
+
+					if (resArrIntIndex-1 != -1)
+					{
+						resArrInt [resArrIntIndex-1] += resArrInt [resArrIntIndex];
+						resArrIntIndex--;
+					}
+					else
+						readyInt = resArrInt [resArrIntIndex];
+
+					if(debug == true) printf("ADDI: %d\n", readyInt);
+					break;
+				}
+
+				errorHandler (errRunRest);
+
 				break;
 			
 			case I_ADDR:
@@ -190,34 +339,93 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 				break;
 
 			case I_SUBI:
-				if(vypocet == false)
-				{
-					temp = ((tNodePtr) new->adr1);
-					temp2 = ((tNodePtr) new->adr2);
-					lastAdr = temp2;
-						//if(debug == true)printf("LASTADR je %p\n",lastAdr );
-					//if(debug == true)printf("\n\n%d - %d | LI:%d A1:%d A2:%d\n\n", temp->data->content.integer,temp2->data->content.integer,lastint,temp->data->content.integer,temp2->data->content.integer);
-					lastint = temp->data->content.integer - temp2->data->content.integer;
-					vypocet = true;
-				} else
-				{
-					temp2 = ((tNodePtr)new->adr2);
-					lastAdr = temp2;
-						//if(debug == true)printf("LASTADR je %p\n",lastAdr );
-					//if(debug == true)printf("\n\n%d - %d | LI:%d A1:%d A2:%d\n\n", lastint,temp2->data->content.integer,lastint,((tNodePtr)new->adr1)->data->content.integer,temp2->data->content.integer);
-					
-	//megakontrolasveta9000
-					if ( lastAdr==lastAdr1)
-						{
-							temp2 = ((tNodePtr) new->adr1);
-							///if(debug == true)printf("narval som adresu jedna do adresy 2\n");
-						}
+				A1 = (tNodePtr) new -> adr1;
+				A2 = (tNodePtr) new -> adr2;
 
-					lastint -= temp2->data->content.integer;
+				// Prisli nam dve nove adresy => zaciatok noveho medzivypoctu
+
+				if (A1 -> data -> used == false && A2 -> data -> used == false)
+				{
+					if (A1 -> data -> content . initialized == false ||
+						A2 -> data -> content . initialized == false  )
+					{
+						fprintf(stderr, "Variable '%s' uninitialized.\n", A1 -> data -> name);
+						errorHandler (errRunUnin);
+					}
+						
+
+					if (debug == true) printf("dve nove\n");
+
+					resArrIntIndex++;
+					resArrInt [resArrIntIndex] = A1 -> data -> content . integer - A2 -> data -> content . integer;
+					A1 -> data -> used = true;
+					A2 -> data -> used = true;
+					readyInt = resArrInt [resArrIntIndex];
+
+					if(debug == true) printf("SUBI: %d\n", readyInt);
+					break;
 				}
-				
-				if(debug == true)
-					printf("SUBI: %d\n", lastint);
+
+				// Prva adresa nebola pouzita ale druha ano => pouzijem prvu
+
+				if (A1 -> data -> used == false && A2 -> data -> used == true)
+				{	
+					if (A1 -> data -> content . initialized == false) 
+					{
+						fprintf(stderr, "Variable '%s' uninitialized.\n", A1 -> data -> name);
+						errorHandler (errRunUnin);
+					}
+
+					if (debug == true) printf("prva lebo druha menom %s mala used\n",A2 -> key);
+
+					resArrInt [resArrIntIndex] -= A1 -> data -> content . integer;
+					A1 -> data -> used = true;
+					readyInt = resArrInt [resArrIntIndex];
+
+					if(debug == true) printf("SUBI: %d\n", readyInt);
+					break;
+				}
+
+				// Prva adresa uz bola druha nie  => pouzijem druhu
+
+				if (A1 -> data -> used == true && A2 -> data -> used == false)
+				{
+					if (A2 -> data -> content . initialized == false) 
+					{
+						fprintf(stderr, "Variable '%s' uninitialized.\n", A1 -> data -> name);
+						errorHandler (errRunUnin);
+					}
+
+					if (debug == true) printf("druha\n");
+
+					resArrInt [resArrIntIndex] -= A2 -> data -> content . integer;
+					A2 -> data -> used = true;
+					readyInt = resArrInt [resArrIntIndex];
+
+					if(debug == true) printf("SUBI: %d\n", readyInt);
+					break;
+				}
+
+				// Obe adresy boli pouzite => zratam medzivysledky
+
+				if (A1 -> data -> used == true && A2 -> data -> used == true)
+				{
+					if (debug == true) printf("aniani\n");
+
+					if (resArrIntIndex-1 != -1)
+					{
+						resArrInt [resArrIntIndex-1] -= resArrInt [resArrIntIndex];
+						resArrIntIndex--;
+					}
+					else
+						readyInt = resArrInt [resArrIntIndex];
+
+					if(debug == true) printf("SUBI: %d\n", readyInt);
+					break;
+				}
+
+				errorHandler (errRunRest);
+
 				break;
 
 			case I_SUBR:
@@ -249,29 +457,85 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 				break;
 
 			case I_MULI:
-				if(vypocet == false)
-				{
-					temp = ((tNodePtr) new->adr1);
-					temp2 = ((tNodePtr) new->adr2);
-					lastAdr1 = temp;
-						//printf("LASTADR1 je %p\n",lastAdr1 );
-					//printf("\n\n%d * %d | LI:%d A1:%d A2:%d\n\n", temp->data->content.integer,temp2->data->content.integer,lastint,temp->data->content.integer,temp2->data->content.integer);
-					lastint = temp->data->content.integer * temp2->data->content.integer;
-					vypocet = true;
-				} 
-				else
-				{
-					temp2 = ((tNodePtr) new->adr2);
-					lastAdr1 = temp;
-						//printf("LASTADR1 je %p\n",lastAdr1 );
-					//printf("\n\n%d * %d | LI:%d A1:%d A2:%d\n\n", lastint,temp2->data->content.integer,lastint,((tNodePtr)new->adr1)->data->content.integer,temp2->data->content.integer);
-					lastint *= temp2->data->content.integer;
-				}
-				
-				if(debug == true)
-					printf("MULI: %d\n", lastint);
-				break;		
+				A1 = (tNodePtr) new -> adr1;
+				A2 = (tNodePtr) new -> adr2;
 
+				// Prisli nam dve nove adresy => zaciatok noveho medzivypoctu
+
+				if (A1 -> data -> used == false && A2 -> data -> used == false)
+				{
+					if (debug == true) printf("dve nove\n");
+
+					if (A1 -> data -> content . initialized == false ||
+						A2 -> data -> content . initialized == false  ) 
+						errorHandler (errRunUnin);
+
+					resArrIntIndex++;
+					resArrInt [resArrIntIndex] = A1 -> data -> content . integer * A2 -> data -> content . integer;
+					A1 -> data -> used = true;
+					A2 -> data -> used = true;
+					readyInt = resArrInt [resArrIntIndex];
+
+					if(debug == true) printf("MULI: %d\n", readyInt);
+					break;
+				}
+
+				// Prva adresa nebola pouzita ale druha ano => pouzijem prvu
+
+				if (A1 -> data -> used == false && A2 -> data -> used == true)
+				{	
+					if (debug == true) printf("prva\n");
+
+					if (A1 -> data -> content . initialized == false) 
+						errorHandler (errRunUnin);
+
+					resArrInt [resArrIntIndex] *= A1 -> data -> content . integer;
+					A1 -> data -> used = true;
+					readyInt = resArrInt [resArrIntIndex];
+
+					if(debug == true) printf("MULI: %d\n", readyInt);
+					break;
+				}
+
+				// Prva adresa uz bola druha nie  => pouzijem druhu
+
+				if (A1 -> data -> used == true && A2 -> data -> used == false)
+				{
+					if (debug == true) printf("druha\n");
+
+					if (A2 -> data -> content . initialized == false) 
+						errorHandler (errRunUnin);
+
+					resArrInt [resArrIntIndex] *= A2 -> data -> content . integer;
+					A2 -> data -> used = true;
+					readyInt = resArrInt [resArrIntIndex];
+
+					if(debug == true) printf("MULI: %d\n", readyInt);
+					break;
+				}
+
+				// Obe adresy boli pouzite => zratam medzivysledky
+
+				if (A1 -> data -> used == true && A2 -> data -> used == true)
+				{
+					if (debug == true) printf("aniani\n");
+
+					if (resArrIntIndex-1 != -1)
+					{
+						resArrInt [resArrIntIndex-1] *= resArrInt [resArrIntIndex];
+						resArrIntIndex--;
+					}
+					else
+						readyInt = resArrInt [resArrIntIndex];
+
+					if(debug == true) printf("MULI: %d\n", readyInt);
+					break;
+				}
+
+				errorHandler (errRunRest);
+
+				break;
+			
 			case I_MULR:
 
 				temp = ((tNodePtr) new->adr1);
@@ -296,7 +560,7 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 				}
 				
 				if(debug == true)
-					printf("MULR: %g\n", lastint);
+					printf("MULR: %g\n", readyInt);
 				break;
 			
 			/*case I_DIVI:
@@ -312,8 +576,8 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 					} 
 					else
 					{
-						//if(debug == true)printf("\n\n%d / %d | LI:%d A1:%d A2:%d\n\n", temp->data->content.integer,temp2->data->content.integer,lastint,temp->data->content.integer,temp2->data->content.integer);
-						lastint = temp->data->content.integer / temp2->data->content.integer;
+						//if(debug == true)printf("\n\n%d / %d | LI:%d A1:%d A2:%d\n\n", temp->data->content.integer,temp2->data->content.integer,readyInt,temp->data->content.integer,temp2->data->content.integer);
+						readyInt = temp->data->content.integer / temp2->data->content.integer;
 						vypocet = true;
 					}
 				} 
@@ -326,13 +590,13 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 						errorHandler(errRunZdiv);
 					} 
 					else 
-						{	//if(debug == true)printf("\n\n%d / %d | LI:%d A1:%d A2:%d\n\n", lastint,temp2->data->content.integer,lastint,((tNodePtr) new->adr1)->data->content.integer,temp2->data->content.integer);
-							lastint = lastint / temp2->data->content.integer;
+						{	//if(debug == true)printf("\n\n%d / %d | LI:%d A1:%d A2:%d\n\n", readyInt,temp2->data->content.integer,readyInt,((tNodePtr) new->adr1)->data->content.integer,temp2->data->content.integer);
+							readyInt = readyInt / temp2->data->content.integer;
 						}
 				}
 				
 				if(debug ==  true)
-					printf("DIVI: %d\n", lastint);
+					printf("DIVI: %d\n", readyInt);
 				break;
 */
 			case I_DIVR:
@@ -342,10 +606,11 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 
 				if(temp->data->type == sym_var_int || temp->data->type == t_expr_int)
 					temp->data->content.real = (double) temp->data->content.integer;
+	
 					
 				if(temp2->data->type == sym_var_int || temp2->data->type == t_expr_int)
 					temp2->data->content.real = (double) temp2->data->content.integer;
-
+			
 				if(vypocet == false)
 				{
 
@@ -379,11 +644,15 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 				break;		
 			
 			case I_ASGNI:						
-				if(lastint < 0) errorHandler(errRunRest);	
+				if (readyInt < 0) errorHandler(errRunRest);	
 
-				((tData) new->result)->content.integer = lastint;		
-				lastint = 0;
+				((tData) new->result)->content.integer = readyInt;
+				((tData) new->result)->content.initialized = true;		
+				readyInt = 0;
 				vypocet = false;
+				resArrIntIndex = -1;
+				preklopenie(currIL);
+
 
 				if(debug == true)	
 					printf("%svysledok ASGNI: %d%s\n", KGRN, (((tData) new->result)->content.integer),KNRM);
@@ -815,6 +1084,7 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 			case I_READI:
 				if(scanf("%d", &(((tData) new->result)->content.integer)) != 1)
 					errorHandler(errRunLoad);
+				((tData) new->result)->content.initialized = true;
 				
 				if (debug==true)
 					printf("%d\n", (((tData) new->result)->content.integer));
@@ -877,7 +1147,9 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 					printf("then vetva\n");//lastbool = 0;
 					tListItem * revert = currIL->active;
 					//printf("pamatam si %d\n",((tInsList *) new->adr1)->active->instruction.instype);
+					recycleAdr = true;
 					interpret(&rootTS, ((tInsList *) new->adr1));
+					preklopenie(currIL);
 
 					currIL->active = revert;
 					//((tInsList *) new->adr1)->active=revert->next;
@@ -889,7 +1161,10 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 					printf("volam picu z else\n");	//lastbool = 0;
 					tListItem * revert = currIL->active;
 					//tListItem * revert = ((tInsList *) new->adr1)->active;
+					recycleAdr = true;
 					interpret(&rootTS, ((tInsList *) new->adr2));
+					preklopenie(currIL);
+
 					//((tInsList *) new->adr1)->active=revert->next;
 					currIL->active = revert;
 					break;
@@ -901,8 +1176,9 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 
 				while(lastbool == true)
 				{
+					recycleAdr = true;
 					interpret(&rootTS, ((tInsList *) new->adr1));
-					//getchar();
+					preklopenie(currIL);
 				}
 				break;
 
@@ -912,7 +1188,7 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 
 				printf("FUNKCIA ZACINA DRZTE SI KLOBUKY\n");
 				currentTerm = (((tData) new->adr1)->nextArg);
-				printf("%s\n", currentTerm->data->name);
+				//printf("%s\n", currentTerm->data->name);
 				//odpamatanie kokotka
 				if(new->result!=NULL)
 				conVarOld = *((tContent *) new->result);//else printf("je nal kokot\n");
@@ -940,8 +1216,8 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 
 				if(strcmp(nazovfunkcie, "length") == 0)
 				{
-					lastint = strlen(((tData) new->adr1)->nextArg->data->content.string);
-					//printf("%d\n", lastint);
+					readyInt = strlen(((tData) new->adr1)->nextArg->data->content.string);
+					//printf("%d\n", readyInt);
 				}
 				else
 					if(strcmp(nazovfunkcie, "copy") == 0)
@@ -953,7 +1229,7 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 					else
 						if(strcmp(nazovfunkcie, "find") == 0)
 						{
-							lastint = BMASearch(((tData) new->adr1)->nextArg->data->content.string,
+							readyInt = BMASearch(((tData) new->adr1)->nextArg->data->content.string,
 											 ((tData) new->adr1)->nextArg->data->nextArg->data->content.string);
 						}
 						else
@@ -969,7 +1245,9 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 								kanter++;
 								printf("__________________________________LEVEL_VNORENI_%d\n",kanter);
 								
+								recycleAdr = true;
 								interpret(/*&(((tData) new->adr1)->localTSadr)*/NULL, (((tData) new->adr1)->localILadr));
+								preklopenie(currIL);
 								
 								printf("__________________________________END_%d\n",kanter);kanter--;
 								
@@ -982,7 +1260,7 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 								{
 									case sym_fun_int:
 									case sym_fok_int:	
-										lastint = (*((tContent *) new->result)).integer;
+										readyInt = (*((tContent *) new->result)).integer;
 										break;
 
 									case sym_fun_rea:
@@ -1002,7 +1280,7 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 									default: printf("KORVOOOOOOOOOOOOOOOOOOOOO\n");exit(563415616);
 								}
 								//printf("vratil som %d\n", (*((tContent *) new->result)).integer);
-								//printf("lastint je %d\n",lastint );
+								//printf("readyInt je %d\n",readyInt );
 
 				                *((tContent *) new->result) = conVarOld;
 				                //printf("obnovil som si kokotka %d\n",(*((tContent *) new->result)).integer);
