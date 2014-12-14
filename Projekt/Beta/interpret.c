@@ -601,13 +601,13 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 					intArr2douArr(&(resArrInt[0]),&(resArrDou[0]),longestExpressionLength);
 				}
 
+				A1 = (tNodePtr) new -> adr1;
+				A2 = (tNodePtr) new -> adr2;
+
 				if (A1 -> data -> type == t_expr_int || A1 -> data -> type == sym_var_int )
 					A1 -> data -> content . real = (double) A1 -> data -> content . integer;
 				if (A2 -> data -> type == t_expr_int || A2 -> data -> type == sym_var_int )
 					A2 -> data -> content . real = (double) A2 -> data -> content . integer;
-
-				A1 = (tNodePtr) new -> adr1;
-				A2 = (tNodePtr) new -> adr2;
 
 				// Prisli nam dve nove adresy => zaciatok noveho medzivypoctu
 
@@ -814,14 +814,13 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 					intArr2douArr(&(resArrInt[0]),&(resArrDou[0]),longestExpressionLength);
 				}
 
+				A1 = (tNodePtr) new -> adr1;
+				A2 = (tNodePtr) new -> adr2;
+
 				if (A1 -> data -> type == t_expr_int || A1 -> data -> type == sym_var_int )
 					A1 -> data -> content . real = (double) A1 -> data -> content . integer;
 				if (A2 -> data -> type == t_expr_int || A2 -> data -> type == sym_var_int )
 					A2 -> data -> content . real = (double) A2 -> data -> content . integer;
-
-				realOnly = true;
-				A1 = (tNodePtr) new -> adr1;
-				A2 = (tNodePtr) new -> adr2;
 
 				// Prisli nam dve nove adresy => zaciatok noveho medzivypoctu
 
@@ -908,14 +907,18 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 					intArr2douArr(&(resArrInt[0]),&(resArrDou[0]),longestExpressionLength);
 				}
 
-				if (A1 -> data -> type == t_expr_int || A1 -> data -> type == sym_var_int )
-					A1 -> data -> content . real = (double) A1 -> data -> content . integer;
-				if (A2 -> data -> type == t_expr_int || A2 -> data -> type == sym_var_int )
-					A2 -> data -> content . real = (double) A2 -> data -> content . integer;
-
-				realOnly = true;
 				A1 = (tNodePtr) new -> adr1;
 				A2 = (tNodePtr) new -> adr2;
+
+				if (A1 -> data -> type == t_expr_int || A1 -> data -> type == sym_var_int )
+					A1 -> data -> content . real = (double) A1 -> data -> content . integer;
+				
+				if (A2 != NULL)
+				{
+					if (A2 -> data -> type == t_expr_int || A2 -> data -> type == sym_var_int )
+						A2 -> data -> content . real = (double) A2 -> data -> content . integer;
+				}
+				
 
 				// Prisli nam dve nove adresy => zaciatok noveho medzivypoctu
 
@@ -928,12 +931,13 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 						errorHandler (errRunUnin);
 
 					resArrDouIndex++;
+					if (A2 -> data -> content . real == 0) errorHandler (errRunZdiv);
 					resArrDou [resArrDouIndex] = A1 -> data -> content . real / A2 -> data -> content . real;
 					A1 -> data -> used = true;
 					A2 -> data -> used = true;
 					readyDou = resArrDou [resArrDouIndex];
 
-					if(debug == true) printf("MULR: %g\n", readyDou);
+					if(debug == true) printf("DIVR: %g\n", readyDou);
 					break;
 				}
 
@@ -946,11 +950,13 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 					if (A1 -> data -> content . initialized == false) 
 						errorHandler (errRunUnin);
 
+					if (A1 -> data -> content . real == 0) errorHandler (errRunZdiv);
+
 					resArrDou [resArrDouIndex] = resArrDou [resArrDouIndex] / A1 -> data -> content . real;
 					A1 -> data -> used = true;
 					readyDou = resArrDou [resArrDouIndex];
 
-					if(debug == true) printf("MULR: %g\n", readyDou);
+					if(debug == true) printf("DIVR: %g\n", readyDou);
 					break;
 				}
 
@@ -962,12 +968,14 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 
 					if (A2 -> data -> content . initialized == false) 
 						errorHandler (errRunUnin);
+					
+					if (A2 -> data -> content . real == 0) errorHandler (errRunZdiv);
 
 					resArrDou [resArrDouIndex] = resArrDou [resArrDouIndex] / A2 -> data -> content . real;
 					A2 -> data -> used = true;
 					readyDou = resArrDou [resArrDouIndex];
 
-					if(debug == true) printf("MULR: %g\n", readyDou);
+					if(debug == true) printf("DIVR: %g\n", readyDou);
 					break;
 				}
 
@@ -979,6 +987,7 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 
 					if (resArrDouIndex-1 != -1)
 					{
+						if (resArrDou [resArrDouIndex] == 0) errorHandler (errRunZdiv);
 						resArrDou [resArrDouIndex-1] = resArrDou [resArrDouIndex-1] / resArrDou [resArrDouIndex];
 						resArrDouIndex--;
 						readyDou = resArrDou [resArrDouIndex];
@@ -986,7 +995,7 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 					else
 						readyDou = resArrDou [resArrDouIndex];
 
-					if(debug == true) printf("MULR: %g\n", readyDou);
+					if(debug == true) printf("DIVR: %g\n", readyDou);
 					break;
 				}
 
