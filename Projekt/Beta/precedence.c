@@ -309,6 +309,7 @@ int precedenceParser() {				// hlavni funkce precedencni analyzy
 	int conStep = 1;
 	int returnType = -1;
 	bool skipGib=true;
+	isReal = false;
 
 
 	temp.element = DOLAR;
@@ -682,7 +683,7 @@ int myOp2matousOp(int myOp, int type1, int type2) {
 	switch(myOp) {
 
 		case PLUS:
-						printf("AAAAAa %d %d\n", type1, type2);
+			printf("AAAAAa %d %d\n", type1, type2);
 
 			if(type1 == t_expr_int && type2 == t_expr_int)
 				matusOp = I_ADDI;
