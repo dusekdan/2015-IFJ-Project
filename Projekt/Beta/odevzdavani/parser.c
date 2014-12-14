@@ -1365,7 +1365,7 @@ void nt_term (token tok, char *currentFunctionKey, tContent **contentArr, tData 
                     fprintf (stderr, "Type mismatch.\n");
                     errorHandler(errSemTypArg);
                 }
-                else////////////NEVZKOKOTILO CHYBU IDEMM ULOZIT LITERAL DO TABULKZ
+                else
                     {
                                             //idem ulozit content pre volanie
                         
