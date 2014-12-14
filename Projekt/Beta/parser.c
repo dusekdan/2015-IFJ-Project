@@ -244,8 +244,9 @@ int buildemin ()
 
 void terminalis (int terminal, token tok)
 {
-    if (debug==true)
+    
         printf("%s",KCYN);
+    if (debug==true)
     switch (terminal)
     {
         case t_var:       printf ("var\n");                  break;
