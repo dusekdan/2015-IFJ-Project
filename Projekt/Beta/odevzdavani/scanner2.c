@@ -484,8 +484,8 @@ int getNextToken(FILE* fd, token TToken)
 
 					if(c == '#' && cx == APOSTROF_ASCII)
 					{
-						printf("Incorrect entity entry!\n");
-						exit(1);
+						fprintf(stderr, "Incorrect entity entry!\n");
+						erroHandler(errLex);
 					}
 
 					if(c == '#' && !isdigit(cx))
