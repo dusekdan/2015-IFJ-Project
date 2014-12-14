@@ -2,10 +2,10 @@
 # Projekt IFJ - Interpret jazyka IFJ14
 #
 # Autori: Matúš Bútora
-#		  Daniel Dušek
-#		  Marie Faltusová
-#		  Roman Jaška
-#		  Filip Kalous
+#	  Daniel Dušek
+#	  Roman Jaška
+#	  Filip Kalous
+#	 a Sochor ne.
 #
 # Datum:  14.12.2014
 #
