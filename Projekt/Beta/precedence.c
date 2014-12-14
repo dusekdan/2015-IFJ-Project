@@ -623,7 +623,14 @@ int reduction(tStack *stack1, tStack *stack2) {
 
 						stackPop(stack1, &change);	// odstraneni <
 						//change.symbol->type = temp1.symbol->type;
-						change = temp1;
+						if(temp1.symbol->type == t_expr_dou || temp3.symbol->type == t_expr_dou) {
+
+							change = temp1;
+							change.symbol->type = t_expr_dou;
+						} 
+						else
+							change = temp1;
+						
 						change.element = NETERM;
 						stackPush(stack1, change);	
 					}

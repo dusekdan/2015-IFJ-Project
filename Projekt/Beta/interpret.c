@@ -4,6 +4,7 @@ int kanter=0;
 bool lastbool;
 bool vypocet = false;
 int readyInt = 0;
+double readyDou = 0;
 int resArrIntIndex = -1;
 int resArrDouIndex = -1;
 double lastdouble = 0;
@@ -13,6 +14,7 @@ void * lastAdr = NULL;
 void * lastAdr1 = NULL;
 bool recycleAdr = false;
 int * currentInstType;
+bool realOnly = false;
 
 
 
@@ -61,10 +63,15 @@ void * preklopenie (tInsList *currIL)
 }
 
 //Funkcia na prehodenie hodnot z integroveho pola do pola double
-void intArr2douArr (int * intArr [], double * douArr [], int count)
+void intArr2douArr (int * intArr, double * douArr, int count)
 {
 	for (int i = 0; i < count; ++i)
-		* douArr [i] = (double) * (intArr [i]);
+		(douArr [i]) = ((double) (intArr [i]));
+	resArrDouIndex = resArrIntIndex;
+	readyDou = (double) readyInt;
+
+	/*for (int j = 0; j < count; ++j)
+		printf("GGGGG %g\n",douArr[j] );*/
 }
 
 int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
@@ -125,7 +132,7 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 				}
 			else
 			{
-				if (debug == true) printf ("currentExpressionLength: %d\n", currentExpressionLength);
+				//if (debug == true) printf ("currentExpressionLength: %d\n", currentExpressionLength);
 				if ( currentExpressionLength > longestExpressionLength)
 					longestExpressionLength = currentExpressionLength;
 				currentExpressionLength = 0;
@@ -157,7 +164,7 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 
 
 	int resArrInt [longestExpressionLength];
-	int resArrDou [longestExpressionLength];
+	double resArrDou [longestExpressionLength];
 
 	First(currIL);
 
@@ -187,9 +194,159 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 					if (A1 -> data -> content . initialized == false) 
 						errorHandler (errRunUnin);
 
-					readyInt = A1 -> data -> content . integer;
+						readyInt = A1 -> data -> content . integer;
 
-					if(debug == true) printf("ADDI: %d\n", readyInt);
+					if (debug == true) printf("ADDI: d:%d g:\n", readyInt, readyDou);
+					break;
+				}
+
+				// Prisli nam dve nove adresy => zaciatok noveho medzivypoctu
+
+				if (A1 -> data -> used == false && A2 -> data -> used == false)
+				{
+					if (debug == true) printf("dve nove\n");
+
+					if (A1 -> data -> content . initialized == false ||
+						A2 -> data -> content . initialized == false  ) 
+						errorHandler (errRunUnin);
+					if (realOnly == false)
+					{
+						resArrIntIndex++;
+						resArrInt [resArrIntIndex] = A1 -> data -> content . integer + A2 -> data -> content . integer;
+						A1 -> data -> used = true;
+						A2 -> data -> used = true;
+						readyInt = resArrInt [resArrIntIndex];
+					}
+					else
+					{
+						resArrDouIndex++;
+						printf("%g + %g \n",(double) (A1 -> data -> content . integer),(double) (A2 -> data -> content . integer));
+						resArrDou [resArrDouIndex] = (double) (A1 -> data -> content . integer) + (double) (A2 -> data -> content . integer);
+						A1 -> data -> used = true;
+						A2 -> data -> used = true;
+						readyDou = resArrDou [resArrDouIndex];
+					}
+					
+					if (debug == true) printf("ADDI: d:%d g:%g\n", readyInt, readyDou);
+					break;
+				}
+
+				// Prva adresa nebola pouzita ale druha ano => pouzijem prvu
+
+				if (A1 -> data -> used == false && A2 -> data -> used == true)
+				{	
+					if (debug == true) printf("prva\n");
+
+					if (A1 -> data -> content . initialized == false) 
+						errorHandler (errRunUnin);
+
+					if (realOnly == false)
+					{ 
+						resArrInt [resArrIntIndex] += A1 -> data -> content . integer;
+						A1 -> data -> used = true;
+						readyInt = resArrInt [resArrIntIndex];
+					}
+					else
+					{
+						resArrDou [resArrDouIndex] += (double) (A1 -> data -> content . integer);
+						A1 -> data -> used = true;
+						readyDou = resArrDou [resArrDouIndex];
+					}
+
+					if (debug == true) printf("ADDI: d:%d g:%g\n", readyInt, readyDou);
+					break;
+				}
+
+				// Prva adresa uz bola druha nie  => pouzijem druhu
+
+				if (A1 -> data -> used == true && A2 -> data -> used == false)
+				{
+					if (debug == true) printf("druha\n");
+
+					if (A2 -> data -> content . initialized == false) 
+						errorHandler (errRunUnin);
+					if (realOnly == false)
+					{
+						resArrInt [resArrIntIndex] += A2 -> data -> content . integer;
+						A2 -> data -> used = true;
+						readyInt = resArrInt [resArrIntIndex];
+					}
+					else
+					{
+						resArrDou [resArrDouIndex] += (double) (A2 -> data -> content . integer);
+						A2 -> data -> used = true;
+						readyDou = resArrDou [resArrDouIndex];
+					}
+					
+
+					if (debug == true) printf("ADDI: d:%d g:%g\n", readyInt, readyDou);
+					break;
+				}
+
+				// Obe adresy boli pouzite => zratam medzivysledky
+
+				if (A1 -> data -> used == true && A2 -> data -> used == true)
+				{
+					if (debug == true) printf("aniani\n");
+
+					if (realOnly == false)
+					{
+						if (resArrIntIndex-1 != -1)
+						{
+							resArrInt [resArrIntIndex-1] += resArrInt [resArrIntIndex];
+							resArrIntIndex--;
+							readyInt = resArrInt [resArrIntIndex];
+						}
+						else
+							readyInt = resArrInt [resArrIntIndex];
+					}
+					else
+					{
+						if (resArrDouIndex-1 != -1)
+						{
+							resArrDou [resArrDouIndex-1] += resArrDou [resArrDouIndex];
+							resArrDouIndex--;
+							readyDou = resArrDou [resArrDouIndex];
+						}
+						else
+							readyDou = resArrDou [resArrDouIndex];
+					}
+
+					if (debug == true) printf("ADDI: d:%d g:%g\n", readyInt, readyDou);
+					break;
+				}
+
+				errorHandler (errRunRest);
+
+				break;
+			
+			case I_ADDR:
+			if (realOnly==false)
+			{
+				realOnly = true;
+				intArr2douArr(&(resArrInt[0]),&(resArrDou[0]),longestExpressionLength);
+			}
+				
+				A1 = (tNodePtr) new -> adr1;
+				A2 = (tNodePtr) new -> adr2;
+
+				if (A1 -> data -> type == t_expr_int || A1 -> data -> type == sym_var_int )
+					A1 -> data -> content . real = (double) A1 -> data -> content . integer;
+				if (A2 -> data -> type == t_expr_int || A2 -> data -> type == sym_var_int )
+					A2 -> data -> content . real = (double) A2 -> data -> content . integer;
+
+				// Prisla nam len jedna adresa => priradenie
+
+				if (A2 == NULL)
+				{
+					if (debug == true) printf("len priradenie\n");
+
+					if (A1 -> data -> content . initialized == false) 
+						errorHandler (errRunUnin);
+
+					readyDou = A1 -> data -> content . real;
+
+					if(debug == true) printf("ADDR: %g\n", readyDou);
 					break;
 				}
 
@@ -203,13 +360,13 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 						A2 -> data -> content . initialized == false  ) 
 						errorHandler (errRunUnin);
 
-					resArrIntIndex++;
-					resArrInt [resArrIntIndex] = A1 -> data -> content . integer + A2 -> data -> content . integer;
+					resArrDouIndex++;
+					resArrDou [resArrDouIndex] = A1 -> data -> content . real + A2 -> data -> content . real;
 					A1 -> data -> used = true;
 					A2 -> data -> used = true;
-					readyInt = resArrInt [resArrIntIndex];
+					readyDou = resArrDou [resArrDouIndex];
 
-					if(debug == true) printf("ADDI: %d\n", readyInt);
+					if(debug == true) printf("ADDR: %g\n", readyDou);
 					break;
 				}
 
@@ -222,11 +379,11 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 					if (A1 -> data -> content . initialized == false) 
 						errorHandler (errRunUnin);
 
-					resArrInt [resArrIntIndex] += A1 -> data -> content . integer;
+					resArrDou [resArrDouIndex] += A1 -> data -> content . real;
 					A1 -> data -> used = true;
-					readyInt = resArrInt [resArrIntIndex];
+					readyDou = resArrDou [resArrDouIndex];
 
-					if(debug == true) printf("ADDI: %d\n", readyInt);
+					if(debug == true) printf("ADDR: %g\n", readyDou);
 					break;
 				}
 
@@ -239,11 +396,11 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 					if (A2 -> data -> content . initialized == false) 
 						errorHandler (errRunUnin);
 
-					resArrInt [resArrIntIndex] += A2 -> data -> content . integer;
+					resArrDou [resArrDouIndex] += A2 -> data -> content . real;
 					A2 -> data -> used = true;
-					readyInt = resArrInt [resArrIntIndex];
+					readyDou = resArrDou [resArrDouIndex];
 
-					if(debug == true) printf("ADDI: %d\n", readyInt);
+					if(debug == true) printf("ADDR %g\n", readyDou);
 					break;
 				}
 
@@ -253,55 +410,21 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 				{
 					if (debug == true) printf("aniani\n");
 
-					if (resArrIntIndex-1 != -1)
+					if (resArrDouIndex-1 != -1)
 					{
-						resArrInt [resArrIntIndex-1] += resArrInt [resArrIntIndex];
-						resArrIntIndex--;
+						resArrDou [resArrDouIndex-1] += resArrDou [resArrDouIndex];
+						resArrDouIndex--;
+						readyDou = resArrDou [resArrDouIndex];
 					}
 					else
-						readyInt = resArrInt [resArrIntIndex];
+						readyDou = resArrDou [resArrDouIndex];
 
-					if(debug == true) printf("ADDI: %d\n", readyInt);
+					if(debug == true) printf("ADDR: %g\n", readyDou);
 					break;
 				}
 
 				errorHandler (errRunRest);
 
-				break;
-			
-			case I_ADDR:
-				if(((tNodePtr) new->adr2) == NULL)
-				{
-					temp = ((tNodePtr) new->adr1);
-					lastdouble += temp->data->content.real;
-				}
-				else
-				{
-					temp = ((tNodePtr) new->adr1);
-					temp2 = ((tNodePtr) new->adr2);
-
-					if(temp->data->type == sym_var_int || temp->data->type == t_expr_int)
-					temp->data->content.real = (double) temp->data->content.integer;
-					
-					if(temp2->data->type == sym_var_int || temp2->data->type == t_expr_int)
-					temp2->data->content.real = (double) temp2->data->content.integer;
-
-					if(vypocet == false)
-					{
-						//temp = ((tNodePtr) new->adr1);
-						//temp2 = ((tNodePtr) new->adr2);
-
-						lastdouble += temp->data->content.real + temp2->data->content.real;
-						vypocet = true;
-					} else
-					{
-						//temp2 = ((tNodePtr) new->adr2);
-						lastdouble += temp2->data->content.real;
-					}
-				}
-				
-				if(debug == true)
-					printf("ADDR: %g\n", lastdouble);
 				break;
 			
 			case I_CONCATE:		
@@ -356,13 +479,23 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 
 					if (debug == true) printf("dve nove\n");
 
-					resArrIntIndex++;
-					resArrInt [resArrIntIndex] = A1 -> data -> content . integer - A2 -> data -> content . integer;
-					A1 -> data -> used = true;
-					A2 -> data -> used = true;
-					readyInt = resArrInt [resArrIntIndex];
-
-					if(debug == true) printf("SUBI: %d\n", readyInt);
+					if (realOnly == false)
+					{
+						resArrIntIndex++;
+						resArrInt [resArrIntIndex] = A1 -> data -> content . integer - A2 -> data -> content . integer;
+						A1 -> data -> used = true;
+						A2 -> data -> used = true;
+						readyInt = resArrInt [resArrIntIndex];
+					}
+					else
+					{
+						resArrDouIndex++;
+						resArrDou [resArrDouIndex] = (double) (A1 -> data -> content . integer) - (double) (A2 -> data -> content . integer);
+						A1 -> data -> used = true;
+						A2 -> data -> used = true;
+						readyDou = resArrDou [resArrDouIndex];
+					}
+					if(debug == true) printf("SUBI: d%d g%g\n", readyInt,readyDou);
 					break;
 				}
 
@@ -378,11 +511,20 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 
 					if (debug == true) printf("prva lebo druha menom %s mala used\n",A2 -> key);
 
-					resArrInt [resArrIntIndex] -= A1 -> data -> content . integer;
-					A1 -> data -> used = true;
-					readyInt = resArrInt [resArrIntIndex];
+					if (realOnly == false)
+					{
+						resArrInt [resArrIntIndex] -= A1 -> data -> content . integer;
+						A1 -> data -> used = true;
+						readyInt = resArrInt [resArrIntIndex];
+					}
+					else
+					{
+						resArrDou [resArrDouIndex] -= (double) (A1 -> data -> content . integer);
+						A1 -> data -> used = true;
+						readyDou = resArrDou [resArrDouIndex];
+					}
 
-					if(debug == true) printf("SUBI: %d\n", readyInt);
+					if(debug == true) printf("SUBI: d%d g%g\n", readyInt,readyDou);
 					break;
 				}
 
@@ -398,11 +540,19 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 
 					if (debug == true) printf("druha\n");
 
-					resArrInt [resArrIntIndex] -= A2 -> data -> content . integer;
-					A2 -> data -> used = true;
-					readyInt = resArrInt [resArrIntIndex];
-
-					if(debug == true) printf("SUBI: %d\n", readyInt);
+					if (realOnly == false)
+					{
+						resArrInt [resArrIntIndex] -= A2 -> data -> content . integer;
+						A2 -> data -> used = true;
+						readyInt = resArrInt [resArrIntIndex];
+					}
+					else
+					{
+						resArrDou [resArrDouIndex] -= (double) (A2 -> data -> content . integer);
+						A2 -> data -> used = true;
+						readyDou = resArrDou [resArrDouIndex];
+					}
+					if(debug == true) printf("SUBI: d%d g%g\n", readyInt, readyDou);
 					break;
 				}
 
@@ -412,15 +562,30 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 				{
 					if (debug == true) printf("aniani\n");
 
-					if (resArrIntIndex-1 != -1)
+					if (realOnly == false)
 					{
-						resArrInt [resArrIntIndex-1] -= resArrInt [resArrIntIndex];
-						resArrIntIndex--;
+						if (resArrIntIndex-1 != -1)
+						{
+							resArrInt [resArrIntIndex-1] -= resArrInt [resArrIntIndex];
+							resArrIntIndex--;
+							readyInt = resArrInt [resArrIntIndex];
+						}
+						else
+							readyInt = resArrInt [resArrIntIndex];
 					}
 					else
-						readyInt = resArrInt [resArrIntIndex];
+					{
+						if (resArrDouIndex-1 != -1)
+						{
+							resArrDou [resArrDouIndex-1] -= resArrDou [resArrDouIndex];
+							resArrDouIndex--;
+							readyDou = resArrDou [resArrDouIndex];
+						}
+						else
+							readyDou = resArrDou [resArrDouIndex];
+					}
 
-					if(debug == true) printf("SUBI: %d\n", readyInt);
+					if(debug == true) printf("SUBI: d%d g%g\n", readyInt, readyDou);
 					break;
 				}
 
@@ -429,31 +594,95 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 				break;
 
 			case I_SUBR:
-
-				temp = ((tNodePtr) new->adr1);
-				temp2 = ((tNodePtr) new->adr2);
-
-				if(temp->data->type == sym_var_int || temp->data->type == t_expr_int)
-					temp->data->content.real = (double) temp->data->content.integer;
-					
-				if(temp2->data->type == sym_var_int || temp2->data->type == t_expr_int)
-					temp2->data->content.real = (double) temp2->data->content.integer;
-
-				if(vypocet == false)
+				if (realOnly==false)
 				{
-					//temp = ((tNodePtr) new->adr1);
-					//temp2 = ((tNodePtr) new->adr2);
-
-					lastdouble = temp->data->content.real - temp2->data->content.real;
-					vypocet = true;
-				} else
-				{
-					//temp2 = ((tNodePtr) new->adr2);
-					lastdouble -= temp2->data->content.real;
+					realOnly = true;
+					intArr2douArr(&(resArrInt[0]),&(resArrDou[0]),longestExpressionLength);
 				}
-				
-				if(debug == true)
-					printf("SUBR: %g\n", lastdouble);
+
+				if (A1 -> data -> type == t_expr_int || A1 -> data -> type == sym_var_int )
+					A1 -> data -> content . real = (double) A1 -> data -> content . integer;
+				if (A2 -> data -> type == t_expr_int || A2 -> data -> type == sym_var_int )
+					A2 -> data -> content . real = (double) A2 -> data -> content . integer;
+
+				A1 = (tNodePtr) new -> adr1;
+				A2 = (tNodePtr) new -> adr2;
+
+				// Prisli nam dve nove adresy => zaciatok noveho medzivypoctu
+
+				if (A1 -> data -> used == false && A2 -> data -> used == false)
+				{
+					if (debug == true) printf("dve nove\n");
+
+					if (A1 -> data -> content . initialized == false ||
+						A2 -> data -> content . initialized == false  ) 
+						errorHandler (errRunUnin);
+
+					resArrDouIndex++;
+					resArrDou [resArrDouIndex] = A1 -> data -> content . real - A2 -> data -> content . real;
+					A1 -> data -> used = true;
+					A2 -> data -> used = true;
+					readyDou = resArrDou [resArrDouIndex];
+
+					if(debug == true) printf("SUBR: %g\n", readyDou);
+					break;
+				}
+
+				// Prva adresa nebola pouzita ale druha ano => pouzijem prvu
+
+				if (A1 -> data -> used == false && A2 -> data -> used == true)
+				{	
+					if (debug == true) printf("prva\n");
+
+					if (A1 -> data -> content . initialized == false) 
+						errorHandler (errRunUnin);
+
+					resArrDou [resArrDouIndex] -= A1 -> data -> content . real;
+					A1 -> data -> used = true;
+					readyDou = resArrDou [resArrDouIndex];
+
+					if(debug == true) printf("SUBR: %g\n", readyDou);
+					break;
+				}
+
+				// Prva adresa uz bola druha nie  => pouzijem druhu
+
+				if (A1 -> data -> used == true && A2 -> data -> used == false)
+				{
+					if (debug == true) printf("druha\n");
+
+					if (A2 -> data -> content . initialized == false) 
+						errorHandler (errRunUnin);
+
+					resArrDou [resArrDouIndex] -= A2 -> data -> content . real;
+					A2 -> data -> used = true;
+					readyDou = resArrDou [resArrDouIndex];
+
+					if(debug == true) printf("SUBR %g\n", readyDou);
+					break;
+				}
+
+				// Obe adresy boli pouzite => zratam medzivysledky
+
+				if (A1 -> data -> used == true && A2 -> data -> used == true)
+				{
+					if (debug == true) printf("aniani\n");
+					printf("resArrDouIndex je %d\n",resArrDouIndex);
+					if (resArrDouIndex-1 != -1)
+					{
+						resArrDou [resArrDouIndex-1] -= resArrDou [resArrDouIndex];
+						resArrDouIndex--;
+						readyDou = resArrDou [resArrDouIndex];
+					}
+					else
+						readyDou = resArrDou [resArrDouIndex];
+
+					if(debug == true) printf("SUBR: %g\n", readyDou);
+					break;
+				}
+
+				errorHandler (errRunRest);
+
 				break;
 
 			case I_MULI:
@@ -469,14 +698,23 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 					if (A1 -> data -> content . initialized == false ||
 						A2 -> data -> content . initialized == false  ) 
 						errorHandler (errRunUnin);
-
-					resArrIntIndex++;
-					resArrInt [resArrIntIndex] = A1 -> data -> content . integer * A2 -> data -> content . integer;
-					A1 -> data -> used = true;
-					A2 -> data -> used = true;
-					readyInt = resArrInt [resArrIntIndex];
-
-					if(debug == true) printf("MULI: %d\n", readyInt);
+					if (realOnly == false)
+					{
+						resArrIntIndex++;
+						resArrInt [resArrIntIndex] = A1 -> data -> content . integer * A2 -> data -> content . integer;
+						A1 -> data -> used = true;
+						A2 -> data -> used = true;
+						readyInt = resArrInt [resArrIntIndex];
+					}
+					else
+					{
+						resArrDouIndex++;
+						resArrDou [resArrDouIndex] = (double) (A1 -> data -> content . integer) * (double) (A2 -> data -> content . integer);
+						A1 -> data -> used = true;
+						A2 -> data -> used = true;
+						readyDou = resArrDou [resArrDouIndex];
+					}
+					if(debug == true) printf("MULI: d%d g%g\n", readyInt, readyDou);
 					break;
 				}
 
@@ -489,11 +727,135 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 					if (A1 -> data -> content . initialized == false) 
 						errorHandler (errRunUnin);
 
-					resArrInt [resArrIntIndex] *= A1 -> data -> content . integer;
-					A1 -> data -> used = true;
-					readyInt = resArrInt [resArrIntIndex];
+					if ( realOnly == false)
+					{
+						resArrInt [resArrIntIndex] *= A1 -> data -> content . integer;
+						A1 -> data -> used = true;
+						readyInt = resArrInt [resArrIntIndex];
+					}
+					else
+					{
+						resArrDou [resArrDouIndex] *= (double) (A1 -> data -> content . integer);
+						A1 -> data -> used = true;
+						readyDou = resArrDou [resArrDouIndex];
+					}
 
-					if(debug == true) printf("MULI: %d\n", readyInt);
+					if(debug == true) printf("MULI: d%d g%g\n", readyInt, readyDou);
+					break;
+				}
+
+				// Prva adresa uz bola druha nie  => pouzijem druhu
+
+				if (A1 -> data -> used == true && A2 -> data -> used == false)
+				{
+					if (debug == true) printf("druha\n");
+
+					if (A2 -> data -> content . initialized == false) 
+						errorHandler (errRunUnin);
+					if (realOnly == false)
+					{
+						resArrInt [resArrIntIndex] *= A2 -> data -> content . integer;
+						A2 -> data -> used = true;
+						readyInt = resArrInt [resArrIntIndex];
+					}
+					else
+					{
+						resArrDou [resArrDouIndex] *= (double) (A2 -> data -> content . integer);
+						A2 -> data -> used = true;
+						readyDou = resArrDou [resArrDouIndex];
+					}
+
+					if(debug == true) printf("MULI: d%d g%g\n", readyInt, readyDou);
+					break;
+				}
+
+				// Obe adresy boli pouzite => zratam medzivysledky
+
+				if (A1 -> data -> used == true && A2 -> data -> used == true)
+				{
+					if (debug == true) printf("aniani\n");
+
+					if (realOnly == false)
+					{
+						if (resArrIntIndex-1 != -1)
+						{
+							resArrInt [resArrIntIndex-1] *= resArrInt [resArrIntIndex];
+							resArrIntIndex--;
+							readyInt = resArrInt [resArrIntIndex];
+						}
+						else
+							readyInt = resArrInt [resArrIntIndex];
+					}
+					else
+					{
+						if (resArrDouIndex-1 != -1)
+						{
+							resArrDou [resArrDouIndex-1] *= resArrDou [resArrDouIndex];
+							resArrDouIndex--;
+							readyDou = resArrDou [resArrDouIndex];
+						}
+						else
+							readyDou = resArrDou [resArrDouIndex];
+					}
+
+					if(debug == true) printf("MULI: d%d g%g\n", readyInt, readyDou);
+					break;
+				}
+
+				errorHandler (errRunRest);
+
+				break;
+			
+			case I_MULR:
+				if (realOnly==false)
+				{
+					realOnly = true;
+					intArr2douArr(&(resArrInt[0]),&(resArrDou[0]),longestExpressionLength);
+				}
+
+				if (A1 -> data -> type == t_expr_int || A1 -> data -> type == sym_var_int )
+					A1 -> data -> content . real = (double) A1 -> data -> content . integer;
+				if (A2 -> data -> type == t_expr_int || A2 -> data -> type == sym_var_int )
+					A2 -> data -> content . real = (double) A2 -> data -> content . integer;
+
+				realOnly = true;
+				A1 = (tNodePtr) new -> adr1;
+				A2 = (tNodePtr) new -> adr2;
+
+				// Prisli nam dve nove adresy => zaciatok noveho medzivypoctu
+
+				if (A1 -> data -> used == false && A2 -> data -> used == false)
+				{
+					if (debug == true) printf("dve nove\n");
+
+					if (A1 -> data -> content . initialized == false ||
+						A2 -> data -> content . initialized == false  ) 
+						errorHandler (errRunUnin);
+
+					resArrDouIndex++;
+					resArrDou [resArrDouIndex] = A1 -> data -> content . real * A2 -> data -> content . real;
+					A1 -> data -> used = true;
+					A2 -> data -> used = true;
+					readyDou = resArrDou [resArrDouIndex];
+
+					if(debug == true) printf("MULR: %g\n", readyDou);
+					break;
+				}
+
+				// Prva adresa nebola pouzita ale druha ano => pouzijem prvu
+
+				if (A1 -> data -> used == false && A2 -> data -> used == true)
+				{	
+					if (debug == true) printf("prva\n");
+
+					if (A1 -> data -> content . initialized == false) 
+						errorHandler (errRunUnin);
+
+					resArrDou [resArrDouIndex] *= A1 -> data -> content . real;
+					A1 -> data -> used = true;
+					readyDou = resArrDou [resArrDouIndex];
+
+					if(debug == true) printf("MULR: %g\n", readyDou);
 					break;
 				}
 
@@ -506,11 +868,11 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 					if (A2 -> data -> content . initialized == false) 
 						errorHandler (errRunUnin);
 
-					resArrInt [resArrIntIndex] *= A2 -> data -> content . integer;
+					resArrDou [resArrDouIndex] *= A2 -> data -> content . real;
 					A2 -> data -> used = true;
-					readyInt = resArrInt [resArrIntIndex];
+					readyDou = resArrDou [resArrDouIndex];
 
-					if(debug == true) printf("MULI: %d\n", readyInt);
+					if(debug == true) printf("MULR: %g\n", readyDou);
 					break;
 				}
 
@@ -520,85 +882,23 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 				{
 					if (debug == true) printf("aniani\n");
 
-					if (resArrIntIndex-1 != -1)
+					if (resArrDouIndex-1 != -1)
 					{
-						resArrInt [resArrIntIndex-1] *= resArrInt [resArrIntIndex];
-						resArrIntIndex--;
+						resArrDou [resArrDouIndex-1] *= resArrDou [resArrDouIndex];
+						resArrDouIndex--;
+						readyDou = resArrDou [resArrDouIndex];
 					}
 					else
-						readyInt = resArrInt [resArrIntIndex];
+						readyDou = resArrDou [resArrDouIndex];
 
-					if(debug == true) printf("MULI: %d\n", readyInt);
+					if(debug == true) printf("MULR: %g\n", readyDou);
 					break;
 				}
 
 				errorHandler (errRunRest);
 
 				break;
-			
-			case I_MULR:
 
-				temp = ((tNodePtr) new->adr1);
-				temp2 = ((tNodePtr) new->adr2);
-
-				if(temp->data->type == sym_var_int || temp->data->type == t_expr_int)
-					temp->data->content.real = (double) temp->data->content.integer;
-					
-				if(temp2->data->type == sym_var_int || temp2->data->type == t_expr_int)
-					temp2->data->content.real = (double) temp2->data->content.integer;
-
-				if(vypocet == false)
-				{
-
-					lastdouble = temp->data->content.real * temp2->data->content.real;
-					vypocet = true;
-				} 
-				else
-				{
-					//temp2 = ((tNodePtr) new->adr2);
-					lastdouble *= temp2->data->content.real;
-				}
-				
-				if(debug == true)
-					printf("MULR: %g\n", readyInt);
-				break;
-			
-			/*case I_DIVI:
-				if(vypocet == false)
-				{
-					temp = ((tNodePtr) new->adr1);
-					temp2 = ((tNodePtr) new->adr2);
-					lastAdr1 = temp;
-						//if(debug == true)printf("LASTADR1 je %p\n",lastAdr1 );
-					if(temp2->data->content.integer == 0)
-					{
-						errorHandler(errRunZdiv);
-					} 
-					else
-					{
-						//if(debug == true)printf("\n\n%d / %d | LI:%d A1:%d A2:%d\n\n", temp->data->content.integer,temp2->data->content.integer,readyInt,temp->data->content.integer,temp2->data->content.integer);
-						readyInt = temp->data->content.integer / temp2->data->content.integer;
-						vypocet = true;
-					}
-				} 
-				else
-				{
-					temp2 = ((tNodePtr) new->adr2);
-					
-					if(temp2->data->content.integer == 0)
-					{
-						errorHandler(errRunZdiv);
-					} 
-					else 
-						{	//if(debug == true)printf("\n\n%d / %d | LI:%d A1:%d A2:%d\n\n", readyInt,temp2->data->content.integer,readyInt,((tNodePtr) new->adr1)->data->content.integer,temp2->data->content.integer);
-							readyInt = readyInt / temp2->data->content.integer;
-						}
-				}
-				
-				if(debug ==  true)
-					printf("DIVI: %d\n", readyInt);
-				break;
-*/
 			case I_DIVR:
 
 				temp = ((tNodePtr) new->adr1);
@@ -659,12 +959,15 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 				break;		
 
 			case I_ASGNR:
-				if(lastdouble < 0) errorHandler(errRunRest);	
+				if(readyDou < 0) errorHandler(errRunRest);	
 
-				((tData) new->result)->content.real = lastdouble;			
-				lastdouble = 0;
+				((tData) new->result)->content.real = readyDou;
+				((tData) new->result)->content.initialized = true;				
+				readyDou = 0;
 				vypocet = false;
-				
+				resArrIntIndex = -1;
+				preklopenie(currIL);
+
 				if(debug == true)
 					printf("vysledok ASGNR: %g\n", (((tData) new->result)->content.real));
 				break;
