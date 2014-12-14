@@ -1,4 +1,14 @@
-//#include "inslist.c"
+/***********************interpret.c******************************/
+/* Soubor: interpret.c - interpretacia jazyka IFJ14  			*/
+/* Předmět: Formalní jazyky a překladače (IFJ) 					*/
+/* Projekt: Implementace interpretu imperativního jazyka IFJ14  */
+/* Varianta zadání: b/1/I 										*/
+/* Datum: prosinec 2014											*/
+/* Kódování: UTF-8												*/
+/* Autoři:			Matúš Bútora (xbutor01)						*/
+/*					Roman Jaška  (xjaska00)						*/
+/*					Filip Kalous (xkalou03)						*/
+/****************************************************************/
 
 int kanter=0;
 bool lastbool;
