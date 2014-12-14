@@ -1,38 +1,42 @@
-////////////////////Roman Jaška
-////////////////////rozrobené
-/*         ___
-         ',_`""\        .---,
-            \   :-""``/`    |
-             `;'     //`\   /
-             /   __     |   ('.
-            |_ ./O)\     \  `) \
-           _/-.    `      `"`  |`-.
-       .-=; `                  /   `-.
-      /o o \   ,_,           .        '.
-      L._._;_.-'           .            `'-.
-        `'-.`             '                 `'-.
-            `.         '                        `-._
-              '-._. -'                              '.
-                 \                                    `\
-                  |                                     \
-                  |    |                                 ;   _.
-                  \    |           |                     |-.((
-                   ;.  \           /    /                |-.`\)
-                   | '. ;         /    |                 |(_) )
-                   |   \ \       /`    |                 ;'--'
-                    \   '.\    /`      |                /
-                     |   /`|  ;        \               /
-                     |  |  |  |-._      '.           .'
-                     /  |  |  |__.`'---"_;'-.     .-'
-                    //__/  /  |    .-'``     _.-'`
-                  jgs     //__/   //___.--''`
-*/
-
-/* Ukazateľ na lokálnu tabuľku */
-//tContent **globalArr;
-
-
-//tContent *elegeblege[100];
+/***********************parser.c*********************************/
+/* Soubor: parser.c - syntaktická/sémantická analýza a generá-  */
+/*                    tor inštrukcií.                           */
+/* Předmět: Formalní jazyky a překladače (IFJ)                  */
+/* Projekt: Implementace interpretu imperativního jazyka IFJ14  */
+/* Varianta zadání: b/1/I                                       */
+/* Datum: prosinec 2014                                         */
+/* Kódování: UTF-8                                              */
+/* Autoři:          Roman Jaška (xjaska00)                      */
+/* ASCII Art:       http://ascii.co.uk/art/pig                  */                
+/****************************************************************/
+/*         ___                                                  */
+/*       ',_`""\        .---,     _ __  _ __ __ _ ___  ___ _ __ */
+/*          \   :-""``/`    |    | '_ \| '__/ _` / __|/ _ \ '__|*/
+/*           `;'     //`\   /    | |_) | | | (_| \__ \  __/ |   */
+/*           /   __     |   ('.  | .__/|_|  \__,_|___/\___|_|   */
+/*          |_ ./O)\     \  `) \ | |                   ___      */
+/*         _/-.    `      `"`  |`|_|                  / __|     */  
+/*     .-=; `                  /   `-.            _  | (__      */
+/*    /o o \   ,_,           .        '.         (_)  \___|     */
+/*    L._._;_.-'           .            `'-.                    */        
+/*      `'-.`             '                 `'-.                */
+/*          `.         '                        `-._            */
+/*            '-._. -'                              '.          */
+/*               \                                    `\        */
+/*                |                                     \       */
+/*                |    |                                 ;   _. */
+/*                \    |           |                     |-.((  */
+/*                 ;.  \           /    /                |-.`\) */
+/*                 | '. ;         /    |                 |(_) ) */
+/*                 |   \ \       /`    |                 ;'--'  */
+/*                  \   '.\    /`      |                /       */
+/*                   |   /`|  ;        \               /        */
+/*                   |  |  |  |-._      '.           .'         */
+/*                   /  |  |  |__.`'---"_;'-.     .-'           */
+/*                  //__/  /  |    .-'``     _.-'`              */
+/*                jgs     //__/   //___.--''`                   */
+/*                                                              */
+/****************************************************************/
 
 /* Premenná rozhodujúca či mám hladať len v globálnej tabuľke */
 
@@ -51,7 +55,7 @@ int pocetArg = 0;
 
 token tok;
 
-bool debug=false;
+bool debug = false;
 
 #include "precedence.c"
 
@@ -69,7 +73,7 @@ char * createKey (char * prefix, char * suffix)
 
     if (key == NULL)
     {
-        fprintf(stderr, "Could not allocate a new key.\n");
+        fprintf (stderr, "Could not allocate a new key.\n");
         errorHandler (errInt);
     }
 
@@ -86,7 +90,6 @@ char * createKey (char * prefix, char * suffix)
 
 bool saveSymbol (tNodePtr * currTS, char * key, char * name, int type, int argCount, bool errOnRedef)
 {
-    //printf("zaacina save\n");
     /* Otestujem či už náhodou neexistuje daný symbol */
 
     if (searchSymbol (currTS, key) == 0)
@@ -96,11 +99,6 @@ bool saveSymbol (tNodePtr * currTS, char * key, char * name, int type, int argCo
 
     tData newsymbol = malloc (sizeof (struct tData));
     //InsertLastMarius(&Smetisko, newsymbol);
-
-    //printf("&newsymbol je %p\n",&newsymbol );
-    //if (Smetisko -> active -> odpad != newsymbol)
-    //InsertLastMarius (&Smetisko, &newsymbol);
-
     
     /* Ak alokácia zlyhala alebo predaný name či key je NULL volám chybu 99 */
     /* Ak alokácia prebehla bez problémov a názvy sú neprázdne, pokračujem  */
@@ -109,15 +107,13 @@ bool saveSymbol (tNodePtr * currTS, char * key, char * name, int type, int argCo
     {
         /*Do dátovej štruktúry uložím dáta predané funkcii*/
 
-        newsymbol -> name     = name;
-        newsymbol -> type     = type;
-        newsymbol -> nextArg  = NULL;
-        newsymbol -> argCount = argCount;
-        newsymbol -> localTSadr = NULL;
-        newsymbol -> localILadr = NULL;
-        newsymbol -> initialized = false;
-        //newsymbol -> content.integer = rand() % 100;
-        //printf("newsymbol.integer je %d\n",newsymbol->content.integer );
+        newsymbol -> name        =     name;
+        newsymbol -> type        =     type;
+        newsymbol -> nextArg     =     NULL;
+        newsymbol -> argCount    = argCount;
+        newsymbol -> localTSadr  =     NULL;
+        newsymbol -> localILadr  =     NULL;
+        newsymbol -> initialized =    false;
 
         /*Uložím do aktuálnej tabulky nový symbol ktorý som si práve pripravil*/
         /*Ak vloženie zlyhá, vraciam internú chybu errInt(99)                 */
@@ -148,53 +144,98 @@ bool saveSymbol (tNodePtr * currTS, char * key, char * name, int type, int argCo
 
 int buildemin ()
 {
+/*
+  _                  _   _     
+ | |                | | | |    
+ | | ___ _ __   __ _| |_| |__  
+ | |/ _ \ '_ \ / _` | __| '_ \ 
+ | |  __/ | | | (_| | |_| | | |
+ |_|\___|_| |_|\__, |\__|_| |_|
+                __/ |          
+               |___/           
+*/
     saveSymbol (&rootTS, "Flength", "length", sym_fok_int, 1, true);
-        tNodePtr newLocalTS;// = malloc (sizeof tNodePtr);
-        init  (& newLocalTS);
-        saveSymbol (& newLocalTS, "placeholder", "testname", 0, 0, true);
-        tData Flength = searchSymbol (& rootTS, "Flength") -> data;
-        Flength -> localTSadr = newLocalTS;
+
+        tNodePtr      newLocalTS;
+        init       (& newLocalTS);
+        saveSymbol (& newLocalTS, "placeholder", NULL, 0, 0, true);
+
+        tData Flength               = searchSymbol (& rootTS, "Flength") -> data;
+              Flength -> localTSadr = newLocalTS;
+
         saveSymbol (& newLocalTS, "Vs", "s", sym_var_str, 0, true);
+
         Flength -> nextArg = searchSymbol (& newLocalTS, "Vs");
-        searchSymbol (& newLocalTS, "Vs") -> data -> nextArg = NULL;
+        Flength -> nextArg -> data -> nextArg = NULL;
+/*
+   ___ ___  _ __  _   _ 
+  / __/ _ \| '_ \| | | |
+ | (_| (_) | |_) | |_| |
+  \___\___/| .__/ \__, |
+           | |     __/ |
+           |_|    |___/ 
 
-    
-
+*/
     saveSymbol (&rootTS, "Fcopy",   "copy",   sym_fok_str, 3, true);
-        tNodePtr newLocalTS2;// = malloc (sizeof tNodePtr);
-        init  (& newLocalTS2);
-        saveSymbol (& newLocalTS2, "placeholder", "testname", 0, 0, true);
-        tData Fcopy = searchSymbol (& rootTS, "Fcopy") -> data;
-        Fcopy -> localTSadr = newLocalTS2;
+        tNodePtr      newLocalTS2;
+        init       (& newLocalTS2);
+        saveSymbol (& newLocalTS2, "placeholder", NULL, 0, 0, true);
+
+        tData Fcopy               = searchSymbol (& rootTS, "Fcopy") -> data;
+              Fcopy -> localTSadr = newLocalTS2;
+
         saveSymbol (& newLocalTS2, "Vs", "s", sym_var_str, 0, true);
+
         Fcopy -> nextArg = searchSymbol (& newLocalTS2, "Vs");
-        saveSymbol (& newLocalTS2, "Vi", "i", sym_var_int, 0, true);
-        searchSymbol (& newLocalTS2, "Vs") -> data -> nextArg = searchSymbol (& newLocalTS2, "Vi");
-        saveSymbol (& newLocalTS2, "Vn", "n", sym_var_int, 0, true);
+
+        saveSymbol   (& newLocalTS2, "Vi", "i", sym_var_int, 0, true);
+        Fcopy -> nextArg -> data -> nextArg = searchSymbol (& newLocalTS2, "Vi");
+        saveSymbol   (& newLocalTS2, "Vn", "n", sym_var_int, 0, true);
         searchSymbol (& newLocalTS2, "Vi") -> data -> nextArg = searchSymbol (& newLocalTS2, "Vn");
         searchSymbol (& newLocalTS2, "Vn") -> data -> nextArg = NULL;
+/*
+   __ _           _ 
+  / _(_)         | |
+ | |_ _ _ __   __| |
+ |  _| | '_ \ / _` |
+ | | | | | | | (_| |
+ |_| |_|_| |_|\__,_|
 
+*/                                        
     saveSymbol (&rootTS, "Ffind",   "find",   sym_fok_int, 2, true);
-        tNodePtr newLocalTS3;// = malloc (sizeof tNodePtr);
-        init  (& newLocalTS3);
-        saveSymbol (& newLocalTS3, "placeholder", "testname", 0, 0, true);
-        tData Ffind = searchSymbol (& rootTS, "Ffind") -> data;
-        Ffind -> localTSadr = newLocalTS3;
+        tNodePtr      newLocalTS3;
+        init       (& newLocalTS3);
+        saveSymbol (& newLocalTS3, "placeholder", NULL, 0, 0, true);
+
+        tData Ffind               = searchSymbol (& rootTS, "Ffind") -> data;
+              Ffind -> localTSadr = newLocalTS3;
+
         saveSymbol (& newLocalTS3, "Vs", "s", sym_var_str, 0, true);
+
         Ffind -> nextArg = searchSymbol (& newLocalTS3, "Vs");
-        saveSymbol (& newLocalTS3, "Vsearch", "search", sym_var_str, 0, true);
-        searchSymbol (& newLocalTS3, "Vs") -> data -> nextArg = searchSymbol (& newLocalTS3, "Vsearch");
+        saveSymbol   (& newLocalTS3, "Vsearch", "search", sym_var_str, 0, true);
+        Ffind -> nextArg -> data -> nextArg = searchSymbol (& newLocalTS3, "Vsearch");
         searchSymbol (& newLocalTS3, "Vsearch") -> data -> nextArg = NULL;
 
+/*               _   
+                | |  
+  ___  ___  _ __| |_ 
+ / __|/ _ \| '__| __|
+ \__ \ (_) | |  | |_ 
+ |___/\___/|_|   \__|
+
+*/
     saveSymbol (&rootTS, "Fsort",   "sort",   sym_fok_str, 1, true);
-        tNodePtr newLocalTS4;// = malloc (sizeof tNodePtr);
+        tNodePtr newLocalTS4;
         init  (& newLocalTS4);
         saveSymbol (& newLocalTS4, "placeholder", "testname", 0, 0, true);
-        tData Fsort = searchSymbol (& rootTS, "Fsort") -> data;
-        Fsort -> localTSadr = newLocalTS4;
+
+        tData Fsort               = searchSymbol (& rootTS, "Fsort") -> data;
+              Fsort -> localTSadr = newLocalTS4;
+
         saveSymbol (& newLocalTS4, "Vs", "s", sym_var_str, 0, true);
         Fsort -> nextArg = searchSymbol (& newLocalTS4, "Vs");
-        searchSymbol (& newLocalTS4, "Vs") -> data -> nextArg = NULL;
+        Fsort -> nextArg -> data -> nextArg = NULL;
 
     return 0;
 }
@@ -388,22 +429,6 @@ void nt_var_def (token tok)
         if (debug == true)
             printf ("\n%sNew Instruction | %p | I_VAR | %p | NULL | NULL |%s\n", KYEL, (void *) currIL, (void *) currentVar->data, KNRM);
 
-
-
-/*
-        printf("%s",KYEL);
-        if (localIL==NULL){
-            insertInst (&IL, I_VAR, &currentVar->data, NULL, NULL);
-            printf("GLOBAL\n");printf("Vlozil som instrukciu I_VAR s ukazatelom %p do IL %p\n", (void *) &currentVar->data, (void *) &IL);
-        }
-
-        else{
-            insertInst (localIL, I_VAR, &currentVar->data, NULL, NULL);
-            printf("LOCAL\n");printf("Vlozil som instrukciu I_VAR s ukazatelom %p do IL %p\n", (void *) &currentVar->data, (void *) localIL);
-        }
-        printf("%s",KNRM);
-        //free (key);*/
-
     }
     else
     {    
@@ -594,7 +619,7 @@ pocetArg = 0;
 
     else
     {    
-        printf ("nt_fun_def_list\n");
+        fprintf (stderr, "Syntax error in nt_fun_def_list, received %d\n", tok -> type);
         errorHandler (errSyn);
     }
 }
@@ -770,7 +795,7 @@ void nt_stmt_list (token tok)
 
         if (tok -> type == t_end)
         {
-            printf("stmtMustntBeEmpty je %d\n",stmtMustntBeEmpty );
+            if (debug == true) printf("stmtMustntBeEmpty je %d\n",stmtMustntBeEmpty );
             if (stmtMustntBeEmpty==true)
             {
                 fprintf(stderr, "Expected another statement after semicolon.\n");
@@ -826,7 +851,7 @@ void nt_stmt_more (token tok)
         if (tok->type == t_semicolon)
         {
             match(tok,t_semicolon);
-            printf("NASTAVIL TRU\n");
+            if (debug == true) printf("NASTAVIL TRU\n");
             stmtMustntBeEmpty=true;
 
             nt_stmt_list(tok);
@@ -851,7 +876,6 @@ int j = 0;
 void nt_stmt (token tok)
 {   
     stmtMustntBeEmpty=false;
-    printf("FALS\n");
     
     if (tok->type == t_if     ||
         tok->type == t_begin  ||
@@ -1114,7 +1138,7 @@ void nt_stmt (token tok)
             //////////////////////////////////////////////////////////////RULE22
             case t_write:   match (tok, t_write);
                             match (tok, t_l_parrent);
-                            tData ** dataArr = (tData**) malloc (sizeof (tData*) * 10);//       printf("vytvoril som doublepole %p\n____________________\n",&contentArr);
+                            tData ** dataArr = (tData**) malloc (sizeof (tData*) * 10);
                             InsertLastMarius (& Smetisko, dataArr);
 
                             nt_term_list (tok, "Fwrite", NULL, dataArr);
@@ -1209,7 +1233,7 @@ int nt_assign (token tok)
             
             //free (key2);
 
-            tContent ** contentArr = (tContent**) malloc (sizeof (tContent*) * 10);//       printf("vytvoril som doublepole %p\n____________________\n",&contentArr);
+            tContent ** contentArr = (tContent**) malloc (sizeof (tContent*) * 10);
             InsertLastMarius (& Smetisko, contentArr);
             nt_term_list (tok, key, contentArr, NULL);
             pocetArg = 0;
@@ -1290,11 +1314,11 @@ void nt_term (token tok, char *currentFunctionKey, tContent **contentArr, tData 
                 if (contentArr!=NULL)
                     {
                         contentArr[j]= currCon;
-                        printf("Do contentArr[%d].integer som ulozil %d\n",j,(*contentArr[j]).integer);
+                        if (debug == true) printf("Do contentArr[%d].integer som ulozil %d\n",j,(*contentArr[j]).integer);
                     }
                 if (dataArr!=NULL)
                     {
-                        printf("davam do dataru\n");
+                        if (debug == true) printf("davam do dataru\n");
                         dataArr[j]=&(hledam -> data);
                     }
 
@@ -1399,7 +1423,7 @@ void nt_term (token tok, char *currentFunctionKey, tContent **contentArr, tData 
                     //idem ulozit content pre volanie
                         
                         char * randomKey = randstring(20);
-                        printf("randomkey je %s\n",randomKey );
+                        if (debug == true) printf("randomkey je %s\n",randomKey );
 
                         if (searchSymbol(&rootTS, randomKey)!=0)
                         {
@@ -1443,7 +1467,7 @@ void nt_term (token tok, char *currentFunctionKey, tContent **contentArr, tData 
                                             //idem ulozit content pre volanie
                         
                         char * randomKey2 = randstring(20);
-                        printf("randomkey2 je %s\n",randomKey2 );
+                        if (debug == true) printf("randomkey2 je %s\n",randomKey2 );
 
                         if (searchSymbol(&rootTS, randomKey2)!=0)
                         {
