@@ -1054,69 +1054,154 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 				break;		
 								//LOGICKE OPERACIE//
 			case I_MORE:
-				
-				temp = ((tNodePtr) new->adr1);
-				temp2 = ((tNodePtr) new->adr2);
+			
+				A1 = (tNodePtr) new -> adr1;
+				A2 = (tNodePtr) new -> adr2;
 
-				if(temp->data->type == t_expr_int || temp->data->type == sym_var_int)
+				// Prisli nam dve nove adresy => zaciatok noveho medzivypoctu
+
+				if (A1 -> data -> used == false && A2 -> data -> used == false)
 				{
-					if(temp->data->content.integer > temp2->data->content.integer)
-					{
-						
-						lastbool = true;
-						
-					} else 
-					{
-						
-						lastbool = false;
-						
-					}
-				} else if(temp->data->type == t_expr_dou || temp->data->type == sym_var_rea)
-				{
-					if(temp->data->content.real > temp2->data->content.real)
-					{
-						
-						lastbool = true;
-						
-					} else 
-					{
-						
-						lastbool = false;
-						
-					}
-				} else if(temp->data->type == t_expr_str || temp->data->type == sym_var_str)
-				{
-					cmp = strcmp(temp->data->content.string, temp2->data->content.string);
-					if(cmp > 0)
-					{
-						
-						lastbool = true;
-						
-				
-					} else 
-					{
-						
-						lastbool = false;
+					if (debug == true) printf("dve nove\n");
+
+					if (A1 -> data -> content . initialized == false ||
+						A2 -> data -> content . initialized == false  ) 
+						errorHandler (errRunUnin);
+
 					
+					if ((A1 -> data -> type == t_expr_int || A1 -> data -> type == sym_var_int) &&
+						(A2 -> data -> type == t_expr_int || A2 -> data -> type == sym_var_int))
+					{	
+						lastbool = (A1 -> data -> content . integer > A2 -> data -> content . integer ) ? true : false;
 					}
-				} else 
-				{
-					if(temp->data->content.boolean > temp2->data->content.boolean)
-					{
-						
-						lastbool = true;
-					
-				
-					} else 
-					{
-						
-						lastbool = false;
-						
+
+					if ((A1 -> data -> type == t_expr_dou || A1 -> data -> type == sym_var_rea) &&
+						(A2 -> data -> type == t_expr_dou || A2 -> data -> type == sym_var_rea))
+					{	
+						lastbool = (A1 -> data -> content . real > A2 -> data -> content . real ) ? true : false;
 					}
+
+					if ((A1 -> data -> type == t_expr_str || A1 -> data -> type == sym_var_str) &&
+						(A2 -> data -> type == t_expr_str || A2 -> data -> type == sym_var_str))
+					{	
+						cmp = strcmp (A1 -> data -> content . string, A2 -> data -> content . string);
+						lastbool = (cmp > 0) ? true : false;
+					}
+
+					if ((A1 -> data -> type == t_expr_boo || A1 -> data -> type == sym_var_boo) &&
+						(A2 -> data -> type == t_expr_boo || A2 -> data -> type == sym_var_boo))
+					{	
+						lastbool = (A1 -> data -> content . boolean > A2 -> data -> content . boolean) ? true : false;
+					}
+					A1 -> data -> used = true;
+					A2 -> data -> used = true;
+
+					if(debug == true) printf("MORE: %d\n", lastbool);
+
+					break;
 				}
+
+				// Prva adresa nebola pouzita ale druha ano => pouzijem prvu
+
+				if (A1 -> data -> used == false && A2 -> data -> used == true)
+				{	
+					if (debug == true) printf("prva\n");
+
+					if (A1 -> data -> content . initialized == false) 
+						errorHandler (errRunUnin);
+
+					if (A1 -> data -> type == t_expr_int || A1 -> data -> type == sym_var_int)
+					{	
+						lastbool = (A1 -> data -> content . integer > resArrInt [resArrIntIndex] ) ? true : false;
+					}
+
+					if (A1 -> data -> type == t_expr_dou || A1 -> data -> type == sym_var_rea)
+					{	
+						lastbool = (A1 -> data -> content . real > resArrDou [resArrDouIndex] ) ? true : false;
+					}
+
+					A1 -> data -> used = true;
+
+					if(debug == true) printf("MORE: %d\n", lastbool);
+					break;
+				}
+
+				// Prva adresa uz bola druha nie  => pouzijem druhu
+
+				
+				if (A1 -> data -> used == true && A2 -> data -> used == false)
+				{	
+					if (debug == true) printf("druha\n");
+
+					if (A2 -> data -> content . initialized == false) 
+						errorHandler (errRunUnin);
+
+					if (A2 -> data -> type == t_expr_int || A2 -> data -> type == sym_var_int)
+					{	
+						lastbool = ( resArrInt [resArrIntIndex] > A2 -> data -> content . integer ) ? true : false;
+					}
+
+					if (A2 -> data -> type == t_expr_dou || A2 -> data -> type == sym_var_rea)
+					{	
+						lastbool = ( resArrDou [resArrDouIndex] > A2 -> data -> content . real ) ? true : false;
+					}
+
+					A2 -> data -> used = true;
+
+					if(debug == true) printf("MORE: %d\n", lastbool);
+					break;
+				}
+
+				// Obe adresy boli pouzite => zratam medzivysledky
+
+				if (A1 -> data -> used == true && A2 -> data -> used == true)
+				{
+					if (debug == true) printf("aniani\n");
+
+					if 	((A1 -> data -> type == t_expr_int || A1 -> data -> type == sym_var_int) &&
+						 (A2 -> data -> type == t_expr_int || A2 -> data -> type == sym_var_int)  )
+					{
+						if (realOnly == true)
+							lastbool = ( resArrDou [resArrDouIndex-1] > resArrDou [resArrDouIndex] ) ? true : false;
+						else
+							lastbool = ( resArrInt [resArrIntIndex-1] > resArrInt [resArrIntIndex] ) ? true : false;
+					}
+
+					if 	((A1 -> data -> type == t_expr_dou || A1 -> data -> type == sym_var_rea) &&
+						 (A2 -> data -> type == t_expr_dou || A2 -> data -> type == sym_var_rea)  )
+					{
+						lastbool = ( resArrDou [resArrDouIndex-1] > resArrDou [resArrDouIndex] ) ? true : false;
+					}
+
+					if 	((A1 -> data -> type == t_expr_dou || A1 -> data -> type == sym_var_rea) &&
+						 (A2 -> data -> type == t_expr_int || A2 -> data -> type == sym_var_int)  )
+					{
+						if (realOnly == true)
+							lastbool = ( resArrDou [resArrDouIndex-1] > resArrDou [resArrDouIndex] ) ? true : false;
+						else
+							lastbool = ( resArrInt [resArrIntIndex-1] > resArrInt [resArrIntIndex] ) ? true : false;
+					}
+
+					if 	((A1 -> data -> type == t_expr_int || A1 -> data -> type == sym_var_int) &&
+						 (A2 -> data -> type == t_expr_dou || A2 -> data -> type == sym_var_rea)  )
+					{
+						if (realOnly == true)
+							lastbool = ( resArrDou [resArrDouIndex-1] > resArrDou [resArrDouIndex] ) ? true : false;
+						else
+							lastbool = ( resArrInt [resArrIntIndex-1] > resArrInt [resArrIntIndex] ) ? true : false;
+					}
+
+					if(debug == true) printf("MORE: %g\n", lastbool);
+					break;
+				}
+
+				errorHandler (errRunRest);
+
 				break;
 			
 			case I_LESS:
+
+
 				
 				temp = ((tNodePtr) new->adr1);			
 				temp2 = ((tNodePtr) new->adr2);
@@ -1448,25 +1533,18 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 				if(scanf("%d", &(((tData) new->result)->content.integer)) != 1)
 					errorHandler(errRunLoad);
 				((tData) new->result)->content.initialized = true;
-				
-				if (debug==true)
-					printf("%d\n", (((tData) new->result)->content.integer));
 				break;
 
 			case I_READR:	
 				if(scanf("%lg", &(((tData) new->result)->content.real)) != 1)
 					errorHandler(errRunLoad);
-				
-				if (debug==true)
-					printf("%lg\n", (((tData) new->result)->content.real));
+				((tData) new->result)->content.initialized = true;
 				break;	
 
 			case I_READS:	
 				if(scanf("%s", (((tData) new->result)->content.string)) != 1)
 					errorHandler(errRunLoad);
-				
-				if (debug==true)
-					printf("%s\n", (((tData) new->result)->content.string));
+				((tData) new->result)->content.initialized = true;
 				break;
 
 			case I_WRITE:
@@ -1496,39 +1574,33 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 							printf("%d", (*((tData**) new->adr2)[i])->content.boolean);		
 						break;
 					
-						default: printf("KOOOORVA\n");
+						default: errorHandler(errInt);
+								break;
 					}
 				}
 				break;
 
 			case I_IF:
-				printf("lastboo je %d\n",lastbool );
+		
 				
 				if(lastbool == true)	
 				{
-
-					printf("then vetva\n");//lastbool = 0;
 					tListItem * revert = currIL->active;
-					//printf("pamatam si %d\n",((tInsList *) new->adr1)->active->instruction.instype);
+				
 					recycleAdr = true;
 					interpret(&rootTS, ((tInsList *) new->adr1));
 					preklopenie(currIL);
 
 					currIL->active = revert;
-					//((tInsList *) new->adr1)->active=revert->next;
-					printf("then vetva skoncila\n");	
 								
 					break;
 				} else 
 				{
-					printf("volam picu z else\n");	//lastbool = 0;
 					tListItem * revert = currIL->active;
-					//tListItem * revert = ((tInsList *) new->adr1)->active;
+				
 					recycleAdr = true;
 					interpret(&rootTS, ((tInsList *) new->adr2));
 					preklopenie(currIL);
-
-					//((tInsList *) new->adr1)->active=revert->next;
 					currIL->active = revert;
 					break;
 				}
@@ -1548,39 +1620,25 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 			case I_FCE:
 					
 
-
-				printf("FUNKCIA ZACINA DRZTE SI KLOBUKY\n");
 				currentTerm = (((tData) new->adr1)->nextArg);
-				//printf("%s\n", currentTerm->data->name);
-				//odpamatanie kokotka
+		
 				if(new->result!=NULL)
-				conVarOld = *((tContent *) new->result);//else printf("je nal kokot\n");
-				//printf("odpamatal som si kokotka %d\n",conVarOld.integer);
-
+				conVarOld = *((tContent *) new->result);
+				
 				for(int i = 0; i < ((tData) new->adr1)->argCount; i++)
 				{
-					//printf("1 FORIK zaciatok\n");
 					conOld[i] = currentTerm->data->content;
-					//printf("integer conoldu je %d\n",conOld[i].integer );
-					printf("integer currentu je %d\n",(*((tContent **)new->adr2)[i]).integer );
-                    //printf("idem tam byt\n");
                     currentTerm->data->content = (*((tContent**) new->adr2)[i]);
-                    //printf("som tu\n");
-					//printf("po ulozeni je v currentTerme %d\n",currentTerm->data->content.integer );
 					currentTerm = currentTerm->data->nextArg;
-					//printf("1 FORIK koniec\n");
 				}
 
 				tNodePtr hledam = searchSymbol  (&rootTS,"Flength");
-				//printf("nasel \n");
+				
 				char *nazovfunkcie = ((tData) new->adr1)->name;
-				//if (nazovfunkcie==NULL)printf("je nal kurva\n");
-				//printf("funkcia je %s\n",nazovfunkcie);
-
+			
 				if(strcmp(nazovfunkcie, "length") == 0)
 				{
 					readyInt = strlen(((tData) new->adr1)->nextArg->data->content.string);
-					//printf("%d\n", readyInt);
 				}
 				else
 					if(strcmp(nazovfunkcie, "copy") == 0)
@@ -1604,15 +1662,12 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 							{
 								tListItem * revert = currIL->active;
 								
-								printf("%srevert si pamata %u v %u %s\n",KCYN,revert->instruction.instype, revert,KNRM );
 								kanter++;
-								printf("__________________________________LEVEL_VNORENI_%d\n",kanter);
-								
+									
 								recycleAdr = true;
-								interpret(/*&(((tData) new->adr1)->localTSadr)*/NULL, (((tData) new->adr1)->localILadr));
+								interpret(NULL, (((tData) new->adr1)->localILadr));
 								preklopenie(currIL);
 								
-								printf("__________________________________END_%d\n",kanter);kanter--;
 								
 								
 								currIL->active = revert;
@@ -1640,13 +1695,12 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 									case sym_fok_boo:
 										lastbool =(*((tContent *) new->result)).boolean;
 										break;
-									default: printf("KORVOOOOOOOOOOOOOOOOOOOOO\n");exit(563415616);
+									default: errorHandler(errInt); 
+											break;
 								}
-								//printf("vratil som %d\n", (*((tContent *) new->result)).integer);
-								//printf("readyInt je %d\n",readyInt );
-
+			
 				                *((tContent *) new->result) = conVarOld;
-				                //printf("obnovil som si kokotka %d\n",(*((tContent *) new->result)).integer);
+				            
 				                currentTerm = (((tData) new->adr1)->nextArg);
 
 								for(int i = 0; i < ((tData) new->adr1)->argCount; i++)
@@ -1659,11 +1713,11 @@ int interpret(tNodePtr *TS, tInsList *currIL)	//precitaj si zadanie real %g, atd
 
                 
 
-                printf("%sFUNKCIA SKONCILA ODLOZTE SI KLOBUCIKY%s\n",KRED,KNRM);	
+                	
 			break;
 			
-			default: printf("kokot dostal som %d\n",new->instype);
-			break;
+			default: errorHandler(errInt);
+					break;
 		}	
 		Succ(currIL);
 
