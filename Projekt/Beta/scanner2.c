@@ -1,3 +1,12 @@
+/***********************scanner.c********************************/
+/* Soubor: scanner.c - Obsahuje lexikální analyzátor 		*/
+/* Předmět: Formalní jazyky a překladače (IFJ) 			*/
+/* Projekt: Implementace interpretu imperativního jazyka IFJ14  */
+/* Varianta zadání: b/1/I 					*/
+/* Datum: prosinec 2014						*/
+/* Kódování: UTF-8						*/
+/* Autoři:			Daniel Dušek (xdusek21)		*/
+/****************************************************************/
 #define APOSTROF_ASCII 39
 /************************ ENUM PRO CASE ****************************-*/
 
