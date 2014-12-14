@@ -8,10 +8,6 @@
 /* Autoři:			Filip Kalous (xkalou03)						*/
 /****************************************************************/
 
-
-#include "ial.h"
-
-
 #define ASCIISIZE 256
 
 tNodePtr rootTS;
@@ -114,20 +110,22 @@ void initTable(tNodePtr *rootTS) {
 
 void disposeTable(tNodePtr *rootTS) {
 
-
-	if((*rootTS)->rptr != NULL) {
-
-		disposeTable(&((*rootTS)->rptr)); 		// vycistime pravou stranu stromu
-	}
-
-	if((*rootTS)->lptr != NULL) {	
+	if(rootTS == NULL) {
 	
-		disposeTable(&((*rootTS)->lptr));		// vycistime levou stranu stromu	
-	}
+		if((*rootTS)->rptr != NULL) {
 
-	free((*rootTS)->data);
-	free(*rootTS);
-	*rootTS = NULL;
+			disposeTable(&((*rootTS)->rptr)); 		// vycistime pravou stranu stromu
+		}
+
+		if((*rootTS)->lptr != NULL) {	
+	
+			disposeTable(&((*rootTS)->lptr));		// vycistime levou stranu stromu	
+		}
+
+		free((*rootTS)->data);
+		free(*rootTS);
+		*rootTS = NULL;
+	}
 }
 
 tNodePtr searchSymbol(tNodePtr *rootTS, char* key) {
@@ -153,7 +151,7 @@ tNodePtr createNode(char *key, tData data) {
 
 
 	tNodePtr new;
-	if((new = malloc(sizeof(struct tUzel))) == NULL) 
+	if((new = malloc(sizeof(struct tNodePtr))) == NULL) 
 		return 0;
 	
 	else {
@@ -229,32 +227,41 @@ void partition(char *text, int *i, int *j) { 	// rozdeleni
 }
 
 
- void quickSort(char *text, int l, int r) { // razeni
-
- 	if((char *textAlloc = malloc(sizeof(char) * strlen(text))) !+ NULL) {
-
- 		strcpy(textAlloc, text);
+char *quickSort(char *text, int l, int r) { // razeni
 
 		int i, j;
 
 		i = l; j = r;
 
-		partition(textAlloc, &i, &j);
+		partition(text, &i, &j);
 
 		if(j > l)
-			quickSort(textAlloc, l, j);
+			quickSort(text, l, j);
 
 		if(i < r)
-			quickSort(textAlloc, i, r);
+			quickSort(text, i, r);
 
+		return text;
+}
 
-		printf("%s\n", textAlloc);
-	}
+char *allocQuickSort(char *text, int l, int r) {
+
+	char *textAlloc;
+
+ 	if((textAlloc = malloc(sizeof(char) * strlen(text))) != NULL) {
+ 		InsertLastMarius(&Smetisko, textAlloc);
+ 		strcpy(textAlloc, text);
+
+ 		textAlloc = quickSort(textAlloc, l, r);
+ 	}
+	
 	else {
 
 		errorHandler(errInt);
-		return;
+		return 0;
 	}
+
+	return textAlloc;
 }
 
 
