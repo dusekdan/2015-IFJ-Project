@@ -1,14 +1,16 @@
 #include "main.h"
 
-int main()
+int main(int argc, char * argv [])
 {
     InitMarius(&Smetisko);
     InitList(&IL);
+    if (argc != 2)
+        exit(errInt);
     fd = fopen(argv[1], "r");
     if(fd == NULL)
     {
         fprintf(stderr,"Encountered an error while opening the file!\n");
-        errorHandler(errInt);
+        exit(errInt);
     }
     startTable();
     tok = malloc (sizeof(struct token));

@@ -87,8 +87,8 @@ void SuccMarius (tSmetisko * Smetisko)
 
 int mariuspedersen (tSmetisko * SmetiskoPTR)
 {
+    if(fd != NULL)
     fclose(fd);
-
 
     FirstMarius (SmetiskoPTR);
     
