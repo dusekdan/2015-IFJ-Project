@@ -33,7 +33,8 @@ typedef struct tData {		// symbol
 	struct tNodePtr *nextArg;			// ukazatel na dalsi argument funkce
 	tInsList *localILadr;        //ukazatel na adresu lokalnych instrukcii
 	tContent content;		// obsah promenne	
-	bool initialized;	
+	bool initialized;
+	bool used;	
 } *tData;
 
 
