@@ -12,15 +12,7 @@ void InitList(tInsList *L)
 void DisposeList(tInsList *L)
 //zrusenie prvok zoznamu, zoznam sa nachadza v stave, v akom bol po inicializaci
 {
-	/*tListItem *tmp;
-	
-	while(L->first != NULL)
-	{
-		tmp = L->first;
-		L->first = L->first->next;
-		//free(tmp);
-	}
-	*/
+
 	L->active = NULL;
 	L->last = NULL;
 }
@@ -45,7 +37,6 @@ void InsertLast(tInsList *L, tInstruction I)
 		}	
 		
 		L->last = new;
-		//printf("Vlozil jsem instrukci %d\n__________________________________\n", new->instruction.instype);
 
 	} else 
 	{
@@ -86,13 +77,10 @@ void First(tInsList *L)
 
 void Replicator(tInsList *IN, tInsList *OUT, tListItem *start, int howMuch)
 {
-	//printf("%d INLAST\n",IN->last);
-	//tListItem * revert = IN->last;
-	//printf("inactive\n");
+
 	Select(IN, start->next);
 	for (int i = 0; i < howMuch; i++)
 	{
-		printf("replikujem ty kokot\n");
 		insertInst(OUT, IN->active->instruction.instype, IN->active->instruction.adr1, IN->active->instruction.adr2, IN->active->instruction.result);
 		Succ(IN);
 	}
@@ -103,18 +91,14 @@ void Replicator(tInsList *IN, tInsList *OUT, tListItem *start, int howMuch)
 
 void Select(tInsList *L, tListItem *destination)
 {
-	//printf("aktivny bol %u\n",L->active );
+
 	L->active = destination;
-	//printf("aktivny je teraz %u\n",L->active );
 }
 
 void Succ(tInsList *L)
 //posune aktivitu na dalsi prvok v zozname
 {
-	/*if(L->active != NULL)
-	{
-		L->active = L->active->next;
-	}*/
+
 	if(L->active != NULL)
 	{
 		if(L->active->next != NULL)
@@ -129,8 +113,7 @@ tInstruction *Copy(tInsList *L)
 //vrati hodnotu aktivneho prvku v zozname
 {
 	if(L->active == NULL)
-	{
-		printf("nie je aktivna instrukcia\n");		
+	{	
 		return NULL;
 	
 	} else return &(L->active->instruction);  	
@@ -154,8 +137,3 @@ bool insertInst (tInsList *list, int operace, void*adr1, void*adr2, void*result)
     return retval;
 
 }
-
-/*int main()
-{
-	return 0;
-}*/

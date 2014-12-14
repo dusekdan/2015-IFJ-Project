@@ -82,7 +82,6 @@ typedef struct token
 }*token;
 
 int getNextToken (FILE*fd, token TToken);
-void terminalis (int terminal, token tok); //na debug
 void nt_var_def_block (token tok);
 void nt_var_def (token tok);
 void nt_var_def_list (token tok);
