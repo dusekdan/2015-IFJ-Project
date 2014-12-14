@@ -21,6 +21,7 @@ typedef struct {			// data promenne v symbolu
 	double real;
 	char *string;
 	bool boolean;
+	bool initialized;
 
 } tContent;
 /*  LEX ČÁST */
@@ -33,7 +34,6 @@ typedef struct tData {		// symbol
 	struct tNodePtr *nextArg;			// ukazatel na dalsi argument funkce
 	tInsList *localILadr;        //ukazatel na adresu lokalnych instrukcii
 	tContent content;		// obsah promenne	
-	bool initialized;
 	bool used;	
 } *tData;
 

@@ -244,7 +244,7 @@ int zpracuj(token tok, tOpData *column) {
 				if(tok->type == t_expr_dou)
 					column->symbol->content.real = tok->val_flo;
 
-				column->symbol->initialized = true;
+				column->symbol->content.initialized = true;
 				column->symbol->used = false;
 				column->symbol->type = tok->type;
 			}

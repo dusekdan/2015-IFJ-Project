@@ -113,7 +113,7 @@ bool saveSymbol (tNodePtr * currTS, char * key, char * name, int type, int argCo
         newsymbol -> argCount    = argCount;
         newsymbol -> localTSadr  =     NULL;
         newsymbol -> localILadr  =     NULL;
-        newsymbol -> initialized =    false;
+        newsymbol -> content . initialized =    false;
 
         /*Uložím do aktuálnej tabulky nový symbol ktorý som si práve pripravil*/
         /*Ak vloženie zlyhá, vraciam internú chybu errInt(99)                 */
@@ -923,7 +923,7 @@ void nt_stmt (token tok)
                             //SEMANTICKA KONTROLA
                             int semControlVar = nt_assign (tok);
                             //printf("Is the variable %s initialized? %d\n",hledam->data->name, hledam->data->initialized);
-                            hledam -> data -> initialized = true;
+                            hledam -> data -> content . initialized = true;
                             //printf("Is the variable %s initialized? %d\n",hledam->data->name, hledam->data->initialized);
 
                             if (semControlVar != hledam->data->type+4 && semControlVar != hledam->data->type+12 && semControlVar != hledam->data->type)
