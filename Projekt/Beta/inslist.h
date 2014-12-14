@@ -24,9 +24,9 @@
 #define I_READI 	19  //scanf result
 #define I_READR		20  //scanf result
 #define I_READS		21  //scanf result
-#define I_WRITEI 	22  //printf result
-#define I_WRITER	23  //printf result
-#define I_WRITES	24  //printf result
+#define I_WRITE 	22  //printf result
+//#define I_WRITER	23  //printf result
+//#define I_WRITES	24  //printf result
 #define I_LENGTH 	25  //nie je funkcia
 #define I_COPY 		26  //nie je funkcia
 #define I_FIND 		27  //result = BMASearch(adr1, adr2)  vrati v resulte poziciu podretazca adr2 v retazci adr1; adr1,adr2 su stringy result je integer
