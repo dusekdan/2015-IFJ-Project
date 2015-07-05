@@ -1,6 +1,11 @@
-ifjproj
+IFJ Project 2014/2015, University of Technology Brno
 =======
 
-Projekt do IFJ, překladač pseudopascalu
+*This shared repository contains complete source code of project of Formal Languages & Automata class from academic year 2014/2015 on Univesity of Technology, Brno.*
 
-Soubor gitKnowHow obsahuje pro nás nejdůležitější příkazy pro používání gitHubu, so check it out nerds!
+
+#Authors
+
+Created by team of four starting programmers - [Daniel Dušek](https://github.com/dusekdan), [Matúš Bůtora](https://github.com/butoramatus), [Roman Jaška](https://github.com/rsn4ke), [Filip Kalous](https://github.com/Strihtrs).
+
+
