@@ -4,7 +4,7 @@ IFJ Project 2014/2015
 
 *This shared repository contains complete source code of project of Formal Languages & Automata class from academic year 2014/2015 on Univesity of Technology, Brno.*
 
-###Description
+## Description
 
 This project is primarily focused on creating a working *pseudo-pascal* compiler/interpretter in language C. By *pseudo-pascal* is meant iteration of language pascal, leaving the syntax, adding few functions (for example qsort()) and removing the user data types to simplify the process of translation.
 
@@ -14,7 +14,7 @@ In development we run on scrum iteration (or pseudo-scrum if you will), which en
 
 Final version of the source code can be found in `/Project/Beta/odevzdavani` folder of this repository. Makefile is included, simple command `make` will be good enough.
 
-###Authors
+## Authors
 
 This project was designed & programmed by the team of four starting programmers - [Daniel Dušek](https://github.com/dusekdan), [Matúš Bútora](https://github.com/butoramatus), [Roman Jaška](https://github.com/rsn4ke), [Filip Kalous](https://github.com/Strihtrs), in order to complete the Formal Languages & Automata class.
 
@@ -22,7 +22,7 @@ In the process of creation of the code, the team lost one of its programmers (no
 
 Team managed to recover from the loss of the programmer and complete the task on time, reaching 21.0 points for each of the team members in the end (maximum amount of points per person in 5-man team is 20.0, so it could be considered success).
 
-####Roles
+### Roles
 
 *Despite the fact we were all programmers, we had also some specific roles.*
 
