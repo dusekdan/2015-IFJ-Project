@@ -12,7 +12,7 @@ Chances are that you, the visitor, have found this page as a result of Googling 
 
 In development we run on scrum iteration (or pseudo-scrum if you will), which ensured that at least some progress is made in time definite intervals.
 
-Final version of the source code can be found in `/Project/Beta/odevzdavani` folder of this repository. Makefile is included, simple command `make` will be good enough.
+Makefile is included, simple command `make` will be good enough.
 
 ## Authors
 
