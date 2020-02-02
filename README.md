@@ -4,6 +4,7 @@ IFJ Project 2014/2015
 
 *This shared repository contains complete source code of project of Formal Languages & Automata class from academic year 2014/2015 on Univesity of Technology, Brno.*
 
+
 ## Description
 
 This project is primarily focused on creating a working *pseudo-pascal* compiler/interpretter in language C. By *pseudo-pascal* is meant iteration of language pascal, leaving the syntax, adding few functions (for example qsort()) and removing the user data types to simplify the process of translation.
